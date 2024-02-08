@@ -1,6 +1,6 @@
-# kriegsspiel-tictactoe
+# kriegspiel-tictactoe
 
-A simple command-line implementation of Zach Weinersmith's proposed game 'Kriegsspiel Tic Tac Toe'.
+A simple command-line implementation of Zach Weinersmith's proposed game 'Kriegspiel Tic Tac Toe'.
 
 see https://mastodon.social/@ZachWeinersmith/111890121393299096
 
@@ -39,25 +39,25 @@ which will allow you to run .csx files.
 To execute the file, cd into the directory where you have unpacked the files and
 run
 
-> `dotnet-script .\KriegsspielTicTacToe.csx`
+> `dotnet-script .\KriegspielTicTacToe.csx`
 
-to run it in basic gameplay (traditional tic-tac-toe but kriegsspiel, hotseat
+to run it in basic gameplay (traditional tic-tac-toe but Kriegspiel, hotseat
 mode).
 
 to see other options for play, run
 
-> `dotnet-script .\KriegsspielTicTacToe.csx /?`
+> `dotnet-script .\KriegspielTicTacToe.csx /?`
 
 note that dotnet-script will intercept all other variations like `-h` or
 `--help` or `-?`, WIP.  Alternately you can supply any garbage like 
 
-> `dotnet-script .\KriegsspielTicTacToe.csx --justshowmethehelp`
+> `dotnet-script .\KriegspielTicTacToe.csx --justshowmethehelp`
 
 and it will insult you but show you the help.
 
 ```
 Description:
-  This is a simple command-line implementation of Zach Weinersmith's proposed game 'Kriegsspiel Tic Tac Toe'
+  This is a simple command-line implementation of Zach Weinersmith's proposed game 'Kriegspiel Tic Tac Toe'
 
 Usage:
   dotnet-script [options]
@@ -65,7 +65,7 @@ Usage:
 Options:
   -f, --file <file>        Path to the json file where gamestate is stored.  Will be resumed automatically if you kill
                            the game (ctrl-C).  Use a fileshare for network multiplayer. [default:
-                           C:\Users\<yourname>\AppData\Roaming\KriegsspielTicTacToe.json]
+                           C:\Users\<yourname>\AppData\Roaming\KriegspielTicTacToe.json]
   -F, --force              Force a new game instead of loading the game at the gamestate file.  Will replace gamestate 
                            file.
   -p, --players <players>  Players mark characters.  Provide them space-separated, eg '-p A B C X Y Z' for a 6-player
@@ -80,17 +80,17 @@ Options:
 
 So, to start a simple 3-player hotseat game between Alice, Bob, and Carol on a 4x4 screen, the command would be
 
-> `dotnet-script .\KriegsspielTicTacToe.csx -p A B C -s 4`
+> `dotnet-script .\KriegspielTicTacToe.csx -p A B C -s 4`
 
 Conversely, to start a multiplayer game with the default rules (2 players X and
 O on a 3x3 board) on a fileshare named `\\kosmos\storage` with random
 start-player, the command would be 
 
-> `dotnet-script .\KriegsspielTicTacToe.csx -f \\kosmos\storage\temp\ksttt.json -j X -r`
+> `dotnet-script .\KriegspielTicTacToe.csx -f \\kosmos\storage\temp\ksttt.json -j X -r`
 
 And then your friend (on another computer with similar access to `\\kosmos\storage\`) can join with 
 
-> `dotnet-script .\KriegsspielTicTacToe.csx -f \\kosmos\storage\temp\ksttt.json -j O`
+> `dotnet-script .\KriegspielTicTacToe.csx -f \\kosmos\storage\temp\ksttt.json -j O`
 
 any game-rule options you pass in when joining an existing game like size,
 players, or randomization will be ignored.
@@ -114,3 +114,15 @@ Don't do that.
 ## Other Bugs
 
 Infinite.  I have no idea.  This was a one-evening hackathon.
+
+# TODO
+
+Zach's proposal has been fleshed out a bit today, and has some things that aren't included in this game.
+
+## Scoring
+
+Zach's KTTT does not end when 3 in a row has been claimed.  Rather, a point is scored in that case.  The game *ends* when the board is full.
+
+## Multiple boards
+
+Zach's KTTT requires 3 separate tic-tac-toe boards and players may draw on any of the 3.  This game as implemented only supports one board of play (but of arbitrary square size).

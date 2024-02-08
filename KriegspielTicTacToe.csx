@@ -554,7 +554,7 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
 /// Default file location for the game state.  You will have to delete this file manually if it should become corrupted.
 /// </summary>
 public static FileInfo DefaultFilePath 
-    => new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KriegsspielTicTacToe.json"));
+    => new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KriegspielTicTacToe.json"));
 
 //### execution starts here. ###
 
@@ -634,7 +634,7 @@ var joinAsPlayerOption = new Option<string>(
 );
 #endregion
 
-var rootCommand = new RootCommand("This is a simple command-line implementation of Zach Weinersmith's proposed game 'Kriegsspiel Tic Tac Toe'"){
+var rootCommand = new RootCommand("This is a simple command-line implementation of Zach Weinersmith's proposed game 'Kriegspiel Tic Tac Toe'"){
     stateFileOption, forceNewGameOption, playersOption, randomOption, sizeOption, joinAsPlayerOption
 };
 
