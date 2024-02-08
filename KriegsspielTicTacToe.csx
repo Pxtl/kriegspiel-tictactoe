@@ -27,7 +27,9 @@ using System.CommandLine;
 using System.Linq;
 using System.Threading;
 
-//class to represent a space on the board.
+/// <summary>
+/// class to represent a space on the board.
+/// </summary>
 public record Space {
     /// <summary>
     /// The current state of the space - NULL means available.
@@ -58,12 +60,6 @@ public record Space {
             ? (MarkChar.ToString() ?? " ")
             : " ";
 }
-
-/// <summary>
-/// Default file location for the game state.  You will have to delete this file manually if it should become corrupted.
-/// </summary>
-public static FileInfo DefaultFilePath 
-    => new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KriegsspielTicTacToe.json"));
 
 /// <summary>
 /// Object that models the full state of the game.  Is serialized into a json file so all players can share reading it.
@@ -109,7 +105,7 @@ public record TicTacToeState {
 
     public HashSet<char> ResignedPlayersSet {get;set;} = new HashSet<char>();
     
-    public Space[,] Board {get;set;} = new Space[1,1]{new Space()};
+    public Space[,] Board {get;set;} = new Space[1,1]{{new Space()}}; //dummy board, never use.
     #endregion
 
     #region methods
@@ -554,7 +550,13 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
     sharedStateFilePath.Delete();
 }
 
-//exection starts here.
+/// <summary>
+/// Default file location for the game state.  You will have to delete this file manually if it should become corrupted.
+/// </summary>
+public static FileInfo DefaultFilePath 
+    => new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KriegsspielTicTacToe.json"));
+
+//### execution starts here. ###
 
 //skip the name of the script-runner itself and the name of the script file.
 var args = Environment.GetCommandLineArgs().Skip(2).ToArray();
@@ -562,18 +564,18 @@ var args = Environment.GetCommandLineArgs().Skip(2).ToArray();
 #region options
 var stateFileOption = new Option<FileInfo>(
     aliases: new[]{"--file", "-f"},
-    description: "Path to the json file where gamestate is stored.",
+    description: "Path to the json file where gamestate is stored.  Will be resumed automatically if you kill the game (ctrl-C).  Use a fileshare for network multiplayer.",
     getDefaultValue: () => DefaultFilePath
 );
 
 var forceNewGameOption = new Option<bool>(
-    aliases: new[]{"--force", "-f"},
-    description: "If true, it will force a new game instead of loading the game at the gamestate file.  Will replace gamestate file."
+    aliases: new[]{"--force", "-F"},
+    description: "Force a new game instead of loading the game at the gamestate file.  Will replace gamestate file."
 );
 
 var playersOption = new Option<string[]>(
     aliases: new[]{"--players", "-p"},
-    description: "Players mark characters.",
+    description: "Players mark characters.  Provide them space-separated, eg '-p A B C X Y Z' for a 6-player game.",
     isDefault: true,
     parseArgument: result => {
         if(result.Tokens.Count == 0) {
@@ -589,12 +591,15 @@ var playersOption = new Option<string[]>(
         } else if(result.Tokens.Select(t => t.Value).Distinct().Count() != result.Tokens.Count) {
             result.ErrorMessage = "Player mark characters must be distinct from each other.";
             return null;
+        } else if(result.Tokens.Any(t => short.TryParse(t.Value, out short _))) {
+            result.ErrorMessage = "Player mark characters must not be numeric.";
+            return null;
         } else {
             return result.Tokens.Select(t => t.Value).ToArray();
         }
     }
 ) {
-    AllowMultipleArgumentsPerToken = true
+    AllowMultipleArgumentsPerToken = true //needed to support array-format -p A B C
 };
 
 var randomOption = new Option<bool>(
