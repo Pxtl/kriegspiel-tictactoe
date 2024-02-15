@@ -23,11 +23,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System.Dynamic;
-using Newtonsoft.Json;
 using System.CommandLine;
 using System.Linq;
 using System.Threading;
+using System.IO;
+using System.Dynamic;
+using Newtonsoft.Json;
 using OneOf;
 
 /// <summary>
@@ -359,8 +360,12 @@ public static FileInfo DefaultFilePath
 
 //### execution starts here. ###
 
-//skip the name of the script-runner itself and the name of the script file.
-var args = Environment.GetCommandLineArgs().Skip(2).ToArray();
+//skip the name of the current exe file
+var args = Environment.GetCommandLineArgs().Skip(1); //skip the executing filename.
+if(Path.GetFileName(Environment.GetCommandLineArgs()[0]).Equals("dotnet-script.dll")) {
+    //running inside the dotnet-script thingy, skip another argument.
+    args = args.Skip(1);
+}
 
 #region options
 var stateFileOption = new Option<FileInfo>(
@@ -429,8 +434,8 @@ var sizeOption = new Option<byte?>(
     }
 );
 var boardsNumberOption = new Option<byte?>(
-    aliases: new[]{"--number", "-n"},
-    description: "Number of boards.  Default is 3.",
+    aliases: new[]{"--boards", "-b"},
+    description: "Number of boards.",
     isDefault: true,
     parseArgument: result => {
         if(result.Tokens.Count == 0) {
@@ -478,4 +483,4 @@ rootCommand.SetHandler(
     stateFileOption, forceNewGameOption, playersOption, randomOption, sizeOption, boardsNumberOption, joinAsPlayerOption
 );
 
-rootCommand.Invoke(args);
+rootCommand.Invoke(args.ToArray());
