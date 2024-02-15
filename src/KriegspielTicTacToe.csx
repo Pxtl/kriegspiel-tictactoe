@@ -1,5 +1,7 @@
 #r "nuget: System.CommandLine, 2.0.0-beta4.22272.1"
 #r "nuget: Newtonsoft.Json, 13.0.3"
+#r "nuget: OneOf, 3.0.263"
+#load "Model.csx"
 
 // Copyright (c) 2024 Martin Zarate
 //
@@ -26,365 +28,113 @@ using Newtonsoft.Json;
 using System.CommandLine;
 using System.Linq;
 using System.Threading;
-
-/// <summary>
-/// class to represent a space on the board.
-/// </summary>
-public record Space {
-    /// <summary>
-    /// The current state of the space - NULL means available.
-    /// </summary>
-    public char? MarkChar {get;set;}
-    private HashSet<char> _knownToPlayersSet {get;set;} = new HashSet<char>();
-    public IReadOnlySet<char> KnownToPlayersSet => _knownToPlayersSet;
-    
-    /// <summary>
-    /// Test if this space is known to the given player.
-    /// </summary>
-    public bool IsKnownToPlayer(char player) 
-        => KnownToPlayersSet.Contains(player);
-    
-    /// <summary>
-    /// Mark this space as known to the given player.
-    /// </summary>
-    public void MakeKnownToPlayer(char player) {
-        _knownToPlayersSet.Add(player);
-    }
-
-    /// <summary>
-    /// Get the display value of this space for the given player.  Show always
-    /// if the player is null.
-    /// </summary>
-    public string ToString(char? player)
-        => (!player.HasValue || IsKnownToPlayer(player.Value))
-            ? (MarkChar.ToString() ?? " ")
-            : " ";
-}
-
-/// <summary>
-/// Object that models the full state of the game.  Is serialized into a json file so all players can share reading it.
-/// </summary>
-public record TicTacToeState {
-    #region constructors
-    /// <summary>
-    /// This constructor is only used by the serializer, never use it.
-    /// </summary>
-    public TicTacToeState(){}
-
-    /// <summary>
-    /// Construct a new gamestate object.  Note that there is no protection at this level against impossible values.
-    /// </summary>
-    public TicTacToeState(char[] players, bool isRandomPlayer, byte width, byte height) : this() {
-        if(isRandomPlayer) {
-            Random.Shared.Shuffle(players);
-        }
-        Players = players.ToList();
-        Board = new Space[width, height];
-        for (var col = 0; col < Board.GetLength(0); col+=1) {
-            for (var row = 0; row < Board.GetLength(1); row+=1) {
-                Board[col,row] = new Space();
-            }
-        }
-    }
-    #endregion
-
-    #region main data properties
-    public IReadOnlyList<char> Players {get;} = new List<char>();
-
-    private int _currentTurnPlayerIndex = 0;
-    /// <summary>
-    /// index within list of *active* players - does not include resigned players.
-    /// </summary>
-    public int CurrentTurnPlayerIndex {
-        get { return _currentTurnPlayerIndex; }
-        set { 
-            _currentTurnPlayerIndex = value; 
-            RefreshCurrentPlayerTurnIndex();
-        }
-    }
-
-    public HashSet<char> ResignedPlayersSet {get;set;} = new HashSet<char>();
-    
-    public Space[,] Board {get;set;} = new Space[1,1]{{new Space()}}; //dummy board, never use.
-    #endregion
-
-    #region methods
-    /// <summary>
-    /// Advance to the next player's turn.  Do not call this if the current
-    /// player has resigned.
-    /// </summary>
-    public void NextTurn() {
-        CurrentTurnPlayerIndex += 1;
-    }
-
-    /// <summary>
-    /// It's possible that the current player turn can exceed the number of
-    /// players.  In that event, wrap around.
-    /// </summary>
-    public void RefreshCurrentPlayerTurnIndex()
-        => _currentTurnPlayerIndex = CurrentTurnPlayerIndex % ActivePlayers.Count();
-    
-    /// <summary>
-    /// Get all of the spaces on the board as a big enumerable that you can
-    /// foreach across.
-    /// </summary>
-    public IEnumerable<Space> BoardAsEnumerable() {
-        foreach(var space in Board) {
-            yield return space;   
-        }
-    }
-    
-    /// <summary>
-    /// Test if the given player has resigned.
-    /// </summary>
-    public bool IsResignedPlayer(char player) 
-        => ResignedPlayersSet.Contains(player);
-
-    /// <summary>
-    /// Mark the given player as resigned.
-    /// </summary>
-    public void ResignPlayer(char player) {
-        ResignedPlayersSet.Add(player);
-        RefreshCurrentPlayerTurnIndex();
-    }
-    
-    /// <summary>
-    /// Get all of the current active players.  Order is consistent.
-    /// </summary>
-    public IEnumerable<char> ActivePlayers
-        => Players.Except(ResignedPlayersSet);
-        
-    /// <summary>
-    /// Get the mark-char of the current-turn player.
-    /// </summary>
-    public char CurrentTurnPlayer
-        => ActivePlayers.ElementAt(CurrentTurnPlayerIndex);
-    
-    /// <summary>
-    /// Get how many spaces are on the board.
-    /// </summary>
-    public int SpaceCount
-        => Board.GetLength(0) * Board.GetLength(1);
-    
-    /// <summary>
-    /// Get how many digits the users will have to type in to type in a
-    /// space-code.
-    /// </summary>
-    public int SpaceIndexCodeLength
-        => (SpaceCount-1).ToString().Length;
-
-    /// <summary>
-    /// For the given space, for the given player, get the textual
-    /// representation of the space.  If the game is over, all players see
-    /// everything, all marks on the board.  If not, they will only see the ones
-    /// they have created or discovered.  If the player is the
-    /// current-turn-player, then the space index codes will be displayed.
-    /// </summary>
-    public string GetSpaceString(char? player, int col, int row) {
-        player = IsGameOver //show for all players if the game is over.
-            ? (char?)null
-            : player;
-
-        var foundSpace = Board[col,row].ToString(player);
-        
-        if(string.IsNullOrWhiteSpace(foundSpace) && player == CurrentTurnPlayer) {
-            return GetSpaceIndexCode(col, row)
-                .ToString(new string('0', SpaceIndexCodeLength)); //zero-pad
-        } else {
-            return foundSpace;
-        }
-    }
-
-    /// <summary>
-    /// For the given space on the board, generate the space's index code.
-    /// </summary>
-    public int GetSpaceIndexCode(int col, int row) {
-        //aims for basic 3x3, but larger if needed
-        //7 8 9
-        //4 5 6
-        //1 2 3
-        return Board.GetLength(1) * (Board.GetLength(0) - 1) //top-left
-            + col
-            - row * Board.GetLength(0)
-            + 1; //1-based
-    }
-
-    /// <summary>
-    /// For the given space index code, find the coordinates.  Uses a "Try"
-    /// signature so that it shall return false if the given spaceindex is not
-    /// on the board at all.
-    /// </summary>
-    public bool TryGetCoordinatesFromSpaceIndexCode(int spaceIndex, out int resultCol, out int resultRow) {
-        //brute-force search
-        //todo: smarter algo
-        for (var col = 0; col < Board.GetLength(0); col+=1) {
-            for (var row = 0; row < Board.GetLength(1); row+=1) {
-                if(GetSpaceIndexCode(col, row) == spaceIndex) {
-                    resultCol = col;
-                    resultRow = row;
-                    return true;
-                }
-            }
-        }
-        resultCol = resultRow = -1;
-        return false;
-    }
-    
-    /// <summary>
-    /// Returns true if the game has ended in a tie.
-    /// </summary>
-    public bool IsTie =>
-        BoardAsEnumerable().All(s => s.MarkChar.HasValue);
-    
-    /// <summary>
-    /// Get the winner of the game.  Returns null if nobody has won yet or the
-    /// game was a tie.  Note this is a heavy calculation and is not cached, but
-    /// computers are fast.  TODO: Optimization.
-    /// </summary>
-    public char? Winner {
-        get 
-        {
-            if(ActivePlayers.Count() == 1) {
-                return ActivePlayers.Single();
-            }
-            //search for full-rows
-            for(int row = 0; row < Board.GetLength(1); row+=1) {
-                bool isWinner = true;
-                var comparator = Board[0,row].MarkChar;
-                if(comparator.HasValue) {
-                    for(int col = 1; col < Board.GetLength(0); col+=1) {
-                        if(comparator != Board[col,row].MarkChar) {
-                            isWinner = false;
-                            break;
-                        }
-                    }
-                    if(isWinner) {
-                        return comparator.Value;
-                    }
-                }
-            }
-            //search for full-columns
-            //todo: deduplicate.  Rotate array and re-run?
-            for(int col = 0; col < Board.GetLength(0); col+=1) {
-                bool isWinner = true;
-                var comparator = Board[col,0].MarkChar;
-                if(comparator.HasValue) {
-                    for(int row = 1; row < Board.GetLength(1); row+=1) {
-                        if(comparator != Board[col,row].MarkChar) {
-                            isWinner = false;
-                            break;
-                        }
-                    }
-                    if(isWinner) {
-                        return comparator.Value;
-                    }
-                }
-            }
-            
-            //create dummy scope to hide comparator var
-            {
-                //todo: support non-square boards, deduplicate.
-                //identity diagonal
-                var comparator = Board[0,0].MarkChar;
-                if(comparator.HasValue) {
-                    bool isWinner = true;
-                    for(int col=1; col < Board.GetLength(0) && col < Board.GetLength(1); col+=1) {
-                        var row = col;
-                        if(comparator != Board[col,row].MarkChar) {
-                            isWinner = false;
-                            break;
-                        }
-                    }
-                    if(isWinner) {
-                        return comparator.Value;
-                    }
-                }
-            }
-            //create dummy scope to hide comparator var
-            {
-                //inverse diagonal
-                var comparator = Board[0,Board.GetLength(1)-1].MarkChar;
-                if(comparator.HasValue) {
-                    bool isWinner = true;
-                    for(int col=1; col < Board.GetLength(0) && col < Board.GetLength(1); col+=1) {
-                        var row = Board.GetLength(1) - 1 - col;
-                        if(comparator != Board[col,row].MarkChar) {
-                            isWinner = false;
-                            break;
-                        }
-                    }
-                    if(isWinner) {
-                        return comparator.Value;
-                    }
-                }
-            }
-            
-            //no winner found.
-            return null;
-        }
-    }
-    
-    /// <summary>
-    /// Returns true if the game has ended, whether by tie or by winner.
-    /// </summary>
-    public bool IsGameOver
-        => IsTie || Winner.HasValue;
-    
-    /// <summary>
-    /// Provides a short text summary of the current game-state. Particularly useful when the game is over.
-    /// </summary>
-    public string GameStateText
-        => Winner.HasValue
-            ? $"Player '{Winner}' wins!"
-            : IsTie 
-            ? "Tie game."
-            : $"Player '{CurrentTurnPlayer}' turn.";
-    
-    #endregion
-}
+using OneOf;
 
 /// <summary>
 /// Helper function to draw a border row of the board.
 /// </summary>
-public static void DrawBorderRow(int columns, string startBarString, string midBarString, string endBarString, string spanString) 
+public static void DrawBorderRow(
+    TicTacToeState state, 
+    string startBarString, 
+    string midBarString, 
+    string endBarString, 
+    string spanString, 
+    bool showBoardCode)
 {
-    Console.Out.Write($"{startBarString}{spanString}");
-    
-    for(var col = 0; col < columns-1; col+=1) {
-        Console.Out.Write($"{midBarString}{spanString}");
+    for (int boardIndex = 0; boardIndex < state.Boards.Count; boardIndex+=1) {
+        var board = state.Boards[boardIndex];
+
+        Console.Out.Write(showBoardCode
+            ? (board.IsDone
+                ? " ✓"
+                : $" {boardIndex + 1}"
+            ): "  "
+        );
+
+        Console.Out.Write($"{startBarString}{spanString}");
+        
+        for(var col = 0; col < board.ColumnCount-1; col+=1) {
+            Console.Out.Write($"{midBarString}{spanString}");
+        }
+        Console.Out.Write(endBarString);
     }
-    Console.Out.Write($"{endBarString}\n");
+    Console.Out.WriteLine();
 }
 
 /// <summary>
 /// Helper function to draw the body-spaces of the board.
 /// </summary>
-public static void DrawSpaceBody(string body)
+public static void DrawSpaceBody(string body, string borderBarString)
 {
     body = body.PadLeft(2);
     body = body.PadRight(3);
-    Console.Out.Write($"│{body}");
+    Console.Out.Write($"{borderBarString}{body}");
+}
+
+/// <summary>
+/// For the given space, for the given player, get the textual
+/// representation of the space.  If the game is over, all players see
+/// everything, all marks on the board.  If not, they will only see the ones
+/// they have created or discovered.  If the player is the
+/// current-turn-player, then the space index codes will be displayed.
+/// </summary>
+public static string GetSpaceString(TicTacToeState state, char? player, int boardIndex, int? activeBoardIndex, int col, int row) {
+    player = state.IsGameOver //show for all players if the game is over.
+        ? (char?)null
+        : player;
+
+    var board = state.Boards[boardIndex];
+    var foundSpace = board.Spaces[col,row].ToString(player);
+    
+    if (
+        string.IsNullOrWhiteSpace(foundSpace) 
+        && !board.IsDone 
+        && player == state.CurrentTurnPlayer
+        && activeBoardIndex == boardIndex
+    ) {
+        return board.GetSpaceIndexCode(col, row)
+            .ToString(new string('0', board.SpaceIndexCodeLength)); //zero-pad
+    } else {
+        return foundSpace;
+    }
+}
+
+public static void DrawBoardRow(TicTacToeState state, char? player, string borderBarString, int? activeBoardIndex, int rowIndex) {
+    for (int boardIndex = 0; boardIndex < state.Boards.Count; boardIndex+=1) {
+        var board = state.Boards[boardIndex];
+        Console.Out.Write("  ");
+
+        for(var col = 0; col < board.ColumnCount; col+=1) {
+            DrawSpaceBody(GetSpaceString(state, player, boardIndex, activeBoardIndex, col, rowIndex), borderBarString);
+        }
+        Console.Out.Write(borderBarString);
+    }
+    Console.Out.WriteLine();
 }
 
 /// <summary>
 /// Draws the full board based on the given gamestate, from the perspective of
 /// the given player.
 /// </summary>
-public void DrawBoard(TicTacToeState state, char? player) {
+public void DrawBoards(TicTacToeState state, char? player, int? activeBoardIndex) {
+    bool doShowBoardCode = state.Boards.Count > 1;
+    Board board = activeBoardIndex.HasValue 
+        ? state.Boards[activeBoardIndex.Value]
+        : null;
+    var maxRowCount = state.Boards.Max(b => b.RowCount);
+
     //top row border
-    DrawBorderRow(state.Board.GetLength(0), "┌", "┬", "┐", "───");
+    DrawBorderRow(state, "┌", "┬", "┐", "───", doShowBoardCode);
     
-    for(var row = 0; row < state.Board.GetLength(1); row+=1) {
+    
+    for(var row = 0; row < maxRowCount; row+=1) {
         if(row > 0) {
             //internal border
-            DrawBorderRow(state.Board.GetLength(0), "├", "┼", "┤", "───");
+            DrawBorderRow(state, "├", "┼", "┤", "───", showBoardCode: false);
         }
-        for(var col = 0; col < state.Board.GetLength(0); col+=1) {
-            DrawSpaceBody(state.GetSpaceString(player, col, row));
-        }
-        Console.Out.Write("│\n");
+        DrawBoardRow(state, player, "|", activeBoardIndex, row);
     }
-    DrawBorderRow(state.Board.GetLength(1), "└", "┴", "┘", "───");
+    DrawBorderRow(state, "└", "┴", "┘", "───", showBoardCode: false);
     
     if(state.ResignedPlayersSet.Count > 0) {
         foreach(var resignedPlayer in state.ResignedPlayersSet) {
@@ -420,7 +170,7 @@ public void SaveState(TicTacToeState state, string filePath) {
 /// Run the full board-game, including command-line GUI.  See command-line
 /// options for information about parameters.
 /// </summary>
-public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] players, bool isRandomPlayer, byte boardSize, char? joinAsPlayer) {
+public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] players, bool isRandomPlayer, IEnumerable<BoardBuilder> boardBuilders, char? joinAsPlayer) {
     //load state
     TicTacToeState state = null;
     if(sharedStateFilePath.Exists && !doForceNewGame) {
@@ -428,7 +178,7 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
         state = LoadState(sharedStateFilePath.FullName);
     } else {
         Console.Out.WriteLine($"Starting new game!");
-        state = new TicTacToeState(players, isRandomPlayer, boardSize, boardSize);
+        state = new TicTacToeState(players, isRandomPlayer, boardBuilders);
         SaveState(state, sharedStateFilePath.FullName);
     }
 
@@ -474,46 +224,70 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
                 Console.WriteLine();
             }
         }
-        var board = state.Board;
         var playerToRender = state.CurrentTurnPlayer; //cache this value in case they resign and we need to check who it is.
         
-        if(!isDone) {
-            DrawBoard(state, playerToRender);
-            
-            Console.Out.WriteLine("Press numeric key(s) to play a space, or 'r' to resign.");
-            
-            var sb = new StringBuilder();
-            do {
-                var key = Console.ReadKey();
-                sb.Append(key.KeyChar);
-            } while (sb.Length < state.SpaceIndexCodeLength && int.TryParse(sb.ToString(), out int _)); //stop when we've reached length or it's non-numeric.
-            Console.Out.WriteLine();
-            var commandString = sb.ToString();
-
-            if(commandString.Equals("R", StringComparison.OrdinalIgnoreCase)) {
-                doNextTurn = true;
-                state.ResignPlayer(state.CurrentTurnPlayer);
-            } else if(int.TryParse(commandString, out int keyInt)) {
-                if(state.TryGetCoordinatesFromSpaceIndexCode(keyInt, out var col, out var row)) {
-                    if(board[col,row].IsKnownToPlayer(state.CurrentTurnPlayer)) {
-                        doNextTurn = false;
-                        Console.Out.WriteLine($"Invalid square, that square is already known to player {state.CurrentTurnPlayer}");
-                    } else {
+        if (!isDone) {
+            int? activeBoardIndex = null;
+            if (state.Boards.Count > 1) {
+                DrawBoards (state, playerToRender, activeBoardIndex);
+                var boardCommand = ReadCommandKeys("Press numeric key(s) to pick a board, or 'r' to resign.", 1, new[]{'r'});
+                boardCommand.Switch (
+                    charCode => {
                         doNextTurn = true;
-                        board[col,row].MakeKnownToPlayer(state.CurrentTurnPlayer);
-                        if(board[col,row].MarkChar.HasValue) {
-                            Console.WriteLine($"You've just discovered that this space is already taken by player '{board[col,row].MarkChar}'.");
+                        state.ResignPlayer(state.CurrentTurnPlayer);
+                    },
+                    keyInt => {
+                        if(
+                            0 < keyInt 
+                            && keyInt <= state.Boards.Count
+                            && !state.Boards[keyInt-1].IsDone
+                        ) {
+                            activeBoardIndex = keyInt - 1;
                         } else {
-                            board[col,row].MarkChar = state.CurrentTurnPlayer;
+                            doNextTurn = false;
+                            Console.WriteLine($"That is not a valid board.  Please pick an incomplete board from 1 to {state.Boards.Count}.");
                         }
+                    },
+                    unknown => {
+                        doNextTurn = false;
                     }
-                } else {
-                    doNextTurn = false;
-                    Console.WriteLine($"That is not a valid square on the board.  Please provide a number from 1 to {state.SpaceCount - 1}.");
-                }
+                );
             } else {
-                doNextTurn = false;
-                Console.WriteLine($"That is not a valid command. Press numeric key(s) to play a space, or 'r' to resign.");
+                activeBoardIndex = 0;
+            }
+
+            if(activeBoardIndex.HasValue) {
+                DrawBoards(state, playerToRender, activeBoardIndex);
+                var board = state.Boards[activeBoardIndex.Value];
+                var spaceCommand = ReadCommandKeys("Press numeric key(s) to play a space, or 'r' to resign.", board.SpaceIndexCodeLength, new[]{'r'});
+                spaceCommand.Switch (
+                    charCode => {
+                        doNextTurn = true;
+                        state.ResignPlayer(state.CurrentTurnPlayer);
+                    },
+                    keyInt => {
+                        if (board.TryGetCoordinatesFromSpaceIndexCode(keyInt, out var col, out var row)) {
+                            if (board.Spaces[col,row].IsKnownToPlayer(state.CurrentTurnPlayer)) {
+                                doNextTurn = false;
+                                Console.Out.WriteLine($"Invalid square, that square is already known to player {state.CurrentTurnPlayer}");
+                            } else {
+                                doNextTurn = true;
+                                board.Spaces[col,row].MakeKnownToPlayer(state.CurrentTurnPlayer);
+                                if (board.Spaces[col,row].MarkChar.HasValue) {
+                                    Console.WriteLine($"You've just discovered that this space is already taken by player '{board.Spaces[col,row].MarkChar}'.");
+                                } else {
+                                    board.Spaces[col,row].MarkChar = state.CurrentTurnPlayer;
+                                }
+                            }
+                        } else {
+                            doNextTurn = false;
+                            Console.WriteLine($"That is not a valid square on the board.  Please provide a number from 1 to {board.SpaceCount - 1}.");
+                        }
+                    },
+                    unknown => {
+                        doNextTurn = false;
+                    }
+                );
             }
         }
                
@@ -529,7 +303,7 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
             }
 
             //since actual player in state is no longer this player, they will mismatch and hide menu keys.
-            DrawBoard(state, playerToRender);
+            DrawBoards(state, playerToRender, activeBoardIndex:null);
             
             if(!state.IsGameOver) {
                 if(!joinAsPlayer.HasValue) {
@@ -548,6 +322,33 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
     Console.Out.WriteLine("Game over.");
     Thread.Sleep(1000); //wait 1 second so other players can get the news.
     sharedStateFilePath.Delete();
+}
+
+public static OneOf<char, int, OneOf.Types.Unknown> ReadCommandKeys(string prompt, int codeLength, char[] validCommandChars = null) {
+    if(validCommandChars == null) {
+        validCommandChars = new[]{'r'};
+    }
+    Console.Out.WriteLine(prompt);
+    
+    var sb = new StringBuilder();
+    var numericCode = -1;
+    var isNumeric = false;
+    do {
+        var key = Console.ReadKey();
+        if(key.KeyChar >= '0' && key.KeyChar <= '9') {
+            sb.Append(key.KeyChar);
+        } else if(validCommandChars.Contains(key.KeyChar)){
+            Console.Out.WriteLine();
+            return key.KeyChar;
+        } else {
+            Console.Out.WriteLine("Invalid command.");
+            Console.Out.WriteLine();
+            return new OneOf.Types.Unknown();
+        }
+        isNumeric = int.TryParse(sb.ToString(), out numericCode);
+    } while (sb.Length < codeLength && isNumeric); //stop when we've reached length or it's non-numeric.
+    Console.Out.WriteLine();
+    return numericCode;
 }
 
 /// <summary>
@@ -627,6 +428,26 @@ var sizeOption = new Option<byte?>(
         return null;
     }
 );
+var boardsNumberOption = new Option<byte?>(
+    aliases: new[]{"--number", "-n"},
+    description: "Number of boards.  Default is 3.",
+    isDefault: true,
+    parseArgument: result => {
+        if(result.Tokens.Count == 0) {
+            //default
+            return 3;
+        }
+
+        if(byte.TryParse(result.Tokens.Single().Value, out byte size)) {
+            if(2<=size && size <= 10) {
+                return size;
+            }
+        }
+        //did not pass above criteria.
+        result.ErrorMessage = "Boards must be a number from 1 to 5";
+        return null;
+    }
+);
 
 var joinAsPlayerOption = new Option<string>(
     aliases: new[]{"--join", "-j"},
@@ -635,22 +456,26 @@ var joinAsPlayerOption = new Option<string>(
 #endregion
 
 var rootCommand = new RootCommand("This is a simple command-line implementation of Zach Weinersmith's proposed game 'Kriegspiel Tic Tac Toe'"){
-    stateFileOption, forceNewGameOption, playersOption, randomOption, sizeOption, joinAsPlayerOption
+    stateFileOption, forceNewGameOption, playersOption, randomOption, sizeOption, boardsNumberOption, joinAsPlayerOption
 };
 
 rootCommand.SetHandler(
-    (file, doForceNewGame, players, isRandomPlayer, size, joinAsPlayer) => {
-        RunGame(
+    (file, doForceNewGame, players, isRandomPlayer, size, boardsNumber, joinAsPlayer) => {
+        var boardBuilders = new BoardBuilder[boardsNumber.Value];
+        for(var i = 0; i < boardsNumber.Value; i+=1) {
+            boardBuilders[i] = new BoardBuilder(size.Value, size.Value);
+        }
+        RunGame (
             file,
             doForceNewGame,
             players.Select(p => p.Single()).ToArray(), 
             isRandomPlayer,
-            size.Value,
+            boardBuilders,
             (joinAsPlayer ?? "").Cast<char?>().SingleOrDefault()
         );
     }, 
     //the duplication of the option-list here is hideous but I don't know what to do about it. System.Commandline is ugly.
-    stateFileOption, forceNewGameOption, playersOption, randomOption, sizeOption, joinAsPlayerOption
+    stateFileOption, forceNewGameOption, playersOption, randomOption, sizeOption, boardsNumberOption, joinAsPlayerOption
 );
 
 rootCommand.Invoke(args);
