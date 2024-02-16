@@ -47,9 +47,9 @@ public static void DrawBorderRow(
 
         Console.Out.Write(showBoardCode
             ? (board.IsDone
-                ? " ✓"
-                : $" {boardIndex + 1}"
-            ): "  "
+                ? " ✓" //board is done so just show a checkmark.
+                : $" {boardIndex + 1}" //key-index to choose it
+            ): "  " //blank space
         );
 
         Console.Out.Write($"{startBarString}{spanString}");
@@ -342,8 +342,8 @@ public static OneOf<char, int, OneOf.Types.Unknown> ReadCommandKeys(string promp
             Console.Out.WriteLine();
             return key.KeyChar;
         } else {
-            Console.Out.WriteLine("Invalid command.");
             Console.Out.WriteLine();
+            Console.Out.WriteLine("Invalid command.");
             return new OneOf.Types.Unknown();
         }
         isNumeric = int.TryParse(sb.ToString(), out numericCode);
@@ -359,13 +359,6 @@ public static FileInfo DefaultFilePath
     => new FileInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "KriegspielTicTacToe.json"));
 
 //### execution starts here. ###
-
-//skip the name of the current exe file
-var args = Environment.GetCommandLineArgs().Skip(1); //skip the executing filename.
-if(Path.GetFileName(Environment.GetCommandLineArgs()[0]).Equals("dotnet-script.dll")) {
-    //running inside the dotnet-script thingy, skip another argument.
-    args = args.Skip(1);
-}
 
 #region options
 var stateFileOption = new Option<FileInfo>(
@@ -414,7 +407,7 @@ var randomOption = new Option<bool>(
 );
 
 var sizeOption = new Option<byte?>(
-    aliases: new[]{"--size", "-s"},
+    aliases: new[]{"--size", "-z"}, //-s is taken by dotnet-script
     description: "Board size.  Default is 3x3.",
     isDefault: true,
     parseArgument: result => {
@@ -444,12 +437,12 @@ var boardsNumberOption = new Option<byte?>(
         }
 
         if(byte.TryParse(result.Tokens.Single().Value, out byte size)) {
-            if(2<=size && size <= 10) {
+            if(2<=size && size <= 9) {
                 return size;
             }
         }
         //did not pass above criteria.
-        result.ErrorMessage = "Boards must be a number from 1 to 5";
+        result.ErrorMessage = "Boards must be a number from 1 to 9";
         return null;
     }
 );
@@ -483,4 +476,4 @@ rootCommand.SetHandler(
     stateFileOption, forceNewGameOption, playersOption, randomOption, sizeOption, boardsNumberOption, joinAsPlayerOption
 );
 
-rootCommand.Invoke(args.ToArray());
+rootCommand.Invoke(Args.ToArray());
