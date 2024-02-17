@@ -1,7 +1,11 @@
 #r "nuget: System.CommandLine, 2.0.0-beta4.22272.1"
 #r "nuget: Newtonsoft.Json, 13.0.3"
 #r "nuget: OneOf, 3.0.263"
+
 #load "Model.csx"
+#load "BoardRenderer.csx"
+
+#nullable enable
 
 // Copyright (c) 2024 Martin Zarate
 //
@@ -32,119 +36,6 @@ using Newtonsoft.Json;
 using OneOf;
 
 /// <summary>
-/// Helper function to draw a border row of the board.
-/// </summary>
-public static void DrawBorderRow(
-    TicTacToeState state, 
-    string startBarString, 
-    string midBarString, 
-    string endBarString, 
-    string spanString, 
-    bool showBoardCode)
-{
-    for (int boardIndex = 0; boardIndex < state.Boards.Count; boardIndex+=1) {
-        var board = state.Boards[boardIndex];
-
-        Console.Out.Write(showBoardCode
-            ? (board.IsDone
-                ? " ✓" //board is done so just show a checkmark.
-                : $" {boardIndex + 1}" //key-index to choose it
-            ): "  " //blank space
-        );
-
-        Console.Out.Write($"{startBarString}{spanString}");
-        
-        for(var col = 0; col < board.ColumnCount-1; col+=1) {
-            Console.Out.Write($"{midBarString}{spanString}");
-        }
-        Console.Out.Write(endBarString);
-    }
-    Console.Out.WriteLine();
-}
-
-/// <summary>
-/// Helper function to draw the body-spaces of the board.
-/// </summary>
-public static void DrawSpaceBody(string body, string borderBarString)
-{
-    body = body.PadLeft(2);
-    body = body.PadRight(3);
-    Console.Out.Write($"{borderBarString}{body}");
-}
-
-/// <summary>
-/// For the given space, for the given player, get the textual
-/// representation of the space.  If the game is over, all players see
-/// everything, all marks on the board.  If not, they will only see the ones
-/// they have created or discovered.  If the player is the
-/// current-turn-player, then the space index codes will be displayed.
-/// </summary>
-public static string GetSpaceString(TicTacToeState state, char? player, int boardIndex, int? activeBoardIndex, int col, int row) {
-    player = state.IsGameOver //show for all players if the game is over.
-        ? (char?)null
-        : player;
-
-    var board = state.Boards[boardIndex];
-    var foundSpace = board.Spaces[col,row].ToString(player);
-    
-    if (
-        string.IsNullOrWhiteSpace(foundSpace) 
-        && !board.IsDone 
-        && player == state.CurrentTurnPlayer
-        && activeBoardIndex == boardIndex
-    ) {
-        return board.GetSpaceIndexCode(col, row)
-            .ToString(new string('0', board.SpaceIndexCodeLength)); //zero-pad
-    } else {
-        return foundSpace;
-    }
-}
-
-public static void DrawBoardRow(TicTacToeState state, char? player, string borderBarString, int? activeBoardIndex, int rowIndex) {
-    for (int boardIndex = 0; boardIndex < state.Boards.Count; boardIndex+=1) {
-        var board = state.Boards[boardIndex];
-        Console.Out.Write("  ");
-
-        for(var col = 0; col < board.ColumnCount; col+=1) {
-            DrawSpaceBody(GetSpaceString(state, player, boardIndex, activeBoardIndex, col, rowIndex), borderBarString);
-        }
-        Console.Out.Write(borderBarString);
-    }
-    Console.Out.WriteLine();
-}
-
-/// <summary>
-/// Draws the full board based on the given gamestate, from the perspective of
-/// the given player.
-/// </summary>
-public void DrawBoards(TicTacToeState state, char? player, int? activeBoardIndex) {
-    bool doShowBoardCode = state.Boards.Count > 1;
-    Board board = activeBoardIndex.HasValue 
-        ? state.Boards[activeBoardIndex.Value]
-        : null;
-    var maxRowCount = state.Boards.Max(b => b.RowCount);
-
-    //top row border
-    DrawBorderRow(state, "┌", "┬", "┐", "───", doShowBoardCode);
-    
-    
-    for(var row = 0; row < maxRowCount; row+=1) {
-        if(row > 0) {
-            //internal border
-            DrawBorderRow(state, "├", "┼", "┤", "───", showBoardCode: false);
-        }
-        DrawBoardRow(state, player, "|", activeBoardIndex, row);
-    }
-    DrawBorderRow(state, "└", "┴", "┘", "───", showBoardCode: false);
-    
-    if(state.ResignedPlayersSet.Count > 0) {
-        foreach(var resignedPlayer in state.ResignedPlayersSet) {
-            Console.Out.WriteLine($" - player '{resignedPlayer}' is resigned.");   
-        }
-    }
-}
-
-/// <summary>
 /// Load TicTacToeState state object from json at the given file path.  No
 /// error-checking exists, will throw if file is inaccessible or nonexistent or
 /// corrupt.
@@ -173,7 +64,7 @@ public void SaveState(TicTacToeState state, string filePath) {
 /// </summary>
 public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] players, bool isRandomPlayer, IEnumerable<BoardBuilder> boardBuilders, char? joinAsPlayer) {
     //load state
-    TicTacToeState state = null;
+    TicTacToeState state;
     if(sharedStateFilePath.Exists && !doForceNewGame) {
         Console.Out.WriteLine($"Loaded saved game!");
         state = LoadState(sharedStateFilePath.FullName);
@@ -228,62 +119,61 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
         var playerToRender = state.CurrentTurnPlayer; //cache this value in case they resign and we need to check who it is.
         
         if (!isDone) {
-            int? activeBoardIndex = null;
-            if (state.Boards.Count > 1) {
-                DrawBoards (state, playerToRender, activeBoardIndex);
+            // choose a board
+            var activeBoardIndex = state.SingleActiveBoardIndex;
+            if (!activeBoardIndex.HasValue) {
+                BoardRenderer.DrawBoards(state, playerToRender, activeBoardIndex);
                 var boardCommand = ReadCommandKeys("Press numeric key(s) to pick a board, or 'r' to resign.", 1, new[]{'r'});
                 boardCommand.Switch (
                     charCode => {
                         doNextTurn = true;
                         state.ResignPlayer(state.CurrentTurnPlayer);
                     },
-                    keyInt => {
-                        if(
-                            0 < keyInt 
-                            && keyInt <= state.Boards.Count
-                            && !state.Boards[keyInt-1].IsDone
-                        ) {
-                            activeBoardIndex = keyInt - 1;
-                        } else {
+                    boardCode => state.SelectBoard(boardCode).Switch (
+                        notFound => {
                             doNextTurn = false;
-                            Console.WriteLine($"That is not a valid board.  Please pick an incomplete board from 1 to {state.Boards.Count}.");
+                            Console.WriteLine ($"That is not a valid board.  Please pick an incomplete board from 1 to {state.Boards.Count}.");
+                        },
+                        boardIsDone => {
+                            doNextTurn = false;
+                            Console.WriteLine ($"That board is already complete.  Please pick a board that has a number on it.");
+                        },
+                        result => {
+                            activeBoardIndex = result.Value;
                         }
-                    },
+                    ),
                     unknown => {
                         doNextTurn = false;
                     }
                 );
-            } else {
-                activeBoardIndex = 0;
             }
 
+            // choose a space
             if(activeBoardIndex.HasValue) {
-                DrawBoards(state, playerToRender, activeBoardIndex);
-                var board = state.Boards[activeBoardIndex.Value];
-                var spaceCommand = ReadCommandKeys("Press numeric key(s) to play a space, or 'r' to resign.", board.SpaceIndexCodeLength, new[]{'r'});
+                var boardIndex = activeBoardIndex.Value;
+                BoardRenderer.DrawBoards(state, playerToRender, boardIndex);
+                var spaceCommand = ReadCommandKeys("Press numeric key(s) to play a space, or 'r' to resign.", state.Boards[boardIndex].SpaceIndexCodeLength, new[]{'r'});
                 spaceCommand.Switch (
                     charCode => {
                         doNextTurn = true;
-                        state.ResignPlayer(state.CurrentTurnPlayer);
+                        state.ResignPlayer (state.CurrentTurnPlayer);
                     },
-                    keyInt => {
-                        if (board.TryGetCoordinatesFromSpaceIndexCode(keyInt, out var col, out var row)) {
-                            if (board.Spaces[col,row].IsKnownToPlayer(state.CurrentTurnPlayer)) {
-                                doNextTurn = false;
-                                Console.Out.WriteLine($"Invalid square, that square is already known to player {state.CurrentTurnPlayer}");
-                            } else {
+                    spaceCode => {
+                        state.PlaySpace(boardIndex, spaceCode).Switch(
+                            success => {
                                 doNextTurn = true;
-                                board.Spaces[col,row].MakeKnownToPlayer(state.CurrentTurnPlayer);
-                                if (board.Spaces[col,row].MarkChar.HasValue) {
-                                    Console.WriteLine($"You've just discovered that this space is already taken by player '{board.Spaces[col,row].MarkChar}'.");
-                                } else {
-                                    board.Spaces[col,row].MarkChar = state.CurrentTurnPlayer;
-                                }
+                                Console.WriteLine($"Played on board {boardIndex + 1}, space {spaceCode}.");
+                            }, result => {
+                                doNextTurn = true;
+                                Console.WriteLine ($"You've just discovered that this space is already taken by player '{result.Value}'.");
+                            }, alreadyPlayed => {
+                                doNextTurn = false;
+                                Console.Out.WriteLine ($"Invalid square, that square is already known to player {state.CurrentTurnPlayer}");
+                            }, notFound => {
+                                doNextTurn = false;
+                                Console.WriteLine($"That is not a valid square on the board.");
                             }
-                        } else {
-                            doNextTurn = false;
-                            Console.WriteLine($"That is not a valid square on the board.  Please provide a number from 1 to {board.SpaceCount - 1}.");
-                        }
+                        );
                     },
                     unknown => {
                         doNextTurn = false;
@@ -291,23 +181,24 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
                 );
             }
         }
-               
-        if(doNextTurn) {
+        
+        // end-of-turn logic
+        if (doNextTurn) {
             //skip going to the next player if the current player resigned, they're already "current".
-            if(!state.IsResignedPlayer(playerToRender)) {
+            if (!state.IsResignedPlayer (playerToRender)) {
                 state.NextTurn();
             }
 
             //save state if we're in hotseat mode or it's our turn.
-            if(!joinAsPlayer.HasValue || playerToRender == joinAsPlayer.Value) {
+            if (!joinAsPlayer.HasValue || playerToRender == joinAsPlayer.Value) {
                 SaveState(state, sharedStateFilePath.FullName);
             }
 
             //since actual player in state is no longer this player, they will mismatch and hide menu keys.
-            DrawBoards(state, playerToRender, activeBoardIndex:null);
+            BoardRenderer.DrawBoards(state, playerToRender, activeBoardIndex:null);
             
-            if(!state.IsGameOver) {
-                if(!joinAsPlayer.HasValue) {
+            if (!state.IsGameOver) {
+                if (!joinAsPlayer.HasValue) {
                     //hotseat-mode only behavior.
                     Console.Out.WriteLine($"Press any key to continue...");
                     Console.ReadKey(intercept: true);
@@ -320,13 +211,17 @@ public void RunGame(FileInfo sharedStateFilePath, bool doForceNewGame, char[] pl
         }
     }
     
+    // end-of-game logic
     Console.Out.WriteLine("Game over.");
     Thread.Sleep(1000); //wait 1 second so other players can get the news.
     sharedStateFilePath.Delete();
 }
 
-public static OneOf<char, int, OneOf.Types.Unknown> ReadCommandKeys(string prompt, int codeLength, char[] validCommandChars = null) {
-    if(validCommandChars == null) {
+public static OneOf<char, int, OneOf.Types.Unknown> ReadCommandKeys(string prompt, int codeLength)
+    => ReadCommandKeys(prompt, codeLength, new char[]{'r'});
+
+public static OneOf<char, int, OneOf.Types.Unknown> ReadCommandKeys(string prompt, int codeLength, char[] validCommandChars) {
+    if (validCommandChars == null) {
         validCommandChars = new[]{'r'};
     }
     Console.Out.WriteLine(prompt);
@@ -377,22 +272,23 @@ var playersOption = new Option<string[]>(
     description: "Players mark characters.  Provide them space-separated, eg '-p A B C X Y Z' for a 6-player game.",
     isDefault: true,
     parseArgument: result => {
+        var failResult = new string[0];
         if(result.Tokens.Count == 0) {
             //default
             return new string[]{"X", "O"};
         } else if (result.Tokens.Count == 1) {
             result.ErrorMessage = "There must be at least 2 mark characters.";
-            return null;
+            return failResult;
         } else if (result.Tokens.Any(t => t.Value.Length == 0 && t.Value.Length > 1)) {
             //TODO: allow 3 chars for mark.
             result.ErrorMessage = "Player mark characters must be 1 chars long.";
-            return null;
+            return failResult;
         } else if(result.Tokens.Select(t => t.Value).Distinct().Count() != result.Tokens.Count) {
             result.ErrorMessage = "Player mark characters must be distinct from each other.";
-            return null;
+            return failResult;
         } else if(result.Tokens.Any(t => short.TryParse(t.Value, out short _))) {
             result.ErrorMessage = "Player mark characters must not be numeric.";
-            return null;
+            return failResult;
         } else {
             return result.Tokens.Select(t => t.Value).ToArray();
         }
@@ -459,9 +355,9 @@ var rootCommand = new RootCommand("This is a simple command-line implementation 
 
 rootCommand.SetHandler(
     (file, doForceNewGame, players, isRandomPlayer, size, boardsNumber, joinAsPlayer) => {
-        var boardBuilders = new BoardBuilder[boardsNumber.Value];
-        for(var i = 0; i < boardsNumber.Value; i+=1) {
-            boardBuilders[i] = new BoardBuilder(size.Value, size.Value);
+        var boardBuilders = new BoardBuilder[boardsNumber!.Value];
+        for(var i = 0; i < boardsNumber!; i+=1) {
+            boardBuilders[i] = new BoardBuilder(size!.Value, size!.Value);
         }
         RunGame (
             file,

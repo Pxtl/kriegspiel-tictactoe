@@ -1,8 +1,16 @@
+#r "nuget: Newtonsoft.Json, 13.0.3"
+#r "nuget: OneOf, 3.0.263"
+
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using OneOf;
+using OneOf.Types;
 
 #region extension methods
+/// <summary>
+/// Variant of MaxBy that returns NULL if there is not a single clear maximum.
+/// </summary>
 public static Nullable<TItem> MaxByStrict<TItem, TProperty> (this ICollection<TItem> items, Func<TItem, TProperty> getter) where TItem:struct {
     var maxItem = items.MaxBy(getter);
     var maxPropVal = getter(maxItem);
@@ -58,9 +66,14 @@ public record Space {
             : " ";
 }
 
+/// <summary>
+/// Score for a single player
+/// </summary>
 public record struct PlayerScore(char Player, int Score);
 
-//read-only value-y collection of scores
+/// <summary>
+/// Read-only value-y collection of scores
+/// </summary>
 public record ScoreCard {
     #region constructors
     public ScoreCard() {
@@ -92,9 +105,16 @@ public record ScoreCard {
         => new ScoreCard(a) + b;
 }
 
+/// <summary>
+/// Parameters to create a board.
+/// </summary>
 public record struct BoardBuilder(byte Width, byte Height);
 
+/// <summary>
+/// JSON-serializable model object for a single tic-tac-toe board.
+/// </summary>
 public record Board {
+    #region constructors
     public Board() {}
     public Board(BoardBuilder builder) : this(builder.Width, builder.Height) {}
     public Board(byte width, byte height) {
@@ -105,23 +125,13 @@ public record Board {
             }
         }
     }
+    #endregion
+
+    #region main data properties
     public Space[,] Spaces {get;set;} = new Space[1,1]{{new Space()}}; //default value is dummy board, never use.
+    #endregion
 
-    [JsonIgnore()]
-    public int ColumnCount
-        => Spaces.GetLength(0);
-
-    [JsonIgnore()]    
-    public int RowCount
-        => Spaces.GetLength(1);
-        
-    /// <summary>
-    /// Get how many spaces are on the board.
-    /// </summary>
-    [JsonIgnore()]
-    public int SpaceCount
-        => Spaces.GetLength(0) * Spaces.GetLength(1);
-
+    #region Methods
     /// <summary>
     /// For the given space on the board, generate the space's index code.
     /// </summary>
@@ -166,6 +176,23 @@ public record Board {
             yield return space;   
         }
     }
+    #endregion
+
+    #region helper properties
+    [JsonIgnore()]
+    public int ColumnCount
+        => Spaces.GetLength(0);
+
+    [JsonIgnore()]    
+    public int RowCount
+        => Spaces.GetLength(1);
+        
+    /// <summary>
+    /// Get how many spaces are on the board.
+    /// </summary>
+    [JsonIgnore()]
+    public int SpaceCount
+        => Spaces.GetLength(0) * Spaces.GetLength(1);
 
     /// <summary>
     /// Get how many digits the users will have to type in to type in a
@@ -173,7 +200,7 @@ public record Board {
     /// </summary>
     [JsonIgnore()]
     public int SpaceIndexCodeLength
-        => (SpaceCount-1).ToString().Length;
+        => SpaceCount.ToString().Length;
 
     /// <summary>
     /// Returns true if the game has ended in a tie.
@@ -265,6 +292,7 @@ public record Board {
             return new ScoreCard(result);
         }
     }
+    #endregion
 }
 
 /// <summary>
@@ -328,17 +356,85 @@ public record TicTacToeState {
     /// <summary>
     /// Test if the given player has resigned.
     /// </summary>
-    public bool IsResignedPlayer(char player) 
+    public bool IsResignedPlayer (char player) 
         => ResignedPlayersSet.Contains(player);
 
     /// <summary>
     /// Mark the given player as resigned.
     /// </summary>
-    public void ResignPlayer(char player) {
+    public void ResignPlayer (char player) {
         ResignedPlayersSet.Add(player);
         RefreshCurrentPlayerTurnIndex();
     }
     
+    public Board GetBoardByCode(int boardCode)
+        => Boards[boardCode-1];
+
+    public OneOf<NotFound, BoardIsDone, Result<int>> SelectBoard(int boardCode)
+        => (boardCode <= 0 || boardCode > Boards.Count)
+            ? new NotFound()
+            // doNextTurn = false;
+            // Console.WriteLine ($"That is not a valid board.  Please pick an incomplete board from 1 to {state.Boards.Count}.");
+            : GetBoardByCode(boardCode).IsDone
+            ? new BoardIsDone()
+            : new Result<int>(boardCode - 1);
+
+    public OneOf<Success, Result<char>, AlreadyPlayed, NotFound> PlaySpace(int boardIndex, int spaceCode) {
+        var board = Boards[boardIndex];
+        if (board.TryGetCoordinatesFromSpaceIndexCode(spaceCode, out var col, out var row)) {
+            return PlaySpace(boardIndex, col, row)
+                .Match<OneOf<Success, Result<char>, AlreadyPlayed, NotFound>>( //have to provide return-type when going from OneOf to OneOf
+                    success => success,
+                    result => result,
+                    alreadyPlayed => alreadyPlayed
+                );
+        } else {
+            return new NotFound();
+        }
+    }
+    
+    public OneOf<Success, Result<char>, AlreadyPlayed> PlaySpace(int boardIndex, int col, int row) {
+        var board = Boards[boardIndex];
+        if (board.Spaces[col,row].MarkChar == CurrentTurnPlayer) {
+            return new AlreadyPlayed();
+        } else {
+            board.Spaces[col,row].MakeKnownToPlayer(CurrentTurnPlayer);
+            var foundMark = board.Spaces[col,row].MarkChar;
+            if (foundMark.HasValue) {
+                return new Result<char>(foundMark.Value);
+            } else {
+                board.Spaces[col,row].MarkChar = CurrentTurnPlayer;
+                return new Success();
+            }
+        }
+    }
+    #endregion
+
+    #region helper properties
+    
+    /// <summary>
+    /// Returns a list of the active board indices. 0-based.
+    /// </summary>
+    [JsonIgnore()]
+    public IEnumerable<int> ActiveBoardIndices {get {
+        for(int i = 0; i < Boards.Count; i+=1) {
+            if(!Boards[i].IsDone) {
+                yield return i;
+            }
+        }
+    }}
+    
+    /// <summary>
+    /// Returns null if there are 0 or multiple active boards. Board Index if there's 1.
+    /// </summary>
+    [JsonIgnore()]
+    public int? SingleActiveBoardIndex {get {
+        var firstElements = ActiveBoardIndices.Take(2).ToArray();
+        return (firstElements.Length == 1)
+            ? firstElements.Single()
+            : null;
+    }}
+
     /// <summary>
     /// Get all of the current active players.  Order is consistent.
     /// </summary>
@@ -356,7 +452,8 @@ public record TicTacToeState {
     [JsonIgnore()]
     public ScoreCard ScoreCard 
         => Boards.Aggregate(new ScoreCard(), (prod, next) => prod + next.ScoreCard);
-       
+    
+    [JsonIgnore()]
     /// <summary>
     /// Get the winner of the game.  Returns null if nobody has won yet or the
     /// game was a tie.  Note this is a heavy calculation and is not cached, but
@@ -404,3 +501,14 @@ public record TicTacToeState {
     
     #endregion
 }
+
+
+/// <summary>
+/// Empty result struct for OneOf, used when a player tries to play on a space they already played.
+/// </summary>
+public struct AlreadyPlayed;
+
+/// <summary>
+/// Empty result struct for OneOf, used when the player tries to select a board that is done.
+/// </summary>
+public struct BoardIsDone;
