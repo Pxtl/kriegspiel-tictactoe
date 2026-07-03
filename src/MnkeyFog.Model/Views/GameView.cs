@@ -25,8 +25,7 @@ public record GameView
             boardViewsArray[i] = new BoardView(gameState.Boards[i], Player, i);
         }
         Boards = boardViewsArray;
-        CanTakeTurn = gameState.PlayersState.CanTakeTurn(Player);
-        AllPlayers = gameState.PlayersState.Players;
+        PlayersState = gameState.PlayersState;
     }
     #endregion
 
@@ -34,15 +33,15 @@ public record GameView
     public IGameTemplate GameTemplate { get; init; }
     public IGameStateServer GameStateServer { get; init; }
     public IReadOnlyList<BoardView> Boards { get; init; }
-    public IReadOnlyList<Player> AllPlayers { get; init; }
+    public PlayersState PlayersState { get; init; }
     #endregion
 
     #region Copied Calculated Members
-    public bool CanTakeTurn { get; init; }
     public bool IsGameOver { get; set; }
     #endregion
 
     #region Player Actions
+    public bool CanTakeTurn => PlayersState.CanTakeTurn(Player);
     public IReadOnlyList<GameActionFactory> AvailableActions { get; init; }
     public Resigned ResignPlayer() {
         if (Player == null) {
@@ -107,9 +106,17 @@ public record GameView
 
     #region Scores
     
+    /// <summary>
+    /// Possibly-approximate scorecard (depending on game) for all active (non-resigned) players
+    /// </summary>
     [JsonIgnore()]
-    public ScoreCard ScoreCard
-    => AllPlayers.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
+    public ScoreCard ScoreCard 
+    => AllPlayersScoreCard.FilterByPlayers(PlayersState.ActivePlayers);
+
+    
+    [JsonIgnore()]
+    public ScoreCard AllPlayersScoreCard
+    => PlayersState.Players.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
         + Boards.Select(b => b.ScoreCard).SumScoreCards();
     #endregion
 
@@ -121,12 +128,12 @@ public record GameView
         .AsSpaceViewEnumerable()
         .Select(s => GetSpaceName(b.BoardName, s.Col, s.Row))
     ); //zero-pad.
-        
-    /// <summary>
-    /// For the given space on the board, generate the space's name. Only used
-    /// on small (3x3 or less) boards.
-    /// </summary>
-    private int GetSpaceNameAsInt(BoardView board, sbyte col, sbyte row) {
+
+	/// <summary>
+	/// For the given space on the board, generate the space's name. Only used
+	/// on small (3x3 or less) boards.
+	/// </summary>
+	private int GetSpaceNameAsInt(BoardView board, sbyte col, sbyte row) {
         //up to basic 3x3. Supports larger but this function does not get
         //called for those.
 

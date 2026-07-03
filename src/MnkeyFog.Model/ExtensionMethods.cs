@@ -10,9 +10,9 @@ public static class ExtensionMethods {
     /// <summary>
     /// Variant of MaxBy that returns mulitple if there is not a single clear maximum.
     /// </summary>
-    public static IEnumerable<TItem> AllMaxBy<TItem, TProperty>(this IEnumerable<TItem> items, Func<TItem, TProperty> getter) where TItem : struct {
-        var maxItem = items.MaxBy(getter);
-        var maxPropVal = getter(maxItem);
+    public static IEnumerable<TItem> AllMaxBy<TItem, TProperty>(this IEnumerable<TItem> items, Func<TItem, TProperty> getter)
+    where TProperty : IEquatable<TProperty> {
+        var maxPropVal = items.Max(getter);
         foreach (var item in items) {
             var itemPropVal = getter(item);
             if (Equals(itemPropVal, maxPropVal)) {
@@ -21,7 +21,16 @@ public static class ExtensionMethods {
         }
     }
 
-
+    public static IEnumerable<TItem> AllMinBy<TItem, TProperty>(this IEnumerable<TItem> items, Func<TItem, TProperty> getter)
+    where TProperty : IEquatable<TProperty> {
+        var minPropVal = items.Min(getter);
+        foreach (var item in items) {
+            var itemPropVal = getter(item);
+            if (Equals(itemPropVal, minPropVal)) {
+                yield return item;
+            }
+        }
+    }
 
     extension(int value) {
         public sbyte AsSByte

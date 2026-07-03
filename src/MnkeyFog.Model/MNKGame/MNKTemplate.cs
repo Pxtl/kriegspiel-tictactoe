@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using MnkeyFog.Model.Template;
 
 namespace MnkeyFog.Model.MNKGame;
@@ -6,6 +7,7 @@ namespace MnkeyFog.Model.MNKGame;
 /// Represents a game type configuration including board builders and play mode settings for an MNK game such as tic tac toe.  <see href="https://en.wikipedia.org/wiki/M,n,k-game">WP: MNK Game</see>
 /// </summary>
 [ModelSerializable]
+[ImmutableObject(true)]
 public record MNKTemplate
 : GameTemplate {
     #region constructors

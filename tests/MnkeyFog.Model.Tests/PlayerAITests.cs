@@ -102,6 +102,46 @@ public class PlayerAITests {
         scoreSum.Highest.Players.Single().Should().Be(asterAIPlayerX);
     }
 
+    //commented out because Clod cannot consistently defeat Randy
+    [Fact]
+    public void AIGameRunner_BasicTicTacToe_MontyAIvsAsterAI() {
+        // AsterAI vs RandomAI should show AsterAI winning more often
+        int iterations = 10;
+
+        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
+            [new Player("X")] = new MontyAI(),
+            [new Player("O")] = new AsterAI()
+        };
+        var asterAIPlayerX = playerAIs.Keys.First();
+        var scoreSum = ScoreCard.Empty;
+        for (int i = 0; i < iterations; i++) {
+            scoreSum += AIGameRunner.RunAIGame(GameTemplates.BasicTicTacToe, playerAIs, out var gameState);
+            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetView(null), 100));
+            Console.Out.WriteLine(gameState.GameStateText);
+        }
+        scoreSum.Highest.Players.Count().Should().Be(1);
+        scoreSum.Highest.Players.Single().Should().Be(asterAIPlayerX);
+    }
+
+    [Fact]
+    public void MontyAI_KnowsToBlock() {
+        var playerX = new Player("X");
+        var playerO = new Player("O");
+        var gameState = new GameState([playerX, playerO], GameTemplates.BasicTicTacToe, isRandomPlayerOrder:false);
+        gameState.Boards[0].Spaces[1,1].Mark = playerO.Mark;
+        gameState.Boards[0].Spaces[2,0].Mark = playerO.Mark;
+        gameState.Boards[0].Spaces[2,2].Mark = playerX.Mark;
+        gameState.Boards[0].Spaces[2,1].Mark = playerX.Mark;
+        var gameView = gameState.GetView(playerX);
+        var montyAI = new MontyAI();
+        var gameAction = montyAI.FindOptimalGameAction(gameView)!;
+        gameAction.GetType().Should().Be(typeof(MNKAction));
+        var mnkAction = (MNKAction)gameAction;
+        mnkAction.BoardIndex.Should().Be(0);
+        mnkAction.Col.Should().Be(0);
+        mnkAction.Row.Should().Be(2);
+    }
+
     [Fact]
     public void AIGameRunner_FogTicTacToe_AsterAIvsRandom() {
         // AsterAI vs RandomAI should show AsterAI winning more often

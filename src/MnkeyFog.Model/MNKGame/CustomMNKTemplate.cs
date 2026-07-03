@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text;
 using MnkeyFog.Model.Template;
 
@@ -10,6 +11,7 @@ namespace MnkeyFog.Model.MNKGame;
 /// href="https://en.wikipedia.org/wiki/M,n,k-game">WP: MNK Game</see>
 /// </summary>
 [ModelSerializable]
+[ImmutableObject(true)]
 public record CustomMNKTemplate : MNKTemplate {
     public CustomMNKTemplate(
         IReadOnlyList<BoardBuilder> boardBuilders,

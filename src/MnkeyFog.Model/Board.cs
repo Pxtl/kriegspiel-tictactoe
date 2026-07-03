@@ -33,7 +33,7 @@ public sealed record Board {
     }
 
     public Board(Board board) {
-        board.ConfirmHasImmutableAttribute();
+        board.Ruleset.ConfirmHasImmutableAttribute();
         Ruleset = board.Ruleset;
         Spaces = new Space[board.ColumnCount, board.RowCount];
         foreach(var spaceEnumerator in board.AsSpaceEnumerable()) {

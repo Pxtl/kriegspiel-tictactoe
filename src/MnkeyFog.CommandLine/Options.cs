@@ -30,37 +30,12 @@ internal static class Options {
         AllowMultipleArgumentsPerToken = true
     };
 
-	public static Option<string[]> AI1PlayersOption = new("-ai1", "-1") {
-        Description = "Difficulty 1 'Randy' (random) AI player mark characters.  Provide them space-separated like with players.",
-        DefaultValueFactory = (result) => [],
-        CustomParser = ParsePlayerMarkArray,
-        Recursive = true,
-        AllowMultipleArgumentsPerToken = true
-    };
-
-    public static Option<string[]> AI2PlayersOption = new("-ai2", "-2") {
-        Description = "Difficulty 2 'Clod' AI (created by llm, weak) player mark characters.  Provide them space-separated like with players.",
-        DefaultValueFactory = (result) => [],
-        CustomParser = ParsePlayerMarkArray,
-        Recursive = true,
-        AllowMultipleArgumentsPerToken = true
-    };
-
-    public static Option<string[]> AI3PlayersOption = new("-ai3", "-3") {
-        Description = "Difficulty 3 'Aster' AI (corrected llm algo, weak) player mark characters.  Provide them space-separated like with players.",
-        DefaultValueFactory = (result) => [],
-        CustomParser = ParsePlayerMarkArray,
-        Recursive = true,
-        AllowMultipleArgumentsPerToken = true
-    };
-
-    public static Option<string[]> AI4PlayersOption = new("-ai4", "-4") {
-        Description = "Difficulty 4 'Monty' AI (experimental monte carlo algo, moderate) player mark characters.  Provide them space-separated like with players.",
-        DefaultValueFactory = (result) => [],
-        CustomParser = ParsePlayerMarkArray,
-        Recursive = true,
-        AllowMultipleArgumentsPerToken = true
-    };
+	public static Option<string[]> AI1PlayersOption = CreatePlayerAIOption("1", "'Randy' AI (random, very weak)");
+    public static Option<string[]> AI2PlayersOption = CreatePlayerAIOption("2", "'Clod' AI (created by llm, weak)");
+    public static Option<string[]> AI3PlayersOption = CreatePlayerAIOption("3", "'Aster' AI (corrected llm algo, weak)");
+    public static Option<string[]> AI4PlayersOption = CreatePlayerAIOption("4", "'Eager' AI (random unless it can score this turn, easy)");
+    public static Option<string[]> AI5PlayersOption = CreatePlayerAIOption("5", "'Monty' AI (depth-3 monte carlo algo, moderate)");
+    public static Option<string[]> AI6PlayersOption = CreatePlayerAIOption("6", "'Carla' AI (depth-4 monte carlo algo, difficult)");
 
     public static Option<bool> RandomOption = new("--random", "-r") {
         Description = "Randomize player order.",
@@ -136,4 +111,13 @@ internal static class Options {
 			return result.Tokens.Select(t => t.Value).ToArray();
 		}
 	}
+
+    private static Option<string[]> CreatePlayerAIOption(string optionChar, string description)
+    => new($"--ai{optionChar}", $"-{optionChar}") {
+        Description = $"Difficulty {optionChar} {description} player mark characters.  Provide them space-separated like with players.",
+        DefaultValueFactory = (result) => [],
+        CustomParser = ParsePlayerMarkArray,
+        Recursive = true,
+        AllowMultipleArgumentsPerToken = true
+    };
 }

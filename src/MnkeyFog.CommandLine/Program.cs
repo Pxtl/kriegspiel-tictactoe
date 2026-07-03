@@ -32,7 +32,9 @@ public class Program {
                 Options.AI1PlayersOption,
                 Options.AI2PlayersOption,
                 Options.AI3PlayersOption,
-                Options.AI4PlayersOption
+                Options.AI4PlayersOption,
+                Options.AI5PlayersOption,
+                Options.AI6PlayersOption
             }, // rootCommand has no Action.  This makes all child commands required.  Be nice if that was documented somewhere.
             Subcommands = {
                 gameCommand,
@@ -153,10 +155,14 @@ public class Program {
         var ai2Players = parseResult.GetValue(Options.AI2PlayersOption) ?? [];
         var ai3Players = parseResult.GetValue(Options.AI3PlayersOption) ?? [];
         var ai4Players = parseResult.GetValue(Options.AI4PlayersOption) ?? [];
+        var ai5Players = parseResult.GetValue(Options.AI5PlayersOption) ?? [];
+        var ai6Players = parseResult.GetValue(Options.AI6PlayersOption) ?? [];
         AIPlayers.AddRange(ai1Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new RandomAI())));
         AIPlayers.AddRange(ai2Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new ClodAI())));
         AIPlayers.AddRange(ai3Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new AsterAI())));
-        AIPlayers.AddRange(ai3Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new MontyAI())));
+        AIPlayers.AddRange(ai4Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new EagerAI())));
+        AIPlayers.AddRange(ai5Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new MontyAI())));
+        AIPlayers.AddRange(ai6Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new CarlaAI())));
     }
 
     private class CommandHandler(Func<ParseResult, int> action) : SynchronousCommandLineAction {

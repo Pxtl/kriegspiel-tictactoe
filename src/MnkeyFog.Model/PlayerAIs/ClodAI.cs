@@ -7,7 +7,8 @@ namespace MnkeyFog.Model.PlayerAIs {
     public class ClodAI : IPlayerAI {
         public string Description => "Clod, Difficulty 2";
 
-        public void Attempt(GameView gameView, IEnumerable<GameActionFactory> actionFactories) {
+        public void Attempt(GameView gameView) {
+            var actionFactories = gameView.AvailableActions;
             var factorySpaceActions = new List<GameActionFactoryForSpace>(actionFactories.OfType<GameActionFactoryForSpace>());
             var simpleFactory = actionFactories.OfType<GameActionFactoryForSimple>().FirstOrDefault();
 

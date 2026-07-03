@@ -16,7 +16,8 @@ namespace MnkeyFog.Model.PlayerAIs {
         List<BoardView>? Boards { get; set; } = null;
         List<List<(sbyte Col, sbyte Row)>>? Lines { get; set; } = null;
 
-        public void Attempt(GameView gameView, IEnumerable<GameActionFactory> actionFactories) {
+        public void Attempt(GameView gameView) {
+            var actionFactories = gameView.AvailableActions;
             var factorySpaceActions = new List<GameActionFactoryForSpace>(actionFactories.OfType<GameActionFactoryForSpace>());
             var simpleFactory = actionFactories.OfType<GameActionFactoryForSimple>().FirstOrDefault();
 

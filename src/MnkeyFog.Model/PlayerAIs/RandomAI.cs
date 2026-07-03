@@ -6,8 +6,9 @@ namespace MnkeyFog.Model.PlayerAIs;
 [ModelSerializable]
 public class RandomAI : IPlayerAI {
     public string Description => "Randy, Difficulty 1";
-	public void Attempt(GameView gameView, IEnumerable<GameActionFactory> actionFactories)
+	public void Attempt(GameView gameView)
 	{
+		var actionFactories = gameView.AvailableActions;
 		var actionFactory = SelectRandomItem(actionFactories);
 		if (actionFactory is GameActionFactoryForSimple actionFactoryForSimple)
 		{

@@ -16,6 +16,9 @@ public class GameState
         GameTemplate = null!;
     }
 
+    /// <summary>
+    /// Copy-constructor.
+    /// </summary>
     public GameState(GameState gameState) {
         gameState.GameTemplate.ConfirmHasImmutableAttribute();
         
@@ -29,13 +32,14 @@ public class GameState
         Player[] players,
         IGameTemplate gameTemplate,
         bool isRandomPlayerOrder
-    ) {
-        if(isRandomPlayerOrder) {
-            Random.Shared.Shuffle(players);
-        }
+    ) : this(new PlayersState(players, gameTemplate.PlayManager, isRandomPlayerOrder), gameTemplate) { }
 
+    public GameState(
+        PlayersState playersState,
+        IGameTemplate gameTemplate
+    ) {
         GameTemplate = gameTemplate;
-        PlayersState = new PlayersState(players, gameTemplate.PlayManager);
+        PlayersState = playersState;
         Boards = gameTemplate.CreateBoards();
 
         if (Boards.Count > 1 && Boards.Any(b => b.RowCount > 9)) {
@@ -44,12 +48,12 @@ public class GameState
             );
         }
 
-        if (!gameTemplate.LegalPlayerCounts.Contains(players.Length)) {
+        if (!gameTemplate.LegalPlayerCounts.Contains(PlayersState.Players.Count)) {
             throw new ApplicationException(
                 "Cannot start game. This game only supports the following player-counts: "
                     + string.Join(", ", gameTemplate.LegalPlayerCounts)
                     + Environment.NewLine
-                    + $"You have provided {players.Length} player(s)."
+                    + $"You have provided {PlayersState.Players.Count} player(s)."
             );
         }
 

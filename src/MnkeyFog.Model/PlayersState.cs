@@ -9,11 +9,28 @@ using OneOf.Types;
 [ModelSerializable]
 public class PlayersState {
     #region constructor
-    public PlayersState(IReadOnlyList<Player> players, PlayManager playManager) {
+    [Obsolete(
+        "Empty constructor puts members in invalid state needs them to be replaced by initializers."
+    )]
+    public PlayersState() {
+        Players = [];
+        PlayManager = RoundRobinPlayManager.Instance;
+    }
+
+    public PlayersState(IReadOnlyList<Player> players, PlayManager playManager)
+    : this(players, playManager, isRandomPlayerOrder: false) {}
+
+    public PlayersState(IReadOnlyList<Player> players, PlayManager playManager, bool isRandomPlayerOrder) {
+        if (isRandomPlayerOrder) {
+            players = players.Shuffle().ToList();
+        }
         Players = players;
         PlayManager = playManager;
     }
 
+    /// <summary>
+    /// Copy-constructor.
+    /// </summary>
 	public PlayersState(PlayersState playersState) {
         playersState.PlayManager.ConfirmHasImmutableAttribute();
 

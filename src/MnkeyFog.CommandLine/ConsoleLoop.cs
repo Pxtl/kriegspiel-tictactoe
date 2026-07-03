@@ -51,7 +51,7 @@ internal static class ConsoleLoop {
                                     gameView.ResignPlayer();
                                 } else {
                                     attemptCount += 1;
-                                    playerAI.Attempt(gameView, gameView.AvailableActions);
+                                    playerAI.Attempt(gameView);
                                 }
                             }
                         }
