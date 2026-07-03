@@ -30,7 +30,9 @@ public class Program {
                 Options.StateFileOption,
                 Options.JoinAsPlayerOption,
                 Options.AI1PlayersOption,
-                Options.AI2PlayersOption
+                Options.AI2PlayersOption,
+                Options.AI3PlayersOption,
+                Options.AI4PlayersOption
             }, // rootCommand has no Action.  This makes all child commands required.  Be nice if that was documented somewhere.
             Subcommands = {
                 gameCommand,
@@ -150,9 +152,11 @@ public class Program {
         var ai1Players = parseResult.GetValue(Options.AI1PlayersOption) ?? [];
         var ai2Players = parseResult.GetValue(Options.AI2PlayersOption) ?? [];
         var ai3Players = parseResult.GetValue(Options.AI3PlayersOption) ?? [];
+        var ai4Players = parseResult.GetValue(Options.AI4PlayersOption) ?? [];
         AIPlayers.AddRange(ai1Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new RandomAI())));
         AIPlayers.AddRange(ai2Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new ClodAI())));
         AIPlayers.AddRange(ai3Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new AsterAI())));
+        AIPlayers.AddRange(ai3Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new MontyAI())));
     }
 
     private class CommandHandler(Func<ParseResult, int> action) : SynchronousCommandLineAction {

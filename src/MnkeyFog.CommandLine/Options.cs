@@ -54,6 +54,14 @@ internal static class Options {
         AllowMultipleArgumentsPerToken = true
     };
 
+    public static Option<string[]> AI4PlayersOption = new("-ai4", "-4") {
+        Description = "Difficulty 4 'Monty' AI (experimental monte carlo algo, moderate) player mark characters.  Provide them space-separated like with players.",
+        DefaultValueFactory = (result) => [],
+        CustomParser = ParsePlayerMarkArray,
+        Recursive = true,
+        AllowMultipleArgumentsPerToken = true
+    };
+
     public static Option<bool> RandomOption = new("--random", "-r") {
         Description = "Randomize player order.",
         Recursive = true
