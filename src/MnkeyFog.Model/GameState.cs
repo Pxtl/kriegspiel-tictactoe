@@ -5,15 +5,24 @@ using MnkeyFog.Model.Views;
 namespace MnkeyFog.Model;
 
 [ModelSerializable]
-public record GameState
+public class GameState
 : IGameState, IGameStateServer {
     #region Constructors
     public GameState() { 
         // unusable default values will probably get removed when members are
         // initialized.
-        PlayManager = new RoundRobinPlayManager([]);
+        PlayersState = new PlayersState([], RoundRobinPlayManager.Instance);
         Boards = [];
         GameTemplate = null!;
+    }
+
+    public GameState(GameState gameState) {
+        gameState.GameTemplate.ConfirmHasImmutableAttribute();
+        
+        Boards = gameState.Boards.Select(board => new Board(board)).ToList();
+        PlayersState = new PlayersState(gameState.PlayersState);
+        GameTemplate = gameState.GameTemplate;
+        ActionQueue = new PlayActionQueue(gameState.ActionQueue);
     }
 
     public GameState(
@@ -26,9 +35,8 @@ public record GameState
         }
 
         GameTemplate = gameTemplate;
-        PlayManager = gameTemplate.PlayManagerFactory.Create(players);        
+        PlayersState = new PlayersState(players, gameTemplate.PlayManager);
         Boards = gameTemplate.CreateBoards();
-        Initialize();
 
         if (Boards.Count > 1 && Boards.Any(b => b.RowCount > 9)) {
             throw new ApplicationException(
@@ -54,7 +62,7 @@ public record GameState
     public IGameTemplate GameTemplate { get; init; }
 
     [JsonProperty(TypeNameHandling = TypeNameHandling.All)]
-    public virtual PlayManager PlayManager { get; init; }
+    public virtual PlayersState PlayersState { get; init; }
 
     [JsonProperty(ItemTypeNameHandling = TypeNameHandling.None)]
     public virtual IReadOnlyList<Board> Boards { get; init; }
@@ -63,21 +71,20 @@ public record GameState
     public PlayActionQueue ActionQueue { get; init; } = new();
     #endregion
 
-    #region Initializer
+    #region Actions
 
-    #region IGameStateServer
     public IPlayActionResult Attempt(PlayerAction action) => action.Attempt(this);
-    public void ResignPlayer(Player player) => PlayManager.ResignPlayer(player);
-    #endregion
-    public virtual void Initialize() {
-        ActionQueue.GameState = this;
-        PlayManager.ActionQueue = ActionQueue;
-    }
+    public void ResignPlayer(Player player) => PlayersState.ResignPlayer(player);
 
-    [OnDeserialized]
-    public void Initialize(StreamingContext context) {
-        Initialize();
-    }
+    public void ExecutePendingActions()
+    => ActionQueue.ExecutePendingActions(this);
+
+    public void EndTurn(Player player, out bool hasStateChanged)
+    => PlayersState.EndTurn(this, player, out hasStateChanged);
+
+    public void EndRound(out bool hasRoundStateChanged)
+    => PlayersState.EndRound(this, out hasRoundStateChanged);
+
     #endregion
 
     public GameView GetView(Player? player)
@@ -89,12 +96,12 @@ public record GameState
     /// </summary>
     [JsonIgnore()]
     public ScoreCard ScoreCard 
-    => AllPlayersScoreCard.FilterByPlayers(PlayManager.ActivePlayers);
+    => AllPlayersScoreCard.FilterByPlayers(PlayersState.ActivePlayers);
 
     
     [JsonIgnore()]
     public ScoreCard AllPlayersScoreCard
-    => PlayManager.Players.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
+    => PlayersState.Players.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
         + Boards.Select(b => b.ScoreCard).SumScoreCards();
 
 
@@ -103,8 +110,8 @@ public record GameState
         if(!IsGameOver) {
             return [];
         }
-        if(PlayManager.ActivePlayers.Count() == 1) {
-            return PlayManager.ActivePlayers;
+        if(PlayersState.ActivePlayers.Count() == 1) {
+            return PlayersState.ActivePlayers;
         }
         else {
             return ScoreCard.Highest.Players;
@@ -113,7 +120,7 @@ public record GameState
 
     [JsonIgnore()]
     public bool IsGameOver
-    => Boards.All(b => b.IsDone) || PlayManager.ActivePlayers.Count() == 1;
+    => Boards.All(b => b.IsDone) || PlayersState.ActivePlayers.Count() == 1;
 
 
     [JsonIgnore()]
@@ -124,15 +131,15 @@ public record GameState
                 ? "Game over. Nobody wins."
                 : $"Game over. {string.Join(" and ", Winners)} win(s)."
             ) 
-            : PlayManager.GameStateText
+            : PlayersState.GameStateText
         )
             + Environment.NewLine 
             + ResignedPlayersText;
 
     [JsonIgnore()]
     public string ResignedPlayersText
-    => PlayManager.ResignedPlayersSet.Count > 0
-        ? $"Resigned players: {string.Join(", ", PlayManager.ResignedPlayersSet.OrderBy(p => p.Mark))}"
+    => PlayersState.ResignedPlayersSet.Count > 0
+        ? $"Resigned players: {string.Join(", ", PlayersState.ResignedPlayersSet.OrderBy(p => p.Mark))}"
         : "";
     #endregion
 

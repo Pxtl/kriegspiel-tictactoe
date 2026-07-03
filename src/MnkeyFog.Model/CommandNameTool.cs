@@ -97,7 +97,7 @@ public static class CommandNameTool {
 
     public static bool TryGetBoardIndexByName(string boardName, int boardsCount, out sbyte boardIndex) {
         var boardNameAsSbyte = sbyte.Parse(boardName);
-        boardIndex = boardNameAsSbyte.Minus1();
+        boardIndex = (boardNameAsSbyte - 1).AsSByte;
         if (boardIndex >= 0 && boardIndex < boardsCount) {
             return true;
         } else {

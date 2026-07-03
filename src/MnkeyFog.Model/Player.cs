@@ -1,9 +1,12 @@
+using System.ComponentModel;
+
 namespace MnkeyFog.Model;
 
 /// <summary>
 /// Represents a player in the game. Stores their marker string.
 /// </summary>
 [ModelSerializable]
+[ImmutableObject(true)]
 public sealed record Player {
     public Player(string mark) {
         if (mark == null) {

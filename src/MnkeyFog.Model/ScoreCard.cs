@@ -1,13 +1,14 @@
 namespace MnkeyFog.Model;
 
 using Sundew.Base.Collections.Immutable;
-using OneOf.Types;
+using System.ComponentModel;
 
 /// <summary>
 /// Immutable value-y collection of scores
 /// </summary>
 [ModelSerializable]
-public struct ScoreCard {
+[ImmutableObject(true)]
+public readonly struct ScoreCard {
     #region constructors
     public ScoreCard() {
         _scores = _emptyPlayerScoreCollection;
@@ -31,7 +32,7 @@ public struct ScoreCard {
     #endregion
 
     #region state members
-    private ValueArray<PlayerScore> _scores {get; set;}
+    private ValueArray<PlayerScore> _scores {get; init;}
     public readonly IReadOnlyList<PlayerScore> PlayerScores
         => _scores;
     #endregion

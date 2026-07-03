@@ -8,12 +8,10 @@ namespace MnkeyFog.Model;
 /// Non-generic interface for <see cref="GameState{TState, TTemplate, TAction}"/> 
 /// </summary>
 public interface IGameState {
-    void Initialize();
-
     #region Data Members
 
     [JsonProperty(TypeNameHandling = TypeNameHandling.All)]
-    PlayManager PlayManager { get; }
+    PlayersState PlayersState { get; }
 
     [JsonProperty(TypeNameHandling = TypeNameHandling.All)]
     IReadOnlyList<Board> Boards { get; }

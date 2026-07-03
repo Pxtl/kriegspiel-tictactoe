@@ -5,6 +5,14 @@ namespace MnkeyFog.Model;
 /// </summary>
 [ModelSerializable]
 public sealed record Space {
+    #region constructors
+    public Space() {}
+    public Space(Space space) {
+        Mark = space.Mark;
+        _knownToPlayersSet = new HashSet<Player>(space.KnownToPlayersSet);
+    }
+    #endregion
+    #region data members
     /// <summary>
     /// The current state of the space - null means available.
     /// '█' means it's an impasse (two players contested this space in same round).
@@ -14,6 +22,7 @@ public sealed record Space {
     private HashSet<Player> _knownToPlayersSet {get;set;} = [];
     [JsonProperty(ItemTypeNameHandling = TypeNameHandling.None, TypeNameHandling = TypeNameHandling.None)] //non-polymorphic
     public IReadOnlySet<Player> KnownToPlayersSet => _knownToPlayersSet;
+    #endregion
     
     /// <summary>
     /// Test if this space is known to the given player.

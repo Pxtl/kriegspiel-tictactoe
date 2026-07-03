@@ -1,8 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using MnkeyFog.Model.Views;
-using OneOf;
 
 namespace MnkeyFog.Model;
 
@@ -21,14 +17,14 @@ public sealed record Board {
     : this(1, 1, BoardRuleset.Empty) { }
 
     public Board(Template.BoardBuilder builder)
-    : this(builder.Width, builder.Height, builder.Ruleset) { }
+    : this(builder.ColumnCount, builder.RowCount, builder.Ruleset) { }
 
-    public Board(sbyte width, sbyte height)
-    : this(width, height, null) { }
+    public Board(sbyte columnCount, sbyte rowCount)
+    : this(columnCount, rowCount, null) { }
 
-    public Board(sbyte width, sbyte height, BoardRuleset? ruleset) {
+    public Board(sbyte columnCount, sbyte rowCount, BoardRuleset? ruleset) {
         Ruleset = ruleset ?? BoardRuleset.Empty;
-        Spaces = new Space[width, height];
+        Spaces = new Space[columnCount, rowCount];
         for (sbyte col = 0; col < ColumnCount; col += 1) {
             for (sbyte row = 0; row < RowCount; row += 1) {
                 Spaces[col, row] = new Space();
@@ -36,13 +32,17 @@ public sealed record Board {
         }
     }
 
-    public Board(BoardRuleset ruleset)
-    : this() {
-        Ruleset = ruleset;
+    public Board(Board board) {
+        board.ConfirmHasImmutableAttribute();
+        Ruleset = board.Ruleset;
+        Spaces = new Space[board.ColumnCount, board.RowCount];
+        foreach(var spaceEnumerator in board.AsSpaceEnumerable()) {
+            Spaces[spaceEnumerator.Col, spaceEnumerator.Row] = new Space(spaceEnumerator.Space);
+        }
     }
     #endregion
 
-    #region main data properties
+    #region data members
     [Required]
     [JsonProperty(ItemTypeNameHandling = TypeNameHandling.None, TypeNameHandling = TypeNameHandling.None)] //non-polymorphic
     public Space[,] Spaces { get; init; }
@@ -83,11 +83,11 @@ public sealed record Board {
     #region helper properties
     [JsonIgnore()]
     public sbyte ColumnCount
-    => (sbyte)Spaces.GetLength(0);
+    => Spaces.GetLength(0).AsSByte;
 
     [JsonIgnore()]
     public sbyte RowCount
-    => (sbyte)Spaces.GetLength(1);
+    => Spaces.GetLength(1).AsSByte;
 
     /// <summary>
     /// Get how many spaces are on the board.

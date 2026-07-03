@@ -1,5 +1,6 @@
 using MnkeyFog.Model.Template;
 using MnkeyFog.Model.Views;
+using Sundew.Base;
 
 namespace MnkeyFog.Model.PlayerAIs {
 
@@ -31,8 +32,8 @@ namespace MnkeyFog.Model.PlayerAIs {
                 double centreX = (board.ColumnCount - 1) / 2.0;      // force double arithmetic
                 double centreY = (board.RowCount - 1) / 2.0;
                 
-                var centreCol = (sbyte)centreX;
-                var centreRow = (sbyte)centreY;
+                var centreCol = centreX.FloorAsSByte;
+                var centreRow = centreY.FloorAsSByte;
 
                 if(Lines == null) {
                     Lines = new List<List<(sbyte Col, sbyte Row)>>();
@@ -45,8 +46,8 @@ namespace MnkeyFog.Model.PlayerAIs {
                         if ((centreRow + delta >= board.RowCount) && (centreRow - delta < 0)) {
                             break;
                         }
-                        currentLine.Add((centreCol, (sbyte)(centreRow + delta)));
-                        currentLine.Add((centreCol, (sbyte)(centreRow - delta)));                    
+                        currentLine.Add((centreCol, (centreRow + delta).AsSByte));
+                        currentLine.Add((centreCol, (centreRow - delta).AsSByte));
                     }
                     Lines.Add(currentLine);
 
@@ -57,8 +58,8 @@ namespace MnkeyFog.Model.PlayerAIs {
                         if ((centreCol + delta >= board.ColumnCount) && (centreCol - delta < 0)) {
                             break;
                         }
-                        currentLine.Add(((sbyte)(centreCol + delta), centreRow));
-                        currentLine.Add(((sbyte)(centreCol - delta), centreRow));          
+                        currentLine.Add(((centreCol + delta).AsSByte, centreRow));
+                        currentLine.Add(((centreCol - delta).AsSByte, centreRow));          
                     }
                     Lines.Add(currentLine);
 
@@ -74,8 +75,8 @@ namespace MnkeyFog.Model.PlayerAIs {
                         ) {
                             break;
                         }
-                        currentLine.Add(((sbyte)(centreCol + delta), (sbyte)(centreRow + delta)));
-                        currentLine.Add(((sbyte)(centreCol - delta), (sbyte)(centreRow - delta)));
+                        currentLine.Add(((centreCol + delta).AsSByte, (centreRow + delta).AsSByte));
+                        currentLine.Add(((centreCol - delta).AsSByte, (centreRow - delta).AsSByte));
                     }
                     Lines.Add(currentLine);
 
@@ -91,8 +92,8 @@ namespace MnkeyFog.Model.PlayerAIs {
                         ) {
                             break;
                         }
-                        currentLine.Add(((sbyte)(centreCol + delta), (sbyte)(centreRow - delta)));
-                        currentLine.Add(((sbyte)(centreCol - delta), (sbyte)(centreRow + delta)));
+                        currentLine.Add(((centreCol + delta).AsSByte, (centreRow - delta).AsSByte));
+                        currentLine.Add(((centreCol - delta).AsSByte, (centreRow + delta).AsSByte));
                     }
                     Lines.Add(currentLine);
 

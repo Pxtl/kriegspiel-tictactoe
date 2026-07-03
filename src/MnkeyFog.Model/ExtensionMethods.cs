@@ -1,3 +1,6 @@
+using System.ComponentModel;
+using System.Reflection;
+
 namespace MnkeyFog.Model;
 
 /// <summary>
@@ -18,21 +21,40 @@ public static class ExtensionMethods {
         }
     }
 
-    /// <summary>
-    /// We use sbyte as a type-safety hack for row/column/board indices.
-    /// Arithmetic on sbyte requires casting to int, which eliminates the
-    /// type-safety.  Resurrect a bit of that type-safety by adding simple
-    /// increment/decrement operators.
-    /// </summary>
-    public static sbyte Plus1(this sbyte value)
-        => ++value;
+
+
+    extension(int value) {
+        public sbyte AsSByte
+        => (sbyte)value;
+    }
+
+    extension(float value) {
+        public sbyte FloorAsSByte
+        => (sbyte)value;
+    }
+
+    extension(double value) {
+        public sbyte FloorAsSByte
+        => (sbyte)value;
+    }
 
     /// <summary>
-    /// We use sbyte as a type-safety hack for row/column/board indices.
-    /// Arithmetic on sbyte requires casting to int, which eliminates the
-    /// type-safety.  Resurrect a bit of that type-safety by adding simple
-    /// increment/decrement operators.
+    /// Since we need copy-constructors for Monte Carlo simulations, we're using
+    /// the ObjectModel <see cref="ImmutableObjectAttribute"/> to mark the
+    /// objects as immutable. This is a little assertion method to confirm.
     /// </summary>
-    public static sbyte Minus1(this sbyte value)
-        => --value;
+    /// <param name="obj"></param>
+    extension(object obj) {
+        public bool HasImmutableAttribute
+        => obj.GetType().GetCustomAttributes<ImmutableObjectAttribute>().Any(attr => attr.Immutable);
+
+        public void ConfirmHasImmutableAttribute() {
+            if (!obj.HasImmutableAttribute) {
+                throw new InvalidOperationException(
+                    $"The object of type '{obj.GetType().Name}' is expected to be immutable. " 
+                    + "Confirm that the object is immutable and apply the {nameof(ImmutableObjectAttribute)} to its class."
+                );
+            }
+        }
+    }
 }

@@ -58,14 +58,14 @@ public record BoardView
     /// </summary>
     [JsonIgnore()]
     public sbyte ColumnCount
-    => (sbyte)Spaces.GetLength(0);
+    => Spaces.GetLength(0).AsSByte;
 
     /// <summary>
     /// Number of rows on the board.
     /// </summary>
     [JsonIgnore()]
     public sbyte RowCount
-    => (sbyte)Spaces.GetLength(1);
+    => Spaces.GetLength(1).AsSByte;
 
     /// <summary>
     /// Get how many spaces are on the board.

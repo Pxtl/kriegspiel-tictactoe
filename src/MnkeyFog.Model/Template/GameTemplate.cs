@@ -2,7 +2,9 @@ namespace MnkeyFog.Model.Template;
 
 /// <summary>
 /// A game template includes all the metadata needed to describe the type of a
-/// game, but not the actual list of players or active state.
+/// game, but not the actual list of players or active state.  GameTemplates
+/// must be immutable because the copy constructor of the Board assumes they can
+/// be aliased safely.
 /// </summary>
 [ModelSerializable]
 public abstract record GameTemplate()
@@ -25,7 +27,7 @@ public abstract record GameTemplate()
 	/// Used to control whether the game will run in round-robin or synchronous mode.
 	/// </summary>
     [JsonProperty(TypeNameHandling = TypeNameHandling.All)]
-	public PlayManagerFactory PlayManagerFactory { get; init; } = RoundRobinPlayManagerFactory.Instance;
+	public PlayManager PlayManager { get; init; } = RoundRobinPlayManager.Instance;
 	public abstract IEnumerable<GameActionFactory> GetAvailableActions(GameState gameState, Player player);
 	/// <summary>
 	/// Create the boards for the game. See GameState for the constraints on the

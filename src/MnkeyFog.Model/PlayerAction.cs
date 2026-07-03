@@ -1,6 +1,9 @@
+using System.ComponentModel;
+
 namespace MnkeyFog.Model;
 
 [ModelSerializable]
+[ImmutableObject(true)]
 public sealed record PlayerAction(GameAction GameAction, Player Player) {
     public IPlayActionResult Attempt(GameState gameState) => GameAction.Attempt(gameState, Player);
 	public bool IsActionCollision(PlayerAction otherAction) => GameAction.IsActionCollision(otherAction, Player);

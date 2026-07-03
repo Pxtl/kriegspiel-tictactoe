@@ -14,8 +14,8 @@ public static class AIGameRunner {
 		gameState = new GameState(aiPlayers.Keys.ToArray(), gameTemplate, true);
 		while(!gameState.IsGameOver) {
 			var playerAttemptCounts = new AutoConstructingDictionary<Player, int>(); //defaults all keys to zero.
-			while(!gameState.PlayManager.IsRoundOver && !gameState.IsGameOver) {
-				var player = gameState.PlayManager.PlayersAvailableForTurn.First();
+			while(!gameState.PlayersState.IsRoundOver && !gameState.IsGameOver) {
+				var player = gameState.PlayersState.PlayersAvailableForTurn.First();
 				var gameView = new GameView(gameState, player);
 				
 				var playerAttemptsCount = playerAttemptCounts[player];
@@ -28,7 +28,7 @@ public static class AIGameRunner {
 					playerAttemptCounts[player] = playerAttemptsCount + 1;
 				}
 			}
-			gameState.PlayManager.EndRound(out _);
+			gameState.EndRound(out _);
 		}
 		return gameState.ScoreCard;
 	}

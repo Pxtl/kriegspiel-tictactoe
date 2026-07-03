@@ -2,18 +2,21 @@ namespace MnkeyFog.Model;
 
 #pragma warning disable CS0659, CS0661 
 // Type overrides Object.Equals(object o) and operator == and operator != but
-// does not override Object.GetHashCode(). We arenot overriding GetHashCode
+// does not override Object.GetHashCode(). We are not overriding GetHashCode
 // because that's for Dictionary keys and this is too mutable to be ever used
 // for that.
 [ModelSerializable]
 public class PlayActionQueue : IPlayActionQueue {
 #pragma warning restore CS0659, CS0661
+    #region constructors
+    public PlayActionQueue() {}
+    public PlayActionQueue(PlayActionQueue actionQueue) {
+        Actions = new List<PlayerAction>(actionQueue.Actions);
+	}
+    #endregion
 
-    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.None)]
+	[JsonProperty(ItemTypeNameHandling = TypeNameHandling.None)]
     public List<PlayerAction> Actions {get;private set;} = [];
-
-    [JsonIgnore()]
-    public GameState? GameState { get; internal set; }
 
     public void Add(PlayerAction action) {
         Actions.Add(action);
@@ -23,12 +26,9 @@ public class PlayActionQueue : IPlayActionQueue {
         Actions.Clear();
     }
 
-    public void ExecutePendingActions() {
+    public void ExecutePendingActions(GameState gameState) {
         if (Actions.Count == 0) {
             return;
-        }
-        if (GameState == null) {
-            throw new InvalidOperationException("Must be initialized first.");
         }
                
         foreach (var action in Actions) {
@@ -36,9 +36,9 @@ public class PlayActionQueue : IPlayActionQueue {
                 .Where(action.IsActionCollision)
                 .ToList();
             if (collisions.Any()) {
-                action.DoActionCollision(GameState, collisions!);
+                action.DoActionCollision(gameState, collisions!);
             } else {
-                action.DoAction(GameState);
+                action.DoAction(gameState);
             }
         }
 

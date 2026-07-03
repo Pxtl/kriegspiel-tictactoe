@@ -1,46 +1,32 @@
 namespace MnkeyFog.Model;
 
-using OneOf;
-using OneOf.Types;
+using System.ComponentModel;
 
 /// <summary>
 /// PlayManager for synchronized mode - player moves are buffered until round end.
 /// </summary>
 [ModelSerializable]
+[ImmutableObject(true)]
 public class SynchronizedPlayManager 
 : PlayManager {
-    #region constructors
-    public SynchronizedPlayManager(IReadOnlyList<Player> players) : base(players) { }
-    #endregion
+    public static SynchronizedPlayManager Instance {get;} = new SynchronizedPlayManager();
 
-    #region properties
-    [JsonIgnore()]
-    public override string GameStateText
+    public override string GameStateText(PlayersState playerState)
         => "Synchronized play. "
-        + (PlayersAvailableForTurn.Any()
-            ? $"Player(s) { string.Join(", ", PlayersAvailableForTurn)} have not taken their turn."
+        + (playerState.PlayersAvailableForTurn.Any()
+            ? $"Player(s) { string.Join(", ", playerState.PlayersAvailableForTurn)} have not taken their turn."
             : "Round complete."
         );
 
-    protected override void EndedRound(out bool hasStateChanged) {
-        ActionQueue!.ExecutePendingActions();
+    public override void EndedRound(GameState gameState, out bool hasStateChanged) {
+        gameState.ExecutePendingActions();
         hasStateChanged = true;
     }
 
-    protected override void EndedTurn(out bool hasStateChanged) {
+    public override void EndedTurn(GameState gameState, out bool hasStateChanged) {
         hasStateChanged = false;
     }
     
-    [JsonIgnore()]
-    public override IEnumerable<Player> PlayersAvailableForTurn
-        => ActivePlayers.Except(PlayedPlayersSet);
-    #endregion
-}
-
-[ModelSerializable]
-public record SynchronizedPlayManagerFactory
-: Template.PlayManagerFactory {
-    public static SynchronizedPlayManagerFactory Instance {get;} = new SynchronizedPlayManagerFactory();
-	public override PlayManager Create(IReadOnlyList<Player> players) 
-		=> new SynchronizedPlayManager(players);
+    public override IEnumerable<Player> PlayersAvailableForTurn(PlayersState playerState)
+        => playerState.ActivePlayers.Except(playerState.PlayedPlayersSet);
 }

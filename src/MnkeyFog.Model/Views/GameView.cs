@@ -25,8 +25,8 @@ public record GameView
             boardViewsArray[i] = new BoardView(gameState.Boards[i], Player, i);
         }
         Boards = boardViewsArray;
-        CanTakeTurn = gameState.PlayManager.CanTakeTurn(Player);
-        AllPlayers = gameState.PlayManager.Players;
+        CanTakeTurn = gameState.PlayersState.CanTakeTurn(Player);
+        AllPlayers = gameState.PlayersState.Players;
     }
     #endregion
 
@@ -88,7 +88,7 @@ public record GameView
 
     #region board management
     [JsonIgnore()]
-    public sbyte BoardsCount => (sbyte)Boards.Count;
+    public sbyte BoardsCount => Boards.Count.AsSByte;
 
     public BoardView GetBoardViewByIndex(sbyte boardIndex)
     => Boards[boardIndex];

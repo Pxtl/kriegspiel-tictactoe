@@ -34,9 +34,9 @@ public record MNKTemplate
     : base() {
         BoardBuilders = boardBuilders;
         IsKriegspiel = isKriegspiel;
-        PlayManagerFactory = isSynchronousMode 
-            ? SynchronizedPlayManagerFactory.Instance
-            : RoundRobinPlayManagerFactory.Instance;
+        PlayManager = isSynchronousMode 
+            ? SynchronizedPlayManager.Instance
+            : RoundRobinPlayManager.Instance;
     }
     #endregion
 
@@ -54,7 +54,7 @@ public record MNKTemplate
         if (!IsKriegspiel) {
             foreach (var board in gameState.Boards) {
                 foreach (var spaceEnum in board.AsSpaceEnumerable()) {
-                    foreach(var player in gameState.PlayManager.Players) {
+                    foreach(var player in gameState.PlayersState.Players) {
                         spaceEnum.Space.MakeKnownToPlayer(player.Mark);
                     }
                 }
@@ -63,7 +63,7 @@ public record MNKTemplate
     }
 
     public override IEnumerable<GameActionFactory> GetAvailableActions(GameState gameState, Player player)
-    => gameState.PlayManager.CanTakeTurn(player) 
+    => gameState.PlayersState.CanTakeTurn(player) 
         ? [ new MNKActionFactory() ]
         : [];
 }

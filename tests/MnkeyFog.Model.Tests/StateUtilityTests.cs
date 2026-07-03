@@ -38,17 +38,17 @@ public class StateUtilityTests {
         //round 1 (collision)
         expectedState.GetView(playerX).Attempt(new MNKAction(0, 1, 1));
         expectedState.GetView(playerO).Attempt(new MNKAction(0, 1, 1));
-        expectedState.PlayManager.EndRound(out _);
+        expectedState.EndRound(out _);
 
         //round 2 (2 separate moves)
         expectedState.GetView(playerX).Attempt(new MNKAction(0, 0, 0));
         expectedState.GetView(playerO).Attempt(new MNKAction(0, 2, 2));
-        expectedState.PlayManager.EndRound(out _);
+        expectedState.EndRound(out _);
 
         //round 3 (player O discovers player X)
         expectedState.GetView(playerX).Attempt(new MNKAction(0, 2, 0));
         expectedState.GetView(playerO).Attempt(new MNKAction(0, 0, 0));
-        expectedState.PlayManager.EndRound(out _);
+        expectedState.EndRound(out _);
 
         //round 4 (incomplete)
         expectedState.GetView(playerX).Attempt(new MNKAction(0, 1, 0));
@@ -62,7 +62,7 @@ public class StateUtilityTests {
         var actualState = (GameState)untypedActualState;
 
         untypedActualState.Boards.Should().BeEquivalentTo(untypedExpectedState.Boards);
-        untypedActualState.PlayManager.Should().BeEquivalentTo(untypedExpectedState.PlayManager);
+        untypedActualState.PlayersState.Should().BeEquivalentTo(untypedExpectedState.PlayersState);
         actualState.ActionQueue.Should().BeEquivalentTo(expectedState.ActionQueue);
         actualState.Should().BeEquivalentTo(expectedState);
     }

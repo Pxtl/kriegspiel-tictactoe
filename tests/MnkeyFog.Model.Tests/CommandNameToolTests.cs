@@ -293,7 +293,7 @@ public class CommandNameToolTests {
         );
         gameState.GetView(players[0]).Attempt(new MNKAction(0, 1, 1));
         gameState.GetView(players[1]).Attempt(new MNKAction(0, 1, 1));
-        gameState.PlayManager.EndRound(out _);
+        gameState.EndRound(out _);
 
         var expected = new string[3,3] {
             {"7", "8", "9"},
@@ -347,7 +347,7 @@ public class CommandNameToolTests {
         //round 1
         gameState.GetView(players[0]).Attempt(new MNKAction(0, 1, 1));
         gameState.GetView(players[1]).Attempt(new MNKAction(0, 1, 1));
-        gameState.PlayManager.EndRound(out _);
+        gameState.EndRound(out _);
 
         var expected = players[0].Mark;
         var actual = CommandNameTool.SpaceCommandName(new GameView(gameState, players[1]), 0, col: 1, row: 1);
@@ -365,7 +365,7 @@ public class CommandNameToolTests {
         //round 1
         gameState.GetView(players[0]).Attempt(new MNKAction(0, 1, 1));
         gameState.GetView(players[1]).Attempt(new MNKAction(0, 0, 0));
-        gameState.PlayManager.EndRound(out _);
+        gameState.EndRound(out _);
 
         var expected = "";
         var actual = CommandNameTool.SpaceCommandName(new GameView(gameState, players[1]), 0, col: 1, row: 1);
@@ -384,12 +384,12 @@ public class CommandNameToolTests {
         //round 1
         gameState.GetView(players[0]).Attempt(new MNKAction(0, 1, 1));
         gameState.GetView(players[1]).Attempt(new MNKAction(0, 1, 1));
-        gameState.PlayManager.EndRound(out _);
+        gameState.EndRound(out _);
 
         //round 2
         gameState.GetView(players[0]).Attempt(new MNKAction(0, 0, 0));
         gameState.GetView(players[1]).Attempt(new MNKAction(0, 2, 2));
-        gameState.PlayManager.EndRound(out _);
+        gameState.EndRound(out _);
 
         var expected = new string[3,3] {
             {"X", " ", " "},

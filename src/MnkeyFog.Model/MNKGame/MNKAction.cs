@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 namespace MnkeyFog.Model.MNKGame;
 
@@ -5,6 +6,7 @@ namespace MnkeyFog.Model.MNKGame;
 /// A play action for an MNK game such as tic tac toe.  <see href="https://en.wikipedia.org/wiki/M,n,k-game">WP: MNK Game</see>
 /// </summary>
 [ModelSerializable]
+[ImmutableObject(true)]
 public record MNKAction
 : GameAction {
     [Obsolete("Default constructor is only used for deserialization.")]
@@ -53,7 +55,7 @@ public record MNKAction
         : throw new InvalidOperationException("Cannot compare different action types.");
 
 	public override IPlayActionResult Attempt(GameState gameState, Player actionPlayer) {
-        if(!gameState.PlayManager.CanTakeTurn(actionPlayer)) {
+        if(!gameState.PlayersState.CanTakeTurn(actionPlayer)) {
             return new InvalidCommand(actionPlayer.Mark);
         }
         if(BoardIndex < 0 || BoardIndex >= gameState.Boards.Count) {
@@ -68,14 +70,14 @@ public record MNKAction
         if (space.Mark == null) {
             space.MakeKnownToPlayer(actionPlayer);
             gameState.ActionQueue.Add(GetPlayerAction(actionPlayer));
-            gameState.PlayManager.EndTurn(actionPlayer, out var hasStateChanged);
+            gameState.EndTurn(actionPlayer, out var hasStateChanged);
             var spaceName = gameState.GetView(actionPlayer).GetSpaceName(BoardIndex, Col, Row);
             return new Enqueued(hasStateChanged, spaceName);
         } else if (space.IsKnownToPlayer(actionPlayer)) {
             return new AlreadyPlayed(actionPlayer);
         } else {
             space.MakeKnownToPlayer(actionPlayer);
-            gameState.PlayManager.EndTurn(actionPlayer, out _);
+            gameState.EndTurn(actionPlayer, out _);
             return new NewlyLearned(space.Mark);
         }
 	}

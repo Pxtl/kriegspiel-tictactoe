@@ -5,7 +5,7 @@ public class PlayManagerTests {
     [Fact]
     public void RoundRobinPlayManagerConstructor_WithUniqueMarksIsAllowed() {
         var expectedPlayers = new List<Player>() { new("X"), new("O") };
-        var actualManager = new RoundRobinPlayManager(expectedPlayers);
+        var actualManager = new PlayersState(expectedPlayers, RoundRobinPlayManager.Instance);
         actualManager.Players.Should().BeEquivalentTo(expectedPlayers);
     }
 
@@ -13,7 +13,7 @@ public class PlayManagerTests {
     public void RoundRobinPlayManagerConstructor_WithNonUniqueMarksThrows() {
         var expectedPlayers = new List<Player>() { new("X"), new("O"), new("X") };
         var action = () => {
-            _ = new RoundRobinPlayManager(expectedPlayers);
+            _ = new PlayersState(expectedPlayers, RoundRobinPlayManager.Instance);
         };
         action.Should().Throw<ArgumentException>();
     }
@@ -22,7 +22,7 @@ public class PlayManagerTests {
     public void RoundRobinPlayManagerConstructor_WithMarksSameButDifferentCaseThrows() {
         var expectedPlayers = new List<Player>() { new("X"), new("O"), new("x") };
         var action = () => {
-            _ = new RoundRobinPlayManager(expectedPlayers);
+            _ = new PlayersState(expectedPlayers, RoundRobinPlayManager.Instance);
         };
         action.Should().Throw<ArgumentException>();
     }
@@ -36,10 +36,10 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
         state.Boards.Count.Should().Be(2);
-        state.PlayManager.Players.Should().Contain(new Player("X"));
-        state.PlayManager.Players.Should().Contain(new Player("O"));
-        state.PlayManager.ActivePlayers.Should().Contain(new Player("X"));
-        state.PlayManager.ActivePlayers.Should().Contain(new Player("O"));
+        state.PlayersState.Players.Should().Contain(new Player("X"));
+        state.PlayersState.Players.Should().Contain(new Player("O"));
+        state.PlayersState.ActivePlayers.Should().Contain(new Player("X"));
+        state.PlayersState.ActivePlayers.Should().Contain(new Player("O"));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public class PlayManagerTests {
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
-        state.PlayManager.RoundIndex.Should().Be(0);
+        state.PlayersState.RoundIndex.Should().Be(0);
     }
 
     [Fact]
@@ -60,8 +60,8 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.EndTurn(new Player("X"), out _);
-        state.PlayManager.ActivePlayers.Should().Contain(new Player("O"));
+        state.EndTurn(new Player("X"), out _);
+        state.PlayersState.ActivePlayers.Should().Contain(new Player("O"));
     }
 
     [Fact]
@@ -72,13 +72,13 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.EndTurn(new Player("X"), out _);
-        state.PlayManager.EndTurn(new Player("O"), out _);
-        state.PlayManager.IsRoundOver.Should().BeTrue();
-        state.PlayManager.GameStateText.Should().Be("Round over.");
+        state.EndTurn(new Player("X"), out _);
+        state.EndTurn(new Player("O"), out _);
+        state.PlayersState.IsRoundOver.Should().BeTrue();
+        state.PlayersState.GameStateText.Should().Be("Round over.");
 
-        state.PlayManager.EndRound(out _);
-        state.PlayManager.RoundIndex.Should().Be(1);
+        state.EndRound(out _);
+        state.PlayersState.RoundIndex.Should().Be(1);
     }
 
     [Fact]
@@ -89,12 +89,12 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.ResignPlayer(new Player("X"));
-        state.PlayManager.EndTurn(new Player("O"), out _);
+        state.PlayersState.ResignPlayer(new Player("X"));
+        state.EndTurn(new Player("O"), out _);
 
-        state.PlayManager.ActivePlayers.Count().Should().Be(1);
-        state.PlayManager.IsRoundOver.Should().BeTrue();
-        state.PlayManager.GameStateText.Should().Be("Round over.");
+        state.PlayersState.ActivePlayers.Count().Should().Be(1);
+        state.PlayersState.IsRoundOver.Should().BeTrue();
+        state.PlayersState.GameStateText.Should().Be("Round over.");
     }
 
     [Fact]
@@ -105,10 +105,10 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.EndTurn(new Player("A"), out _);
-        state.PlayManager.EndTurn(new Player("B"), out _);
-        state.PlayManager.IsRoundOver.Should().BeTrue();
-        state.PlayManager.GameStateText.Should().Be("Synchronized play. Round complete.");
+        state.EndTurn(new Player("A"), out _);
+        state.EndTurn(new Player("B"), out _);
+        state.PlayersState.IsRoundOver.Should().BeTrue();
+        state.PlayersState.GameStateText.Should().Be("Synchronized play. Round complete.");
     }
 
     [Fact]
@@ -119,13 +119,13 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.NumberOfActivePlayers.Should().Be(3);
+        state.PlayersState.NumberOfActivePlayers.Should().Be(3);
 
-        state.PlayManager.EndTurn(new Player("A"), out _);
-        state.PlayManager.EndTurn(new Player("B"), out _);
-        state.PlayManager.EndTurn(new Player("C"), out _);
-        state.PlayManager.IsRoundOver.Should().BeTrue();
-        state.PlayManager.GameStateText.Should().Be("Synchronized play. Round complete.");
+        state.EndTurn(new Player("A"), out _);
+        state.EndTurn(new Player("B"), out _);
+        state.EndTurn(new Player("C"), out _);
+        state.PlayersState.IsRoundOver.Should().BeTrue();
+        state.PlayersState.GameStateText.Should().Be("Synchronized play. Round complete.");
     }
 
     [Fact]
@@ -136,12 +136,12 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.ResignPlayer(new Player("A"));
+        state.PlayersState.ResignPlayer(new Player("A"));
 
-        state.PlayManager.CanTakeTurn(new Player("A")).Should().BeFalse();
-        state.PlayManager.CanTakeTurn(new Player("B")).Should().BeTrue();
-        state.PlayManager.CanTakeTurn(new Player("C")).Should().BeFalse();
-        state.PlayManager.CanTakeTurn(new Player("D")).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(new Player("A")).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(new Player("B")).Should().BeTrue();
+        state.PlayersState.CanTakeTurn(new Player("C")).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(new Player("D")).Should().BeFalse();
     }
 
     [Fact]
@@ -152,9 +152,9 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.ResignPlayer(new Player("A"));
-        state.PlayManager.ActivePlayers.Should().Contain(new Player("B"));
-        state.PlayManager.ActivePlayers.Should().Contain(new Player("C"));
+        state.PlayersState.ResignPlayer(new Player("A"));
+        state.PlayersState.ActivePlayers.Should().Contain(new Player("B"));
+        state.PlayersState.ActivePlayers.Should().Contain(new Player("C"));
     }
 
     [Fact]
@@ -165,8 +165,8 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.ResignPlayer(new Player("A"));
-        state.PlayManager.ResignedPlayersSet.Should().Contain(new Player("A"));
+        state.PlayersState.ResignPlayer(new Player("A"));
+        state.PlayersState.ResignedPlayersSet.Should().Contain(new Player("A"));
     }
 
     [Fact]
@@ -177,12 +177,12 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.ResignPlayer(new Player("A"));
-        state.PlayManager.EndTurn(new Player("A"), out _); // A was resigned, turn skipped
+        state.PlayersState.ResignPlayer(new Player("A"));
+        state.EndTurn(new Player("A"), out _); // A was resigned, turn skipped
 
-        state.PlayManager.ActivePlayers.First().Should().Be(new Player("B"));
-        state.PlayManager.EndTurn(new Player("B"), out _);
-        state.PlayManager.EndTurn(new Player("C"), out _);
+        state.PlayersState.ActivePlayers.First().Should().Be(new Player("B"));
+        state.EndTurn(new Player("B"), out _);
+        state.EndTurn(new Player("C"), out _);
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.ActivePlayers.First().Should().Be(new Player("A"));
+        state.PlayersState.ActivePlayers.First().Should().Be(new Player("A"));
     }
 
     [Fact]
@@ -203,7 +203,7 @@ public class PlayManagerTests {
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: true
         );
-        var firstPlayer = state.PlayManager.ActivePlayers.First();
+        var firstPlayer = state.PlayersState.ActivePlayers.First();
         var expectedPlayers = new[] {new Player("A"), new Player("B"), new Player("C")};
         expectedPlayers.Contains(firstPlayer).Should().BeTrue();
     }
@@ -216,14 +216,14 @@ public class PlayManagerTests {
             isRandomPlayerOrder: false
         );
 
-        state.PlayManager.ResignPlayer(new Player("A"));
+        state.PlayersState.ResignPlayer(new Player("A"));
         
-        state.PlayManager.CanTakeTurn(new Player("A")).Should().BeFalse();
-        state.PlayManager.CanTakeTurn(new Player("B")).Should().BeTrue();
-        state.PlayManager.CanTakeTurn(new Player("C")).Should().BeTrue();
+        state.PlayersState.CanTakeTurn(new Player("A")).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(new Player("B")).Should().BeTrue();
+        state.PlayersState.CanTakeTurn(new Player("C")).Should().BeTrue();
         
         // player D does not exist.
-        state.PlayManager.CanTakeTurn(new Player("D")).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(new Player("D")).Should().BeFalse();
     }
 
 }

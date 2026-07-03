@@ -23,7 +23,7 @@ internal static class ConsoleLoop {
             localHotseatGame => "Running in hotseat mode."
         ));
         
-        Console.Out.WriteLine($"Players are {string.Join(", ", state.PlayManager.Players)}.");
+        Console.Out.WriteLine($"Players are {string.Join(", ", state.PlayersState.Players)}.");
         Console.Out.WriteLine($"Game is {state.GameTemplate.CommandName}.");
         Console.Out.WriteLine($"Description: {state.GameTemplate.Description}");
         foreach(var aiPlayer in aiPlayers) {
@@ -36,14 +36,14 @@ internal static class ConsoleLoop {
             var isDoneAITurns = false;
             while(!isDoneAITurns) {
                 isDoneAITurns = true;
-                foreach (var player in state.PlayManager.PlayersAvailableForTurn) {
+                foreach (var player in state.PlayersState.PlayersAvailableForTurn) {
                     if(aiPlayers.TryGetValue(player, out var playerAI)) {
                         //if any AI player can take their turn, we're not done
                         //AI turns.  Keep attempting until no AI player does a
                         //turn.
                         isDoneAITurns = false; 
                         var attemptCount = 0;
-                        while (state.PlayManager.CanTakeTurn(player)) {
+                        while (state.PlayersState.CanTakeTurn(player)) {
                             using(var stateStorage = new StateStorage(sharedStateFilePath.FullName, out state)) {
                                 var gameView = state.GetView(player);
                                 if (attemptCount > AIGameRunner.MaxPlayerAIAttemptCount) {
@@ -62,7 +62,7 @@ internal static class ConsoleLoop {
 
             var currentPlayerChosen = joinAsPlayer.Match(
                 player => {
-                    if (!state.PlayManager.Players.Contains(player)) {
+                    if (!state.PlayersState.Players.Contains(player)) {
                         throw new ApplicationException($"Invalid player join, player {player} is not a player in this game.");
                     }
                     bool isDoneWaiting = false;
@@ -71,7 +71,7 @@ internal static class ConsoleLoop {
                     //wait loop.
                     while (!isDoneWaiting) {
                         state = StateStorage.LoadState(sharedStateFilePath.FullName);
-                        if (state.PlayManager.PlayersAvailableForTurn.Contains(player)
+                        if (state.PlayersState.PlayersAvailableForTurn.Contains(player)
                             ||
                             state.IsGameOver
                         ) {
@@ -86,7 +86,7 @@ internal static class ConsoleLoop {
                         ? OneOf<Result<Player>, RoundIsOver, GameIsOver>.FromT2(new GameIsOver())
                         : new Result<Player>(player);
                 },
-                localHotseatGame => DoPlayerChooserLoop(state.PlayManager)
+                localHotseatGame => DoPlayerChooserLoop(state.PlayersState)
             );
 
             currentPlayerChosen.Switch(
@@ -102,10 +102,10 @@ internal static class ConsoleLoop {
                 }
             );
             //execute round-end stuff.
-            if (state.PlayManager.IsRoundOver) {
+            if (state.PlayersState.IsRoundOver) {
                 var hasRoundStateChanged = false;
                 using (var stateStorage = new StateStorage(sharedStateFilePath.FullName, out state)) {
-                    state.PlayManager.EndRound(out hasRoundStateChanged);
+                    state.EndRound(out hasRoundStateChanged);
                 }
                 if (hasRoundStateChanged) {
                     InputUtility.PauseAndPressAnyKey("Round over.");
@@ -206,9 +206,9 @@ internal static class ConsoleLoop {
         }
     }
 
-    internal static OneOf<Result<Player>, RoundIsOver, GameIsOver> DoPlayerChooserLoop(PlayManager playManager) {
+    internal static OneOf<Result<Player>, RoundIsOver, GameIsOver> DoPlayerChooserLoop(PlayersState playerState) {
         // Use ModelToKeyUtility for clean, testable key mapping
-        var playerToCommand = CommandNameTool.BuildPlayerToCommandNameMap(playManager.PlayersAvailableForTurn);
+        var playerToCommand = CommandNameTool.BuildPlayerToCommandNameMap(playerState.PlayersAvailableForTurn);
 
         var commandToPlayer = playerToCommand
             .ToOrderedDictionary(
@@ -218,20 +218,20 @@ internal static class ConsoleLoop {
             );
 
         while (true) {
-            if (playManager.PlayersAvailableForTurn.Count() == 1) {
-                var currentPlayer = playManager.PlayersAvailableForTurn.Single();
+            if (playerState.PlayersAvailableForTurn.Count() == 1) {
+                var currentPlayer = playerState.PlayersAvailableForTurn.Single();
                 InputUtility.PauseAndPressAnyKey(prompt: $"Player {currentPlayer} ready?");
                 Console.WriteLine();
                 return new Result<Player>(currentPlayer);
             }
-            if (playManager.IsRoundOver) {
+            if (playerState.IsRoundOver) {
                 return new RoundIsOver();
             }
 
-            Console.Out.WriteLine(playManager.GameStateText);
+            Console.Out.WriteLine(playerState.GameStateText);
 
             // Display all available players with alternate key hints for non-typeable marks
-            var playerDisplayList = playManager.PlayersAvailableForTurn
+            var playerDisplayList = playerState.PlayersAvailableForTurn
                 .Select(p => {
                     var altKey = playerToCommand[p];
                     var keyDisplay = altKey.Equals(p.Mark, StringComparison.OrdinalIgnoreCase)

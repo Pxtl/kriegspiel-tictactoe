@@ -12,8 +12,8 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
         
-        var currentPlayer = state.PlayManager.PlayersAvailableForTurn.First();
-        state.PlayManager.EndTurn(currentPlayer, out _);
+        var currentPlayer = state.PlayersState.PlayersAvailableForTurn.First();
+        state.EndTurn(currentPlayer, out _);
         
         var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
         var expected = @"
@@ -105,7 +105,7 @@ public class BoardRendererTests {
         state.GetView(currentPlayer).Attempt(new MNKAction(0, 1, 1));     
         var otherPlayer = new Player("O");
         state.GetView(otherPlayer).Attempt(new MNKAction(0, 0, 0));
-        state.PlayManager.EndRound(out var _);
+        state.EndRound(out var _);
 
         var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
 
@@ -134,8 +134,8 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
         
-        var currentPlayer = state.PlayManager.PlayersAvailableForTurn.First();
-        state.PlayManager.EndTurn(currentPlayer, out _);
+        var currentPlayer = state.PlayersState.PlayersAvailableForTurn.First();
+        state.EndTurn(currentPlayer, out _);
         
         var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
         var expected = @"
@@ -209,7 +209,7 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
         
-        var currentPlayer = state.PlayManager.PlayersAvailableForTurn.First();
+        var currentPlayer = state.PlayersState.PlayersAvailableForTurn.First();
         
         var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
         var expected = @"
@@ -285,7 +285,7 @@ public class BoardRendererTests {
         );
 
         var currentPlayer = new Player("X");
-        state.PlayManager.EndTurn(currentPlayer, out _);
+        state.EndTurn(currentPlayer, out _);
 
         // wrap halfway through 3rd board
         var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer), maxRenderWidth:42);
@@ -323,7 +323,7 @@ public class BoardRendererTests {
         );
 
         var currentPlayer = new Player("X");
-        state.PlayManager.EndTurn(currentPlayer, out _);
+        state.EndTurn(currentPlayer, out _);
         
         // 0 means wrap as tight as possible.
         var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer), maxRenderWidth: 0);

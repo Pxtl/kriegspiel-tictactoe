@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using OneOf;
 using OneOf.Types;
 
@@ -7,24 +8,25 @@ namespace MnkeyFog.Model.MNKGame;
 /// A board ruleset for an MNK game such as tic tac toe.  <see href="https://en.wikipedia.org/wiki/M,n,k-game">WP: MNK Game</see>
 /// </summary>
 [ModelSerializable]
+[ImmutableObject(true)]
 public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenScored = false)
 : BoardRuleset() {
     public static Template.BoardBuilder CreateBoardBuilder(
-        sbyte width,
-        sbyte height,
+        sbyte columnCount,
+        sbyte rowCount,
         sbyte? scoringLength = null,
         bool isBoardDoneWhenScored = false
     ) {
-        if (width > 26) {
-            throw new ArgumentException("The board size limit is 26x26.", nameof(width));
+        if (columnCount > 26) {
+            throw new ArgumentException("The board size limit is 26x26.", nameof(columnCount));
         }
-        if (height > 26) {
-            throw new ArgumentException("The board size limit is 26x26.", nameof(height));
+        if (rowCount > 26) {
+            throw new ArgumentException("The board size limit is 26x26.", nameof(rowCount));
         }
         
         return new Template.BoardBuilder(
-            width,
-            height,
+            columnCount,
+            rowCount,
             new MNKBoardRuleset(scoringLength, isBoardDoneWhenScored)
         ) { };
     }
@@ -138,7 +140,7 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
     }
 
     private static (sbyte Col, sbyte Row) ExtrapolatePos((sbyte Col, sbyte Row) pos, (sbyte Col, sbyte Row) delta, int multiplier)
-    => ((sbyte)(pos.Col + delta.Col * multiplier), (sbyte)(pos.Row + delta.Row * multiplier));
+    => ((pos.Col + delta.Col * multiplier).AsSByte, (pos.Row + delta.Row * multiplier).AsSByte);
     #endregion
 
 }

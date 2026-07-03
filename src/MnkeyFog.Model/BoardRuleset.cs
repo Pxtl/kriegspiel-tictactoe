@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 namespace MnkeyFog.Model;
 
 /// <summary>
@@ -5,6 +7,7 @@ namespace MnkeyFog.Model;
 /// any points ever, you must override Score to get actual useful gameplay.
 /// </summary>
 [ModelSerializable]
+[ImmutableObject(true)]
 public record BoardRuleset {
 	public static BoardRuleset Empty { get; } = new BoardRuleset();
 	public virtual bool IsDone(Board board)

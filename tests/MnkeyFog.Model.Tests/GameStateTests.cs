@@ -9,7 +9,7 @@ public class GameStateTests {
             isRandomPlayerOrder: false
         );
         state.Boards.Should().BeEmpty();
-        state.PlayManager.Players.Should().Contain(new Player("X")).And.Subject.Should().Contain(new Player("O"));
-        state.PlayManager.ActivePlayers.Should().Contain(new Player("X")).And.Subject.Should().Contain(new Player("O"));
+        state.PlayersState.Players.Should().Contain(new Player("X")).And.Subject.Should().Contain(new Player("O"));
+        state.PlayersState.ActivePlayers.Should().Contain(new Player("X")).And.Subject.Should().Contain(new Player("O"));
     }
 }

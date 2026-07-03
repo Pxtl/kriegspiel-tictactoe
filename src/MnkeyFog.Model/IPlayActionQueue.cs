@@ -1,5 +1,5 @@
 namespace MnkeyFog.Model;
 
 public interface IPlayActionQueue {
-    void ExecutePendingActions();
+    void ExecutePendingActions(GameState gameState);
 }
