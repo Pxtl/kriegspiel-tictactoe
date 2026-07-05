@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using MnkeyFog.Model.Indexed;
 namespace MnkeyFog.Model.MNKGame;
 
 /// <summary>
@@ -29,14 +30,15 @@ public record MNKAction
     [Required]
     public sbyte Row {get;init;}
  
-	public override void DoActionCollision(GameState gameState, Player actionPlayer, IReadOnlyList<PlayerAction> collisions) {
+	public override void DoActionCollision(GameState gameState, int actionPlayerIndex, IReadOnlyList<PlayerAction> collisions) {
         if (GetBoard(gameState).IsDone) {
             return;
         }
         var space = GetSpace(gameState);
-		space.Mark = "█";
-        foreach(var player in collisions.Select(c => c.Player)) {
-            space.MakeKnownToPlayer(player);
+		space.MarkIndex = Space.ImpasseMarkIndex;
+        foreach(var player in collisions.Select(c => c.PlayerIndex)) {
+            var playerIndexed = gameState.PlayersState.GetPlayerIndexed(player);
+            space.MakeKnownToPlayerIndex(playerIndexed.Index);
         }
 	}
 
@@ -46,17 +48,17 @@ public record MNKAction
     protected Space GetSpace(GameState gameState)
         => GetBoard(gameState).Spaces[Col, Row];
 
-	public override bool IsActionCollision(PlayerAction otherAction, Player actionPlayer)
+	public override bool IsActionCollision(PlayerAction otherAction, int actionPlayerIndex)
     => otherAction.GameAction is MNKAction otherTicTacToeAction 
         ? BoardIndex == otherTicTacToeAction.BoardIndex
             && Col == otherTicTacToeAction.Col
             && Row == otherTicTacToeAction.Row
-            && actionPlayer != otherAction.Player
+            && actionPlayerIndex != otherAction.PlayerIndex
         : throw new InvalidOperationException("Cannot compare different action types.");
 
-	public override IPlayActionResult Attempt(GameState gameState, Player actionPlayer) {
-        if(!gameState.PlayersState.CanTakeTurn(actionPlayer)) {
-            return new InvalidCommand(actionPlayer.Mark);
+	public override IPlayActionResult Attempt(GameState gameState, int actionPlayerIndex) {
+        if(!gameState.PlayersState.CanTakeTurn(actionPlayerIndex)) {
+            return new CannotTakeTurn(actionPlayerIndex);
         }
         if(BoardIndex < 0 || BoardIndex >= gameState.Boards.Count) {
             return new InvalidCommand(BoardIndex.ToString());
@@ -66,41 +68,40 @@ public record MNKAction
             return new InvalidCommand($"{Col}, {Row}");
         }
 
-        var space = board.Spaces[Col, Row];
-        if (space.Mark == null) {
-            space.MakeKnownToPlayer(actionPlayer);
-            gameState.ActionQueue.Add(GetPlayerAction(actionPlayer));
-            gameState.EndTurn(actionPlayer, out var hasStateChanged);
-            var spaceName = gameState.GetView(actionPlayer).GetSpaceName(BoardIndex, Col, Row);
+        ref var space = ref board.Spaces[Col, Row];
+        if (space.MarkIndex == null) {
+            space.MakeKnownToPlayerIndex(actionPlayerIndex);
+            gameState.ActionQueue.Add(GetPlayerAction(actionPlayerIndex));
+            gameState.EndTurn(actionPlayerIndex, out var hasStateChanged);
+            var spaceName = gameState.GetView(actionPlayerIndex).GetSpaceName(BoardIndex, Col, Row);
             return new Enqueued(hasStateChanged, spaceName);
-        } else if (space.IsKnownToPlayer(actionPlayer)) {
-            return new AlreadyPlayed(actionPlayer);
+        } else if (space.IsKnownToPlayerIndex(actionPlayerIndex)) {
+            return new PositionAlreadyPlayed(actionPlayerIndex);
         } else {
-            space.MakeKnownToPlayer(actionPlayer);
-            gameState.EndTurn(actionPlayer, out _);
-            return new NewlyLearned(space.Mark);
+            space.MakeKnownToPlayerIndex(actionPlayerIndex);
+            gameState.EndTurn(actionPlayerIndex, out _);
+            return new NewlyLearned(space.MarkIndex.Value);
         }
 	}
 
-	public override void DoAction(GameState gameState, Player actionPlayer)
+	public override void DoAction(GameState gameState, int actionPlayerIndex)
 	{
 		if (GetBoard(gameState).IsDone) {
             return;
         }
         var space = GetSpace(gameState);
 
-        if (space.Mark == null) {
-            space.Mark = actionPlayer.Mark;
+        if (space.MarkIndex == null) {
+            space.MarkIndex = actionPlayerIndex;
         }
-            
-        space.MakeKnownToPlayer(actionPlayer);
+        space.MakeKnownToPlayerIndex(actionPlayerIndex);
 	}
 
     public static GameAction Create(
         GameState gameState,
         string spaceName
     ) {
-        if (gameState.GetView(player: null).TryGetCoordinatesFromSpaceName(spaceName, out sbyte boardIndex, out var col, out var row)) {
+        if (gameState.GetView(playerIndex: null).TryGetCoordinatesFromSpaceName(spaceName, out sbyte boardIndex, out var col, out var row)) {
             return new MNKAction(boardIndex, col, row);
         } else {
             throw new KeyNotFoundException("That is not a valid space name.");

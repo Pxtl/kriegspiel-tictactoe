@@ -27,31 +27,31 @@ public class StateUtilityTests {
     public void SerializeAndDeserialize_SynchronousGameState() {
         var boardBuilder3x3 = MNKBoardRuleset.CreateBoardBuilder(3, 3);
         var players = new char[] { 'X', 'O' }.ToPlayersArray();
-        var playerX = players[0];
-        var playerO = players[1];
         var expectedState = new GameState(
             players,
             new MNKTemplate([boardBuilder3x3, boardBuilder3x3, boardBuilder3x3], isSynchronousMode: true, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
+        var playerXIndex = 0;
+        var playerOIndex = 1;
 
         //round 1 (collision)
-        expectedState.GetView(playerX).Attempt(new MNKAction(0, 1, 1));
-        expectedState.GetView(playerO).Attempt(new MNKAction(0, 1, 1));
+        expectedState.GetView(playerXIndex).Attempt(new MNKAction(0, 1, 1));
+        expectedState.GetView(playerOIndex).Attempt(new MNKAction(0, 1, 1));
         expectedState.EndRound(out _);
 
         //round 2 (2 separate moves)
-        expectedState.GetView(playerX).Attempt(new MNKAction(0, 0, 0));
-        expectedState.GetView(playerO).Attempt(new MNKAction(0, 2, 2));
+        expectedState.GetView(playerXIndex).Attempt(new MNKAction(0, 0, 0));
+        expectedState.GetView(playerOIndex).Attempt(new MNKAction(0, 2, 2));
         expectedState.EndRound(out _);
 
         //round 3 (player O discovers player X)
-        expectedState.GetView(playerX).Attempt(new MNKAction(0, 2, 0));
-        expectedState.GetView(playerO).Attempt(new MNKAction(0, 0, 0));
+        expectedState.GetView(playerXIndex).Attempt(new MNKAction(0, 2, 0));
+        expectedState.GetView(playerOIndex).Attempt(new MNKAction(0, 0, 0));
         expectedState.EndRound(out _);
 
         //round 4 (incomplete)
-        expectedState.GetView(playerX).Attempt(new MNKAction(0, 1, 0));
+        expectedState.GetView(playerXIndex).Attempt(new MNKAction(0, 1, 0));
  
         IGameState untypedExpectedState = expectedState;
 

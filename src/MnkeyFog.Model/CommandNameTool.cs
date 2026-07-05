@@ -1,6 +1,7 @@
 namespace MnkeyFog.Model;
 
 using System.Text.RegularExpressions;
+using MnkeyFog.Model.Indexed;
 using MnkeyFog.Model.Views;
 using OneOf;
 using OneOf.Types;
@@ -12,23 +13,23 @@ using OneOf.Types;
 /// Because these are functional, they are testable.
 /// </remarks>
 public static class CommandNameTool {
-    public static OrderedDictionary<Player, string> BuildPlayerToCommandNameMap(IEnumerable<Player> availablePlayers) {
+    public static OrderedDictionary<int, string> BuildPlayerToCommandNameMap(IEnumerable<PlayerIndexed> availablePlayers) {
         // Build alternate key mapping for ALL players before entering loop
         // Keys are uppercase only (A-Z, 0-9)
         var usedKeys = availablePlayers
-            .Select(p => p.Mark)
+            .Select(p => p.Player.Mark)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var playerToKey = new OrderedDictionary<Player, string>();
+        var playerIndexToKey = new OrderedDictionary<int, string>();
 
         foreach (var player in availablePlayers) {
             // Check if mark is typeable (ASCII letter or digit)
-            bool isTypeable = (player.Mark.Length == 1)
-                && Regex.IsMatch(player.Mark, "[ABCDEFGHJKLMNOPSTUVWXYZ1-9]", RegexOptions.IgnoreCase); //remove I, R, 0 (zero) and Q.  I and O for confusion, R and Q for command collisions.
+            bool isTypeable = (player.Player.Mark.Length == 1)
+                && Regex.IsMatch(player.Player, "[ABCDEFGHJKLMNOPSTUVWXYZ1-9]", RegexOptions.IgnoreCase); //remove I, R, 0 (zero) and Q.  I and O for confusion, R and Q for command collisions.
 
             if (isTypeable)  {
                 // Typeable mark - use the mark itself
-                playerToKey[player] = player.Mark;
+                playerIndexToKey[player.Index] = player.Player.Mark;
             } else {
                 // Non-typeable mark (emoji, Snowman, etc.) - assign alternate key
 
@@ -40,13 +41,13 @@ public static class CommandNameTool {
                     if (usedKeys.Contains(digitKey)) {
                         continue;
                     } else {
-                        playerToKey[player] = digitKey;
+                        playerIndexToKey[player.Index] = digitKey;
                         usedKeys.Add(digitKey);
                         break;
                     }
                 }
 
-                if (!playerToKey.ContainsKey(player)) {
+                if (!playerIndexToKey.ContainsKey(player.Index)) {
                     // If needed, use letters (A-Z)
                     // stop at 26 since then we've exhausted letters.
                     for (int letterKeyIndex = 0; letterKeyIndex < 26; letterKeyIndex += 1) {
@@ -54,7 +55,7 @@ public static class CommandNameTool {
                         if (usedKeys.Contains(letterKey)) {
                             continue;
                         } else {
-                            playerToKey[player] = letterKey;
+                            playerIndexToKey[player.Index] = letterKey;
                             usedKeys.Add(letterKey);
                             break;
                         }
@@ -63,7 +64,7 @@ public static class CommandNameTool {
             }
         }
 
-        return playerToKey;
+        return playerIndexToKey;
     }
 
 
@@ -76,7 +77,7 @@ public static class CommandNameTool {
     /// </summary>
     public static string SpaceCommandName(GameView gameView, sbyte boardIndex, sbyte col, sbyte row) {
         ArgumentNullException.ThrowIfNull(gameView);
-        var player = gameView.Player;
+        var player = gameView.PlayerIndex;
         player = gameView.IsGameOver //show for all players if the game is over.
             ? null
             : player;
@@ -85,13 +86,13 @@ public static class CommandNameTool {
         var spaceView = boardView.GetSpaceView(col, row);
 
         if (
-            string.IsNullOrWhiteSpace(spaceView.Mark) 
+            !spaceView.MarkIndex.HasValue
             && !boardView.IsDone 
             && gameView.CanTakeTurn
         ) {
             return boardView.GetSpaceName(gameView, col, row);
         } else {
-            return spaceView.Mark ?? "";
+            return gameView.PlayersState.GetMark(spaceView.MarkIndex);
         }
     }
 

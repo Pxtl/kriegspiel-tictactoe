@@ -2,9 +2,8 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using OneOf;
 using MnkeyFog.Model.Template;
-using System.CommandLine.Parsing;
-using Sundew.Base.Collections;
 using MnkeyFog.Model.PlayerAIs;
+using PxtlCa.SystemCollectionsExtensions;
 
 namespace MnkeyFog.CommandLine;
 
@@ -95,7 +94,7 @@ public class Program {
             }
         };
 
-        gameCommand.Subcommands.AddRange(
+        gameCommand.Subcommands.AddRange<Command>(
             GameTemplates.GetBuiltInGameTemplates().Select(template => new Command(template.CommandName!, template.Description) {
                     Action = new CommandHandler(parseResult => {
                         ParseRootOptions(parseResult); 
@@ -104,7 +103,7 @@ public class Program {
                         return parseResult.Errors.Count;
                     })
                 }
-            )
+            ).ToList()
         );
 
         var parseResult = rootCommand.Parse(

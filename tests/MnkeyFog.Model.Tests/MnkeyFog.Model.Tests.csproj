@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="PxtlCa.SystemCollectionsExtensions" Version="0.3.4" />
     <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
     <PackageReference Include="xunit.v3.runner.console" Version="3.2.2" />
     <PackageReference Include="FluentAssertions" Version="7.2.2" />

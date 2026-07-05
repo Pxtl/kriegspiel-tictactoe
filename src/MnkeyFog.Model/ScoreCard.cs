@@ -1,7 +1,8 @@
 namespace MnkeyFog.Model;
 
-using Sundew.Base.Collections.Immutable;
 using System.ComponentModel;
+using PxtlCa.Collections;
+using PxtlCa.Collections.Extensions;
 
 /// <summary>
 /// Immutable value-y collection of scores
@@ -13,28 +14,35 @@ public readonly struct ScoreCard {
     public ScoreCard() {
         _scores = _emptyPlayerScoreCollection;
     }
-    public ScoreCard(Player player, int score) : this(new PlayerScore(player, score)) {}
-    public ScoreCard(PlayerScore playerScore) : this([playerScore]) {}
-    public ScoreCard(IEnumerable<PlayerScore> scores) {
+    public ScoreCard(int playerIndex, int score) : this(new PlayerIndexScore(playerIndex, score)) {}
+    public ScoreCard(PlayerIndexScore playerScore) : this([playerScore]) {}
+    public ScoreCard(IEnumerable<PlayerIndexScore> scores) {
         _scores = scores
-            .GroupBy(s => s.Player)
-            .OrderBy(g => g.Key.Mark)
-            .Select(g => new PlayerScore(g.Key, g.Sum(kvp => kvp.Score)))
-            .ToValueArray();
+            .GroupBy(s => s.PlayerIndex)
+            .OrderBy(g => g.Key)
+            .Select(g => new PlayerIndexScore(g.Key, g.Sum(kvp => kvp.Score)))
+            .ToStructList();
     }
 
+    /// <summary>
+    ///  that is only allowed when we already know scores are
+    /// unique.
+    /// </summary>
+    internal ScoreCard(PlayerIndexScore[] scores) {
+        _scores = new StructList<PlayerIndexScore>(scores);
+    }
     #endregion
 
     #region static Empty
-    private static ValueArray<PlayerScore> _emptyPlayerScoreCollection = new ValueArray<PlayerScore>();
+    private static StructList<PlayerIndexScore> _emptyPlayerScoreCollection = new StructList<PlayerIndexScore>();
     public static ScoreCard Empty { get; } = new ScoreCard();
 
     #endregion
 
     #region state members
-    private ValueArray<PlayerScore> _scores {get; init;}
-    public readonly IReadOnlyList<PlayerScore> PlayerScores
-        => _scores;
+    private StructList<PlayerIndexScore> _scores {get; init;}
+    public readonly IReadOnlyList<PlayerIndexScore> PlayerScores
+    => _scores;
     #endregion
 
     #region calculated members
@@ -46,7 +54,8 @@ public readonly struct ScoreCard {
         ? Empty
         : new ScoreCard(_scores.AllMaxBy(s => s.Score));
 
-    public readonly IEnumerable<Player> Players => _scores.Select(s => s.Player);
+    public readonly IEnumerable<Player> AsPlayers(PlayersState playersState)
+    => _scores.Select(s => playersState.Players[s.PlayerIndex]);
 	#endregion
 
 	#region object overrides (equality and tostring)
@@ -55,7 +64,7 @@ public readonly struct ScoreCard {
     public override bool Equals(object? obj) {
         if (obj == null) {
             return false;
-        } else if (obj is PlayerScore playerScore) {
+        } else if (obj is PlayerIndexScore playerScore) {
             obj = new ScoreCard(playerScore);
         } 
         
@@ -83,8 +92,8 @@ public readonly struct ScoreCard {
     }
     #endregion
 
-	public ScoreCard FilterByPlayers(IEnumerable<Player> players)
-	=> new ScoreCard(PlayerScores.Where(ps => players.Contains(ps.Player)));
+	public ScoreCard FilterByPlayerIndices(IEnumerable<int> playerIndices)
+	=> new ScoreCard(PlayerScores.Where(ps => playerIndices.Contains(ps.PlayerIndex)));
 
     #region operator overloads
     public static ScoreCard operator +(ScoreCard a, ScoreCard b)
@@ -92,10 +101,10 @@ public readonly struct ScoreCard {
         : b.IsEmpty ? a
         : new ScoreCard(a._scores.Concat(b._scores));
 
-    public static ScoreCard operator +(ScoreCard a, PlayerScore b)
+    public static ScoreCard operator +(ScoreCard a, PlayerIndexScore b)
     => new ScoreCard(a._scores.Append(b));
 
-    public static ScoreCard operator +(PlayerScore a, ScoreCard b)
+    public static ScoreCard operator +(PlayerIndexScore a, ScoreCard b)
     => new ScoreCard(a) + b;
     #endregion
 
@@ -114,8 +123,12 @@ public static class ScoreCardExtensions {
     public static ScoreCard SumScoreCards(this IEnumerable<ScoreCard> scoreCards)
     => ScoreCard.SumScoreCards(scoreCards);
 
-    public static ScoreCard BlankPlayersScoreCard(this IEnumerable<Player> players)
-    => players
-        .Select(p => new ScoreCard(new PlayerScore(p, 0)))
-        .SumScoreCards();
+    public static ScoreCard BlankPlayersScoreCard(this IReadOnlyList<Player> players) {
+        // switch to array-based for performance.
+        var playerScores = new PlayerIndexScore[players.Count];
+        for (int i = 0; i < players.Count; i += 1) {
+            playerScores[i] = new PlayerIndexScore(i, 0);
+        }
+        return new ScoreCard(playerScores);
+    }
 }

@@ -13,9 +13,9 @@ public class BoardRendererTests {
         );
         
         var currentPlayer = state.PlayersState.PlayersAvailableForTurn.First();
-        state.EndTurn(currentPlayer, out _);
+        state.EndTurn(currentPlayer.Index, out _);
         
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index));
         var expected = @"
   ┌───┬───┬───┐
   │   │   │   │
@@ -41,7 +41,7 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
         
-        var currentPlayer = new Player("X");
+        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
         state.GetView(currentPlayer).Attempt(new MNKAction(0, 0, 0));
         var expected = @"
   ┌───┬───┬───┐
@@ -56,7 +56,7 @@ public class BoardRendererTests {
             .TrimEnd()
             .ReplaceLineEndings();
 
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));    
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index));    
         actual.TrimEnd().Should().Be(expected);
     }
 
@@ -71,9 +71,9 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = new Player("X");
+        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
         // 0 means wrap as tight as possible.
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index));
 
         var expected = @"
   ┌───┬───┬───┐
@@ -101,13 +101,13 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = new Player("X");
+        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
         state.GetView(currentPlayer).Attempt(new MNKAction(0, 1, 1));     
-        var otherPlayer = new Player("O");
+        var otherPlayer = state.PlayersState.GetPlayerIndexed("O");
         state.GetView(otherPlayer).Attempt(new MNKAction(0, 0, 0));
         state.EndRound(out var _);
 
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index));
 
         var expected = @"
   ┌───┬───┬───┐
@@ -135,9 +135,9 @@ public class BoardRendererTests {
         );
         
         var currentPlayer = state.PlayersState.PlayersAvailableForTurn.First();
-        state.EndTurn(currentPlayer, out _);
+        state.EndTurn(currentPlayer.Index, out _);
         
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index));
         var expected = @"
   ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │   │
@@ -211,7 +211,7 @@ public class BoardRendererTests {
         
         var currentPlayer = state.PlayersState.PlayersAvailableForTurn.First();
         
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer));
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index));
         var expected = @"
   ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
   │A26│B26│C26│D26│E26│F26│G26│H26│I26│J26│K26│L26│M26│N26│O26│P26│Q26│R26│S26│T26│U26│V26│W26│X26│Y26│Z26│
@@ -284,11 +284,11 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = new Player("X");
-        state.EndTurn(currentPlayer, out _);
+        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
+        state.EndTurn(currentPlayer.Index, out _);
 
         // wrap halfway through 3rd board
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer), maxRenderWidth:42);
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index), maxRenderWidth:42);
         var expected = @"
  1┌───┬───┬───┐ 2┌───┬───┬───┐
   │   │   │   │  │   │   │   │
@@ -322,11 +322,11 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = new Player("X");
-        state.EndTurn(currentPlayer, out _);
+        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
+        state.EndTurn(currentPlayer.Index, out _);
         
         // 0 means wrap as tight as possible.
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer), maxRenderWidth: 0);
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index), maxRenderWidth: 0);
         var expected = @"
  1┌───┬───┬───┐
   │   │   │   │
@@ -367,9 +367,9 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = new Player("X");
+        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
 
-        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer), maxRenderWidth: 999999);
+        var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index), maxRenderWidth: 999999);
 
         var expected = @"
  1┌───┬───┬───┐ 2┌───┬───┬───┐ 3┌───┬───┬───┐

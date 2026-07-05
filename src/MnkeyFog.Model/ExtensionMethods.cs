@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
+using MnkeyFog.Model.Indexed;
 
 namespace MnkeyFog.Model;
 
@@ -54,16 +55,41 @@ public static class ExtensionMethods {
     /// </summary>
     /// <param name="obj"></param>
     extension(object obj) {
-        public bool HasImmutableAttribute
-        => obj.GetType().GetCustomAttributes<ImmutableObjectAttribute>().Any(attr => attr.Immutable);
+        public bool HasImmutableAttribute {
+            get {
+                var type = obj.GetType();
+                if(_immutableTypesCache.TryGetValue(type, out bool hasImmutable)) {
+                    return hasImmutable;
+                } else {
+                    hasImmutable = obj.GetType().GetCustomAttributes<ImmutableObjectAttribute>().Any(attr => attr.Immutable);
+                    _immutableTypesCache[type] = hasImmutable;
+                    return hasImmutable;
+                }
+            }
+        }
 
         public void ConfirmHasImmutableAttribute() {
             if (!obj.HasImmutableAttribute) {
+                
                 throw new InvalidOperationException(
                     $"The object of type '{obj.GetType().Name}' is expected to be immutable. " 
                     + "Confirm that the object is immutable and apply the {nameof(ImmutableObjectAttribute)} to its class."
                 );
             }
+        }
+    }
+
+    public static Dictionary<Type, bool> _immutableTypesCache = new Dictionary<Type, bool>();
+
+    public static IEnumerable<PlayerIndexed> ToPlayersIndexed(this IReadOnlyList<Player> players) {
+        for(var i = 0; i < players.Count; i+=1) {
+            yield return new PlayerIndexed(players[i], i);
+        }
+    }
+
+    public static IEnumerable<PlayerIndexed> ToPlayersIndexed(this IReadOnlyList<string> playerMarks) {
+        for(var i = 0; i < playerMarks.Count; i+=1) {
+            yield return new PlayerIndexed(new Player(playerMarks[i]), i);
         }
     }
 }

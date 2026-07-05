@@ -1,6 +1,7 @@
 namespace MnkeyFog.Model;
 
 using System.ComponentModel;
+using MnkeyFog.Model.Indexed;
 using OneOf;
 using OneOf.Types;
 
@@ -13,5 +14,5 @@ public abstract class PlayManager {
     public abstract string GameStateText(PlayersState playerState);
     public abstract void EndedRound(GameState gameState, out bool hasStateChanged);
     public abstract void EndedTurn(GameState gameState, out bool hasStateChanged);
-    public abstract IEnumerable<Player> PlayersAvailableForTurn(PlayersState playerState);
+    public abstract IEnumerable<PlayerIndexed> PlayersAvailableForTurn(PlayersState playerState);
 }

@@ -1,3 +1,4 @@
+using MnkeyFog.Model.Indexed;
 using MnkeyFog.Model.PlayerAIs;
 
 namespace MnkeyFog.Model.Tests;
@@ -91,47 +92,47 @@ public class PlayerAITests {
             [new Player("X")] = new AsterAI(),
             [new Player("O")] = new RandomAI()
         };
-        var asterAIPlayerX = playerAIs.Keys.First();
+        var asterAIPlayerXIndex = 0;
         var scoreSum = ScoreCard.Empty;
         for (int i = 0; i < iterations; i++) {
             scoreSum += AIGameRunner.RunAIGame(GameTemplates.BasicTicTacToe, playerAIs, out var gameState);
-            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetView(null), 100));
+            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetSpectatorView(), 100));
             Console.Out.WriteLine(gameState.GameStateText);
         }
-        scoreSum.Highest.Players.Count().Should().Be(1);
-        scoreSum.Highest.Players.Single().Should().Be(asterAIPlayerX);
+        scoreSum.Highest.PlayerScores.Count().Should().Be(1);
+        scoreSum.Highest.PlayerScores.Single().PlayerIndex.Should().Be(asterAIPlayerXIndex);
     }
 
     //commented out because Clod cannot consistently defeat Randy
     [Fact]
     public void AIGameRunner_BasicTicTacToe_MontyAIvsAsterAI() {
         // AsterAI vs RandomAI should show AsterAI winning more often
-        int iterations = 10;
+        int iterations = 100;
 
         var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
             [new Player("X")] = new MontyAI(),
             [new Player("O")] = new AsterAI()
         };
-        var asterAIPlayerX = playerAIs.Keys.First();
+        var montyAIPlayerXIndex = 0;
         var scoreSum = ScoreCard.Empty;
         for (int i = 0; i < iterations; i++) {
             scoreSum += AIGameRunner.RunAIGame(GameTemplates.BasicTicTacToe, playerAIs, out var gameState);
-            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetView(null), 100));
+            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetSpectatorView(), 100));
             Console.Out.WriteLine(gameState.GameStateText);
         }
-        scoreSum.Highest.Players.Count().Should().Be(1);
-        scoreSum.Highest.Players.Single().Should().Be(asterAIPlayerX);
+        scoreSum.Highest.PlayerScores.Count().Should().Be(1);
+        scoreSum.Highest.PlayerScores.Single().PlayerIndex.Should().Be(montyAIPlayerXIndex);
     }
 
     [Fact]
     public void MontyAI_KnowsToBlock() {
-        var playerX = new Player("X");
-        var playerO = new Player("O");
-        var gameState = new GameState([playerX, playerO], GameTemplates.BasicTicTacToe, isRandomPlayerOrder:false);
-        gameState.Boards[0].Spaces[1,1].Mark = playerO.Mark;
-        gameState.Boards[0].Spaces[2,0].Mark = playerO.Mark;
-        gameState.Boards[0].Spaces[2,2].Mark = playerX.Mark;
-        gameState.Boards[0].Spaces[2,1].Mark = playerX.Mark;
+        var playerX = new PlayerIndexed("X", 0);
+        var playerO = new PlayerIndexed("O", 1);
+        var gameState = new GameState([playerX.Player, playerO.Player], GameTemplates.BasicTicTacToe, isRandomPlayerOrder:false);
+        gameState.Boards[0].Spaces[1,1].MarkIndex = playerO.Index;
+        gameState.Boards[0].Spaces[2,0].MarkIndex = playerO.Index;
+        gameState.Boards[0].Spaces[2,2].MarkIndex = playerX.Index;
+        gameState.Boards[0].Spaces[2,1].MarkIndex = playerX.Index;
         var gameView = gameState.GetView(playerX);
         var montyAI = new MontyAI();
         var gameAction = montyAI.FindOptimalGameAction(gameView)!;
@@ -151,14 +152,19 @@ public class PlayerAITests {
             [new Player("X")] = new AsterAI(),
             [new Player("O")] = new RandomAI()
         };
+        var playerState = new PlayersState(playerAIs.Keys, RoundRobinPlayManager.Instance);
         var asterAIPlayerX = playerAIs.Keys.First();
         var scoreSum = ScoreCard.Empty;
         for (int i = 0; i < iterations; i++) {
-            scoreSum += AIGameRunner.RunAIGame(GameTemplates.FogTicTacToe, playerAIs, out var gameState);
-            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetView(null), 100));
+            var result = AIGameRunner.RunAIGame(GameTemplates.FogTicTacToe, playerAIs, out var gameState);
+            // add 1 point per-win.
+            scoreSum += new ScoreCard(
+                result.Highest.PlayerScores.Select(ps => new PlayerIndexScore(ps.PlayerIndex, 1))
+            );
+            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetSpectatorView(), 100));
             Console.Out.WriteLine(gameState.GameStateText);
         }
-        scoreSum.Highest.Players.Count().Should().Be(1);
-        scoreSum.Highest.Players.Single().Should().Be(asterAIPlayerX);
+        scoreSum.Highest.AsPlayers(playerState).Count().Should().Be(1);
+        scoreSum.Highest.AsPlayers(playerState).Single().Should().Be(asterAIPlayerX);
     }
 }

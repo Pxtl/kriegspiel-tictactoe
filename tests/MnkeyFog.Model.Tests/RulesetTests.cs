@@ -1,17 +1,19 @@
 namespace MnkeyFog.Model.Tests;
 
 public class RulesetTests {
+    const int _playerXIndex = 0;
+    const int _playerOIndex = 1;
     #region orthogonal tests
     
     [Fact]
     public void Given3x3Board_WhenVerticalFull_ThenXWins() {
         var board = new Board(3, 3, new MNKBoardRuleset());
 
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[0, 1].Mark = "X";
-        board.Spaces[0, 2].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[0, 1].MarkIndex = _playerXIndex;
+        board.Spaces[0, 2].MarkIndex = _playerXIndex;
 
-        var expectedPlayerScore = new PlayerScore("X", 1);
+        var expectedPlayerScore = new PlayerIndexScore(_playerXIndex, 1);
         board.ScoreCard.Highest!.Should().Be(expectedPlayerScore);
         board.IsDone.Should().BeFalse();
     }
@@ -20,11 +22,11 @@ public class RulesetTests {
     public void Given3x3Board_WhenLineFullAndBoardIsDoneWhenScored_ThenBoardIsDone() {
         var board = new Board(3, 3, new MNKBoardRuleset(IsBoardDoneWhenScored: true));
 
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[0, 1].Mark = "X";
-        board.Spaces[0, 2].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[0, 1].MarkIndex = _playerXIndex;
+        board.Spaces[0, 2].MarkIndex = _playerXIndex;
 
-        var expectedPlayerScore = new PlayerScore("X", 1);
+        var expectedPlayerScore = new PlayerIndexScore(_playerXIndex, 1);
         board.ScoreCard.Highest!.Should().Be(expectedPlayerScore);
         board.IsDone.Should().BeTrue();
     }
@@ -33,11 +35,11 @@ public class RulesetTests {
     public void Given3x3Board_WhenLineFullAndBoardIsNotDoneWhenScored_ThenBoardIsNotDone() {
         var board = new Board(3, 3, new MNKBoardRuleset(IsBoardDoneWhenScored: false));
 
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[0, 1].Mark = "X";
-        board.Spaces[0, 2].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[0, 1].MarkIndex = _playerXIndex;
+        board.Spaces[0, 2].MarkIndex = _playerXIndex;
 
-        var expectedPlayerScore = new PlayerScore("X", 1);
+        var expectedPlayerScore = new PlayerIndexScore(_playerXIndex, 1);
         board.ScoreCard.Highest!.Should().Be(expectedPlayerScore);
         board.IsDone.Should().BeFalse();
     }
@@ -46,19 +48,19 @@ public class RulesetTests {
     public void Given3x3Board_WhenHorizontalFullWithMultipleWinningRows_ThenMajorityWins() {
         var board = new Board(3, 3, new MNKBoardRuleset());
 
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[1, 0].Mark = "X";
-        board.Spaces[2, 0].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[1, 0].MarkIndex = _playerXIndex;
+        board.Spaces[2, 0].MarkIndex = _playerXIndex;
 
-        board.Spaces[0, 1].Mark = "O";
-        board.Spaces[1, 1].Mark = "O";
-        board.Spaces[2, 1].Mark = "O";
+        board.Spaces[0, 1].MarkIndex = _playerOIndex;
+        board.Spaces[1, 1].MarkIndex = _playerOIndex;
+        board.Spaces[2, 1].MarkIndex = _playerOIndex;
 
-        board.Spaces[0, 2].Mark = "O";
-        board.Spaces[1, 2].Mark = "O";
-        board.Spaces[2, 2].Mark = "O";
+        board.Spaces[0, 2].MarkIndex = _playerOIndex;
+        board.Spaces[1, 2].MarkIndex = _playerOIndex;
+        board.Spaces[2, 2].MarkIndex = _playerOIndex;
 
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("O", 2));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerOIndex, 2));
         board.IsDone.Should().BeTrue();
     }
     #endregion
@@ -68,22 +70,22 @@ public class RulesetTests {
     public void Given3x3Board_WhenIdentityDiagonal_ThenXWins() {
         var board = new Board(3, 3, new MNKBoardRuleset());
         
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[1, 1].Mark = "X";
-        board.Spaces[2, 2].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[1, 1].MarkIndex = _playerXIndex;
+        board.Spaces[2, 2].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
     public void Given3x3Board_WhenInverseDiagonal_ThenXWins() {
         var board = new Board(3, 3, new MNKBoardRuleset());
         
-        board.Spaces[0, 2].Mark = "X";
-        board.Spaces[1, 1].Mark = "X";
-        board.Spaces[2, 0].Mark = "X";
+        board.Spaces[0, 2].MarkIndex = _playerXIndex;
+        board.Spaces[1, 1].MarkIndex = _playerXIndex;
+        board.Spaces[2, 0].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
     #endregion
 
@@ -94,11 +96,11 @@ public class RulesetTests {
         var board = new Board(4, 3, new MNKBoardRuleset());
         
         // Identity diagonal: starts at (0, H-diagLen) = (0, 0), ends at (diagLen-1, H-1) = (2, 2)
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[1, 1].Mark = "X";
-        board.Spaces[2, 2].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[1, 1].MarkIndex = _playerXIndex;
+        board.Spaces[2, 2].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
@@ -106,11 +108,11 @@ public class RulesetTests {
         var board = new Board(4, 3, new MNKBoardRuleset());
         
         // Identity diagonal: starts at (0, H-diagLen) = (0, 0), ends at (diagLen-1, H-1) = (2, 2)
-        board.Spaces[1, 0].Mark = "X";
-        board.Spaces[2, 1].Mark = "X";
-        board.Spaces[3, 2].Mark = "X";
+        board.Spaces[1, 0].MarkIndex = _playerXIndex;
+        board.Spaces[2, 1].MarkIndex = _playerXIndex;
+        board.Spaces[3, 2].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
@@ -118,11 +120,11 @@ public class RulesetTests {
         var board = new Board(4, 3, new MNKBoardRuleset());
         
         // Inverse diagonal: starts at (0, diagLen-1) = (0, 2), ends at (diagLen-1, 0) = (2, 0)
-        board.Spaces[0, 2].Mark = "X";
-        board.Spaces[1, 1].Mark = "X";
-        board.Spaces[2, 0].Mark = "X";
+        board.Spaces[0, 2].MarkIndex = _playerXIndex;
+        board.Spaces[1, 1].MarkIndex = _playerXIndex;
+        board.Spaces[2, 0].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
         [Fact]
@@ -130,11 +132,11 @@ public class RulesetTests {
         var board = new Board(4, 3, new MNKBoardRuleset());
         
         // Inverse diagonal: starts at (0, diagLen-1) = (0, 2), ends at (diagLen-1, 0) = (2, 0)
-        board.Spaces[1, 2].Mark = "X";
-        board.Spaces[2, 1].Mark = "X";
-        board.Spaces[3, 0].Mark = "X";
+        board.Spaces[1, 2].MarkIndex = _playerXIndex;
+        board.Spaces[2, 1].MarkIndex = _playerXIndex;
+        board.Spaces[3, 0].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
@@ -142,8 +144,8 @@ public class RulesetTests {
         var board = new Board(4, 3, new MNKBoardRuleset(IsBoardDoneWhenScored: true));
         
         // Only 2 X's inline on diagonal - not a winning line
-        board.Spaces[0, 1].Mark = "X";
-        board.Spaces[1, 2].Mark = "X";
+        board.Spaces[0, 1].MarkIndex = _playerXIndex;
+        board.Spaces[1, 2].MarkIndex = _playerXIndex;
         
         board.ScoreCard.Highest.Should().Be(ScoreCard.Empty);
         board.IsDone.Should().BeFalse();
@@ -157,11 +159,11 @@ public class RulesetTests {
         var board = new Board(3, 4, new MNKBoardRuleset());
         
         // Identity diagonal: starts at (0, H-diagLen) = (0, 1), ends at (diagLen-1, H-1) = (2, 3)
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[1, 1].Mark = "X";
-        board.Spaces[2, 2].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[1, 1].MarkIndex = _playerXIndex;
+        board.Spaces[2, 2].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
@@ -169,11 +171,11 @@ public class RulesetTests {
         var board = new Board(3, 4, new MNKBoardRuleset());
         
         // Identity diagonal: starts at (0, H-diagLen) = (0, 1), ends at (diagLen-1, H-1) = (2, 3)
-        board.Spaces[0, 1].Mark = "X";
-        board.Spaces[1, 2].Mark = "X";
-        board.Spaces[2, 3].Mark = "X";
+        board.Spaces[0, 1].MarkIndex = _playerXIndex;
+        board.Spaces[1, 2].MarkIndex = _playerXIndex;
+        board.Spaces[2, 3].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
@@ -181,11 +183,11 @@ public class RulesetTests {
         var board = new Board(3, 4, new MNKBoardRuleset());
         
         // Inverse diagonal: starts at (0, diagLen-1) = (0, 2), ends at (diagLen-1, 0) = (2, 0)
-        board.Spaces[0, 2].Mark = "X";
-        board.Spaces[1, 1].Mark = "X";
-        board.Spaces[2, 0].Mark = "X";
+        board.Spaces[0, 2].MarkIndex = _playerXIndex;
+        board.Spaces[1, 1].MarkIndex = _playerXIndex;
+        board.Spaces[2, 0].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
@@ -193,11 +195,13 @@ public class RulesetTests {
         var board = new Board(3, 4, new MNKBoardRuleset());
         
         // Inverse diagonal: starts at (0, diagLen-1) = (0, 2), ends at (diagLen-1, 0) = (2, 0)
-        board.Spaces[0, 3].Mark = "X";
-        board.Spaces[1, 2].Mark = "X";
-        board.Spaces[2, 1].Mark = "X";
+        board.Spaces[0, 3].MarkIndex = _playerXIndex;
+        board.Spaces[1, 2].MarkIndex = _playerXIndex;
+        board.Spaces[2, 1].MarkIndex = _playerXIndex;
+
+        board.Spaces[0, 0].MarkIndex = _playerOIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Player.Mark.Should().Be("X");
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
     #endregion
 
@@ -208,12 +212,14 @@ public class RulesetTests {
         var board = new Board(4, 6, new MNKBoardRuleset());
         
         // Identity diagonal: starts at (0, H-diagLen) = (0, 2), ends at (diagLen-1, H-1) = (3, 5)
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[1, 1].Mark = "X";
-        board.Spaces[2, 2].Mark = "X";
-        board.Spaces[3, 3].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[1, 1].MarkIndex = _playerXIndex;
+        board.Spaces[2, 2].MarkIndex = _playerXIndex;
+        board.Spaces[3, 3].MarkIndex = _playerXIndex;
+
+        board.Spaces[0, 3].MarkIndex = _playerOIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
@@ -221,12 +227,14 @@ public class RulesetTests {
         var board = new Board(4, 6, new MNKBoardRuleset());
         
         // Identity diagonal: starts at (0, H-diagLen) = (0, 2), ends at (diagLen-1, H-1) = (3, 5)
-        board.Spaces[0, 1].Mark = "X";
-        board.Spaces[1, 2].Mark = "X";
-        board.Spaces[2, 3].Mark = "X";
-        board.Spaces[3, 4].Mark = "X";
+        board.Spaces[0, 1].MarkIndex = _playerXIndex;
+        board.Spaces[1, 2].MarkIndex = _playerXIndex;
+        board.Spaces[2, 3].MarkIndex = _playerXIndex;
+        board.Spaces[3, 4].MarkIndex = _playerXIndex;
+
+        board.Spaces[0, 3].MarkIndex = _playerOIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
     
     
@@ -235,12 +243,14 @@ public class RulesetTests {
         var board = new Board(4, 6, new MNKBoardRuleset());
         
         // Identity diagonal: starts at (0, H-diagLen) = (0, 2), ends at (diagLen-1, H-1) = (3, 5)
-        board.Spaces[0, 2].Mark = "X";
-        board.Spaces[1, 3].Mark = "X";
-        board.Spaces[2, 4].Mark = "X";
-        board.Spaces[3, 5].Mark = "X";
+        board.Spaces[0, 2].MarkIndex = _playerXIndex;
+        board.Spaces[1, 3].MarkIndex = _playerXIndex;
+        board.Spaces[2, 4].MarkIndex = _playerXIndex;
+        board.Spaces[3, 5].MarkIndex = _playerXIndex;
+
+        board.Spaces[0, 3].MarkIndex = _playerOIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
@@ -248,12 +258,14 @@ public class RulesetTests {
         var board = new Board(4, 6, new MNKBoardRuleset());
         
         // Inverse diagonal: starts at (0, diagLen-1) = (0, 3), ends at (diagLen-1, 0) = (3, 0)
-        board.Spaces[0, 3].Mark = "X";
-        board.Spaces[1, 2].Mark = "X";
-        board.Spaces[2, 1].Mark = "X";
-        board.Spaces[3, 0].Mark = "X";
+        board.Spaces[0, 3].MarkIndex = _playerXIndex;
+        board.Spaces[1, 2].MarkIndex = _playerXIndex;
+        board.Spaces[2, 1].MarkIndex = _playerXIndex;
+        board.Spaces[3, 0].MarkIndex = _playerXIndex;
+
+        board.Spaces[1, 1].MarkIndex = _playerOIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
     #endregion
 
@@ -262,26 +274,28 @@ public class RulesetTests {
     public void Given6x6BoardScoringLength3_WhenScoringLineIsLength4_ThenXWins1Point() {
         var board = new Board(6, 6, new MNKBoardRuleset(ScoringLength: 3));
         
-        board.Spaces[0, 3].Mark = "X";
-        board.Spaces[1, 2].Mark = "X";
-        board.Spaces[2, 1].Mark = "X";
-        board.Spaces[3, 0].Mark = "X";
+        board.Spaces[0, 3].MarkIndex = _playerXIndex;
+        board.Spaces[1, 2].MarkIndex = _playerXIndex;
+        board.Spaces[2, 1].MarkIndex = _playerXIndex;
+        board.Spaces[3, 0].MarkIndex = _playerXIndex;
+
+        board.Spaces[3, 3].MarkIndex = _playerOIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 1));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
     [Fact]
     public void Given6x6BoardScoringLength3_WhenScoringLineIsLength6_ThenXWins2Points() {
         var board = new Board(6, 6, new MNKBoardRuleset(ScoringLength: 3));
         
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[1, 1].Mark = "X";
-        board.Spaces[2, 2].Mark = "X";
-        board.Spaces[3, 3].Mark = "X";
-        board.Spaces[4, 4].Mark = "X";
-        board.Spaces[5, 5].Mark = "X";
+        board.Spaces[0, 0].MarkIndex = _playerXIndex;
+        board.Spaces[1, 1].MarkIndex = _playerXIndex;
+        board.Spaces[2, 2].MarkIndex = _playerXIndex;
+        board.Spaces[3, 3].MarkIndex = _playerXIndex;
+        board.Spaces[4, 4].MarkIndex = _playerXIndex;
+        board.Spaces[5, 5].MarkIndex = _playerXIndex;
         
-        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerScore("X", 2));
+        board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 2));
     }
     #endregion
 

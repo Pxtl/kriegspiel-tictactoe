@@ -1,3 +1,5 @@
+using PxtlCa.SystemCollectionsExtensions;
+
 namespace MnkeyFog.Model.Tests;
 
 public class BoardTests {
@@ -60,19 +62,19 @@ public class BoardTests {
     [Fact]
     public void MakeKnownToPlayer_MarksToPlayer_IsKnown() {
         var board = new Board(3, 3, new MNKBoardRuleset());
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[0, 0].MakeKnownToPlayer("X");
+        board.Spaces[0, 0].MarkIndex = 0;
+        board.Spaces[0, 0].MakeKnownToPlayerIndex(0);
 
-        board.Spaces[0, 0].KnownToPlayersSet.Should().Contain("X");
+        board.Spaces[0, 0].KnownToPlayerIndicesSet.ToHashSet().Should().Contain(0);
     }
 
     [Fact]
     public void MakeKnownToPlayer_MarksToAnotherPlayer_IsKnown() {
         var board = new Board(3, 3, new MNKBoardRuleset());
-        board.Spaces[0, 0].Mark = "X";
-        board.Spaces[0, 0].MakeKnownToPlayer("O");
+        board.Spaces[0, 0].MarkIndex = 0;
+        board.Spaces[0, 0].MakeKnownToPlayerIndex(1);
 
-        board.Spaces[0, 0].KnownToPlayersSet.Should().Contain("O");
+        board.Spaces[0, 0].KnownToPlayerIndicesSet.ToHashSet().Should().Contain(1);
     }
     #endregion
 }

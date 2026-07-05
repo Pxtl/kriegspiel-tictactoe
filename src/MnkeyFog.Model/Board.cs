@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using MnkeyFog.Model.Indexed;
 
 namespace MnkeyFog.Model;
 
@@ -6,6 +7,10 @@ namespace MnkeyFog.Model;
 /// JSON-serializable model object for a single tic-tac-toe board. Columns are
 /// left-to-right, rows are top-to-bottom.
 /// </summary>
+/// <remarks>
+/// //TODO: Cache ScoreCard and IsDone, invalidate cache on changes to board
+/// contents.
+/// </remarks>
 [ModelSerializable]
 public sealed record Board {
     #region constructors
@@ -51,10 +56,10 @@ public sealed record Board {
     #endregion
 
     #region Methods
-    public IEnumerable<SpaceEnumerator> AsSpaceEnumerable() {
+    public IEnumerable<SpaceIndexed> AsSpaceEnumerable() {
         for (sbyte col = 0; col < Spaces.GetLength(0); col += 1) {
             for (sbyte row = 0; row < Spaces.GetLength(1); row += 1) {
-                yield return new SpaceEnumerator(Spaces[col, row], col, row);
+                yield return new SpaceIndexed(Spaces[col, row], col, row);
             }
         }
     }
@@ -101,7 +106,7 @@ public sealed record Board {
     /// </summary>
     [JsonIgnore()]
     public bool IsFull
-    => AsSpaceEnumerable().All(s => s.Space.Mark != null);
+    => AsSpaceEnumerable().All(s => s.Space.MarkIndex != null);
 
     /// <summary>
     /// Returns true if the board is done and locked from further play.

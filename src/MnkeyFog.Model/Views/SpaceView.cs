@@ -1,18 +1,20 @@
+using MnkeyFog.Model.Indexed;
+
 namespace MnkeyFog.Model.Views;
 
 public record SpaceView
 : GameObjectView {
-    public SpaceView(Space space, Player? player, sbyte col, sbyte row)
-    : base(player) {
+    public SpaceView(Space space, int? playerIndex, sbyte col, sbyte row)
+    : base(playerIndex) {
         Col = col;
         Row = row;
-        Mark = space.IsKnownToPlayer(Player)
-            ? space.Mark
+        MarkIndex = space.IsKnownToPlayerIndex(playerIndex)
+            ? space.MarkIndex
             : null;
     }
     #region data properties
     public sbyte Col { get; init; }
     public sbyte Row { get; init; }
-	public string? Mark { get; init; }
+	public int? MarkIndex { get; init; }
     #endregion
 }

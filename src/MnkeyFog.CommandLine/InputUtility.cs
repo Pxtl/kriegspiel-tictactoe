@@ -1,6 +1,5 @@
 using OneOf;
 using OneOf.Types;
-using Sundew.Base;
 
 namespace MnkeyFog.CommandLine;
 
@@ -50,7 +49,7 @@ internal static class InputUtility {
                     // do nothing, the ReadCommandInput already printed "Invalid Command"
                 }
             );
-            if(loopResult.HasValue) {
+            if(loopResult != null) {
                 return loopResult;
             }
         }

@@ -11,18 +11,18 @@ namespace MnkeyFog.Model.Views;
 public record GameView
 : GameObjectView {
     #region Constructors
-    public GameView(GameState gameState, Player? player)
-    : base(player) {
+    public GameView(GameState gameState, int? playerIndex)
+    : base(playerIndex) {
         GameTemplate = gameState.GameTemplate;
         GameStateServer = gameState;
         IsGameOver = gameState.IsGameOver;
-        AvailableActions = (Player == null)
+        AvailableActions = (PlayerIndex == null)
             ? new List<GameActionFactory>()
-            : gameState.GameTemplate.GetAvailableActions(gameState, Player).ToList();
+            : gameState.GameTemplate.GetAvailableActions(gameState, PlayerIndex.Value).ToList();
 
         var boardViewsArray = new BoardView[gameState.Boards.Count];
         for(sbyte i = 0; i < gameState.Boards.Count; i+=1) {
-            boardViewsArray[i] = new BoardView(gameState.Boards[i], Player, i);
+            boardViewsArray[i] = new BoardView(gameState.Boards[i], PlayerIndex, i);
         }
         Boards = boardViewsArray;
         PlayersState = gameState.PlayersState;
@@ -41,22 +41,22 @@ public record GameView
     #endregion
 
     #region Player Actions
-    public bool CanTakeTurn => PlayersState.CanTakeTurn(Player);
+    public bool CanTakeTurn => PlayersState.CanTakeTurn(PlayerIndex);
     public IReadOnlyList<GameActionFactory> AvailableActions { get; init; }
     public Resigned ResignPlayer() {
-        if (Player == null) {
-            throw new InvalidOperationException($"{nameof(Player)} is null.");
+        if (PlayerIndex == null) {
+            throw new InvalidOperationException($"{nameof(PlayerIndex)} is null.");
         } else {
-            GameStateServer.ResignPlayer(Player);
-            return new Resigned(Player);
+            GameStateServer.ResignPlayer(PlayerIndex.Value);
+            return new Resigned(PlayerIndex.Value);
         }
     }
 
     public IPlayActionResult Attempt(GameAction playAction) {
-        if (Player == null) {
-            throw new InvalidOperationException($"{nameof(Player)} is null.");
+        if (PlayerIndex == null) {
+            throw new InvalidOperationException($"{nameof(PlayerIndex)} is null.");
         }
-        return GameStateServer.Attempt(playAction.GetPlayerAction(Player));
+        return GameStateServer.Attempt(playAction.GetPlayerAction(PlayerIndex.Value));
     }
 
     public OneOf<Result<BoardView>, InvalidCommand, BoardIsDone> AttemptBoard(string boardName)
@@ -107,15 +107,10 @@ public record GameView
     #region Scores
     
     /// <summary>
-    /// Possibly-approximate scorecard (depending on game) for all active (non-resigned) players
+    /// Possibly-approximate scorecard (depending on game) for all players
     /// </summary>
     [JsonIgnore()]
-    public ScoreCard ScoreCard 
-    => AllPlayersScoreCard.FilterByPlayers(PlayersState.ActivePlayers);
-
-    
-    [JsonIgnore()]
-    public ScoreCard AllPlayersScoreCard
+    public ScoreCard ScoreCard
     => PlayersState.Players.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
         + Boards.Select(b => b.ScoreCard).SumScoreCards();
     #endregion

@@ -1,6 +1,9 @@
+using MnkeyFog.Model.Indexed;
+
 namespace MnkeyFog.Model.Tests;
 
 public class PlayManagerTests {
+    
     #region unique player marks
     [Fact]
     public void RoundRobinPlayManagerConstructor_WithUniqueMarksIsAllowed() {
@@ -30,6 +33,8 @@ public class PlayManagerTests {
 
     [Fact]
     public void GameStateConstructor_WithBoardsCreatesProperState() {
+        var playerXIndex = 0;
+        var playerOIndex = 1;
         var state = new GameState(
             [new Player("X"), new Player("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3), MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
@@ -38,42 +43,47 @@ public class PlayManagerTests {
         state.Boards.Count.Should().Be(2);
         state.PlayersState.Players.Should().Contain(new Player("X"));
         state.PlayersState.Players.Should().Contain(new Player("O"));
-        state.PlayersState.ActivePlayers.Should().Contain(new Player("X"));
-        state.PlayersState.ActivePlayers.Should().Contain(new Player("O"));
+        state.PlayersState.ActivePlayerIndices.Should().Contain(playerXIndex);
+        state.PlayersState.ActivePlayerIndices.Should().Contain(playerOIndex);
     }
 
     [Fact]
     public void Round_RoundIndexStartsAtZero() {
+        var playerXIndex = 0;
         var state = new GameState(
             [new Player("X"), new Player("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
-        state.PlayersState.RoundIndex.Should().Be(0);
+        state.PlayersState.RoundIndex.Should().Be(playerXIndex);
     }
 
     [Fact]
     public void EndTurn_AdvancesTurn() {
+        var playerXIndex = 0;
+        var playerOIndex = 1;
         var state = new GameState(
             [new Player("X"), new Player("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.EndTurn(new Player("X"), out _);
-        state.PlayersState.ActivePlayers.Should().Contain(new Player("O"));
+        state.EndTurn(playerXIndex, out _);
+        state.PlayersState.ActivePlayerIndices.Should().Contain(playerOIndex);
     }
 
     [Fact]
     public void EndTurn_EndRound_TracksRoundIndex() {
+        var playerXIndex = 0;
+        var playerOIndex = 1;
         var state = new GameState(
             [new Player("X"), new Player("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.EndTurn(new Player("X"), out _);
-        state.EndTurn(new Player("O"), out _);
+        state.EndTurn(playerXIndex, out _);
+        state.EndTurn(playerOIndex, out _);
         state.PlayersState.IsRoundOver.Should().BeTrue();
         state.PlayersState.GameStateText.Should().Be("Round over.");
 
@@ -83,14 +93,16 @@ public class PlayManagerTests {
 
     [Fact]
     public void RoundComplete_OnePlayerResigned() {
+        var playerXIndex = 0;
+        var playerOIndex = 1;
         var state = new GameState(
             [new Player("X"), new Player("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.PlayersState.ResignPlayer(new Player("X"));
-        state.EndTurn(new Player("O"), out _);
+        state.PlayersState.ResignPlayer(playerXIndex);
+        state.EndTurn(playerOIndex, out _);
 
         state.PlayersState.ActivePlayers.Count().Should().Be(1);
         state.PlayersState.IsRoundOver.Should().BeTrue();
@@ -99,20 +111,25 @@ public class PlayManagerTests {
 
     [Fact]
     public void RoundComplete_TwoPlayers() {
+        var playerAIndex = 0;
+        var playerBIndex = 1;
         var state = new GameState(
             [new Player("A"), new Player("B")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: true, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.EndTurn(new Player("A"), out _);
-        state.EndTurn(new Player("B"), out _);
+        state.EndTurn(playerAIndex, out _);
+        state.EndTurn(playerBIndex, out _);
         state.PlayersState.IsRoundOver.Should().BeTrue();
         state.PlayersState.GameStateText.Should().Be("Synchronized play. Round complete.");
     }
 
     [Fact]
     public void RoundComplete_ThreePlayers() {
+        var playerAIndex = 0;
+        var playerBIndex = 1;
+        var playerCIndex = 2;
         var state = new GameState(
             [new Player("A"), new Player("B"), new Player("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: true, isKriegspiel: true),
@@ -121,79 +138,88 @@ public class PlayManagerTests {
 
         state.PlayersState.NumberOfActivePlayers.Should().Be(3);
 
-        state.EndTurn(new Player("A"), out _);
-        state.EndTurn(new Player("B"), out _);
-        state.EndTurn(new Player("C"), out _);
+        state.EndTurn(playerAIndex, out _);
+        state.EndTurn(playerBIndex, out _);
+        state.EndTurn(playerCIndex, out _);
         state.PlayersState.IsRoundOver.Should().BeTrue();
         state.PlayersState.GameStateText.Should().Be("Synchronized play. Round complete.");
     }
 
     [Fact]
     public void ResignPlayerInRoundRobinMode_OnlyNextPlayerCanTakeTurn() {
+        var playerAIndex = 0;
+        var playerBIndex = 1;
+        var playerCIndex = 2;
+        var playerDIndex = 3;
         var state = new GameState(
             [new Player("A"), new Player("B"), new Player("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.PlayersState.ResignPlayer(new Player("A"));
+        state.PlayersState.ResignPlayer(playerAIndex);
 
-        state.PlayersState.CanTakeTurn(new Player("A")).Should().BeFalse();
-        state.PlayersState.CanTakeTurn(new Player("B")).Should().BeTrue();
-        state.PlayersState.CanTakeTurn(new Player("C")).Should().BeFalse();
-        state.PlayersState.CanTakeTurn(new Player("D")).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(playerAIndex).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(playerBIndex).Should().BeTrue();
+        state.PlayersState.CanTakeTurn(playerCIndex).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(playerDIndex).Should().BeFalse();
     }
 
     [Fact]
     public void ActivePlayers_ExcludesResignedPlayers() {
+        var playerAIndex = 0;
+        var playerBIndex = 1;
+        var playerCIndex = 2;
         var state = new GameState(
             [new Player("A"), new Player("B"), new Player("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.PlayersState.ResignPlayer(new Player("A"));
-        state.PlayersState.ActivePlayers.Should().Contain(new Player("B"));
-        state.PlayersState.ActivePlayers.Should().Contain(new Player("C"));
+        state.PlayersState.ResignPlayer(playerAIndex);
+        state.PlayersState.ActivePlayerIndices.Should().Contain(playerBIndex);
+        state.PlayersState.ActivePlayerIndices.Should().Contain(playerCIndex);
     }
 
     [Fact]
     public void ResignPlayer_AddsToResignedPlayersSet() {
+        var playerAIndex = 0;
+
         var state = new GameState(
             [new Player("A"), new Player("B"), new Player("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.PlayersState.ResignPlayer(new Player("A"));
-        state.PlayersState.ResignedPlayersSet.Should().Contain(new Player("A"));
+        state.PlayersState.ResignPlayer(playerAIndex);
+        state.PlayersState.ResignedPlayerIndicesSet.Should().Contain(playerAIndex);
     }
 
     [Fact]
     public void ResignPlayer_SkipsResignedTurn() {
+        var playerAIndex = 0;
+        var playerBIndex = 1;
         var state = new GameState(
             [new Player("A"), new Player("B"), new Player("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.PlayersState.ResignPlayer(new Player("A"));
-        state.EndTurn(new Player("A"), out _); // A was resigned, turn skipped
-
-        state.PlayersState.ActivePlayers.First().Should().Be(new Player("B"));
-        state.EndTurn(new Player("B"), out _);
-        state.EndTurn(new Player("C"), out _);
+        state.PlayersState.ResignPlayer(playerAIndex);
+        state.PlayersState.ActivePlayerIndices.First().Should().Be(playerBIndex);
     }
 
     [Fact]
     public void GameStateConstructor_3Players_FirstPlayerIs_A() {
+        var playerAIndexed = new PlayerIndexed("A", 0);
+
         var state = new GameState(
             [new Player("A"), new Player("B"), new Player("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.PlayersState.ActivePlayers.First().Should().Be(new Player("A"));
+        state.PlayersState.ActivePlayers.First().Should().Be(playerAIndexed);
     }
 
     [Fact]
@@ -203,27 +229,31 @@ public class PlayManagerTests {
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: true
         );
-        var firstPlayer = state.PlayersState.ActivePlayers.First();
-        var expectedPlayers = new[] {new Player("A"), new Player("B"), new Player("C")};
+        var firstPlayer = state.PlayersState.ActivePlayers.Select(ap => ap.Index).First();
+        var expectedPlayers = new[] {0,1,2};
         expectedPlayers.Contains(firstPlayer).Should().BeTrue();
     }
 
     [Fact]
     public void CanTakeTurn_AllAvailablePlayersSynchronousMode() {
+        var playerAIndex = 0;
+        var playerBIndex = 1;
+        var playerCIndex = 2;
+        var playerDIndex = 3;
         var state = new GameState(
             [new Player("A"), new Player("B"), new Player("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: true, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
 
-        state.PlayersState.ResignPlayer(new Player("A"));
+        state.PlayersState.ResignPlayer(playerAIndex);
         
-        state.PlayersState.CanTakeTurn(new Player("A")).Should().BeFalse();
-        state.PlayersState.CanTakeTurn(new Player("B")).Should().BeTrue();
-        state.PlayersState.CanTakeTurn(new Player("C")).Should().BeTrue();
+        state.PlayersState.CanTakeTurn(playerAIndex).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(playerBIndex).Should().BeTrue();
+        state.PlayersState.CanTakeTurn(playerCIndex).Should().BeTrue();
         
         // player D does not exist.
-        state.PlayersState.CanTakeTurn(new Player("D")).Should().BeFalse();
+        state.PlayersState.CanTakeTurn(playerDIndex).Should().BeFalse();
     }
 
 }

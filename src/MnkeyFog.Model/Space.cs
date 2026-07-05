@@ -1,3 +1,6 @@
+using System.Collections.Specialized;
+using MnkeyFog.Model.Indexed;
+
 namespace MnkeyFog.Model;
 
 /// <summary>
@@ -5,11 +8,17 @@ namespace MnkeyFog.Model;
 /// </summary>
 [ModelSerializable]
 public sealed record Space {
+    public const int ImpasseMarkIndex = -1;
+    public const char ImpasseChar = '█';
+
+    public static readonly int? EmptyMarkIndex = null;
+    public static readonly string EmptyMarkString = " ";
+
     #region constructors
     public Space() {}
     public Space(Space space) {
-        Mark = space.Mark;
-        _knownToPlayersSet = new HashSet<Player>(space.KnownToPlayersSet);
+        MarkIndex = space.MarkIndex;
+        _knownToPlayerIndicesSet = space._knownToPlayerIndicesSet;
     }
     #endregion
     #region data members
@@ -17,32 +26,37 @@ public sealed record Space {
     /// The current state of the space - null means available.
     /// '█' means it's an impasse (two players contested this space in same round).
     /// </summary>
-    public string? Mark {get;set;}
+    public int? MarkIndex {get;set;}
     
-    private HashSet<Player> _knownToPlayersSet {get;set;} = [];
-    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.None, TypeNameHandling = TypeNameHandling.None)] //non-polymorphic
-    public IReadOnlySet<Player> KnownToPlayersSet => _knownToPlayersSet;
+    private BitVector32 _knownToPlayerIndicesSet;
+    [JsonConverter(typeof(BitVector32Converter))]
+    public BitVector32 KnownToPlayerIndicesSet {
+        get => _knownToPlayerIndicesSet;
+        init {
+            _knownToPlayerIndicesSet = value;
+        }
+    }
     #endregion
     
     /// <summary>
     /// Test if this space is known to the given player.
     /// </summary>
-    public bool IsKnownToPlayer(Player? player) 
-        => (player == null) || KnownToPlayersSet.Contains(player);
+    public bool IsKnownToPlayerIndex(int? playerIndex) 
+        => (playerIndex == null) || KnownToPlayerIndicesSet[BitVector32.CreateMask(playerIndex.Value)];
     
     /// <summary>
     /// Mark this space as known to the given player.
     /// </summary>
-    public void MakeKnownToPlayer(Player player) {
-        _knownToPlayersSet.Add(player);
+    public void MakeKnownToPlayerIndex(int playerIndex) {
+        _knownToPlayerIndicesSet[1 << playerIndex] = true;
     }
 
     /// <summary>
     /// Get the display value of this space for the given player.
     /// Show always if the player is null.
     /// </summary>
-    public string ToString(Player? player)
-        => (player == null || IsKnownToPlayer(player))
-            ? (Mark ?? " ")
-            : " ";
+    public string ToString(PlayerIndexed? player, PlayersState playersState)
+        => (player == null || IsKnownToPlayerIndex(player.Index))
+            ? playersState.GetMark(MarkIndex)
+            : EmptyMarkString;
 }

@@ -1,3 +1,4 @@
+using MnkeyFog.Model.Indexed;
 using MnkeyFog.Model.PlayerAIs;
 using MnkeyFog.Model.Template;
 using OneOf;
@@ -36,16 +37,16 @@ internal static class ConsoleLoop {
             var isDoneAITurns = false;
             while(!isDoneAITurns) {
                 isDoneAITurns = true;
-                foreach (var player in state.PlayersState.PlayersAvailableForTurn) {
-                    if(aiPlayers.TryGetValue(player, out var playerAI)) {
+                foreach (var playerIndexed in state.PlayersState.PlayersAvailableForTurn) {
+                    if(aiPlayers.TryGetValue(playerIndexed.Player, out var playerAI)) {
                         //if any AI player can take their turn, we're not done
                         //AI turns.  Keep attempting until no AI player does a
                         //turn.
                         isDoneAITurns = false; 
                         var attemptCount = 0;
-                        while (state.PlayersState.CanTakeTurn(player)) {
+                        while (state.PlayersState.CanTakeTurn(playerIndexed.Index)) {
                             using(var stateStorage = new StateStorage(sharedStateFilePath.FullName, out state)) {
-                                var gameView = state.GetView(player);
+                                var gameView = state.GetView(playerIndexed.Index);
                                 if (attemptCount > AIGameRunner.MaxPlayerAIAttemptCount) {
                                     // resign if the player AI can't figure out a legal move.
                                     gameView.ResignPlayer();
@@ -55,7 +56,7 @@ internal static class ConsoleLoop {
                                 }
                             }
                         }
-                        Console.Out.WriteLine($"AI Player {player} has finished their turn.");
+                        Console.Out.WriteLine($"AI Player {playerIndexed.Player} has finished their turn.");
                     }
                 }
             }
@@ -65,13 +66,14 @@ internal static class ConsoleLoop {
                     if (!state.PlayersState.Players.Contains(player)) {
                         throw new ApplicationException($"Invalid player join, player {player} is not a player in this game.");
                     }
+                    var playerIndexed = state.PlayersState.GetPlayerIndexed(player);
                     bool isDoneWaiting = false;
                     Console.Out.Write("Waiting for your turn.");
 
                     //wait loop.
                     while (!isDoneWaiting) {
                         state = StateStorage.LoadState(sharedStateFilePath.FullName);
-                        if (state.PlayersState.PlayersAvailableForTurn.Contains(player)
+                        if (state.PlayersState.PlayersAvailableForTurn.Contains(playerIndexed)
                             ||
                             state.IsGameOver
                         ) {
@@ -83,8 +85,8 @@ internal static class ConsoleLoop {
                     }
                     Console.Out.WriteLine();
                     return state.IsGameOver
-                        ? OneOf<Result<Player>, RoundIsOver, GameIsOver>.FromT2(new GameIsOver())
-                        : new Result<Player>(player);
+                        ? OneOf<Result<PlayerIndexed>, RoundIsOver, GameIsOver>.FromT2(new GameIsOver())
+                        : new Result<PlayerIndexed>(playerIndexed);
                 },
                 localHotseatGame => DoPlayerChooserLoop(state.PlayersState)
             );
@@ -124,51 +126,51 @@ internal static class ConsoleLoop {
                 );
             } else {
                 Console.Out.WriteLine(state.GameStateText);
-                Console.Out.WriteLine(BoardRenderer.DrawBoards(state.GetView(null), maxRenderWidth: Console.BufferWidth));
+                Console.Out.WriteLine(BoardRenderer.DrawBoards(state.GetSpectatorView(), maxRenderWidth: Console.BufferWidth));
                 isGameOver = true;
-            }              
+            }
         }
 
         Thread.Sleep(1000);
         sharedStateFilePath.Delete();
     }
 
-    private static void DoPlayerTurnLoop(ref GameState state, Player currentPlayer, string sharedStateFilePath) {
+    private static void DoPlayerTurnLoop(ref GameState state, PlayerIndexed playerIndexed, string sharedStateFilePath) {
         IPlayActionResult? playActionResult = null;
         while (playActionResult == null || !playActionResult.IsTurnDone) {
             Console.Out.WriteLine(state.GameStateText);
-            Console.Out.WriteLine($"Player {currentPlayer.Mark}, take your turn.");
-            var gameView = state.GetView(currentPlayer);
+            Console.Out.WriteLine($"Player {playerIndexed.Player}, take your turn.");
+            var gameView = state.GetView(playerIndexed);
             Console.Out.WriteLine(
                 BoardRenderer.DrawBoards(gameView, maxRenderWidth: Console.BufferWidth)
             );
-            playActionResult = DoPlayerAction(ref state, currentPlayer, sharedStateFilePath);
-            Console.Out.WriteLine(playActionResult.ResultText);
+            playActionResult = DoPlayerAction(ref state, playerIndexed, sharedStateFilePath);
+            Console.Out.WriteLine(playActionResult.GetResultText(state.PlayersState));
         }
         var isViewChanged = playActionResult.IsViewChanged;
         if (isViewChanged) {
             Console.Out.WriteLine(
-                BoardRenderer.DrawBoards(state.GetView(currentPlayer), maxRenderWidth: Console.BufferWidth)
+                BoardRenderer.DrawBoards(state.GetView(playerIndexed), maxRenderWidth: Console.BufferWidth)
             );
         }
     }
 
-    private static IPlayActionResult DoPlayerAction(ref GameState state, Player currentPlayer, string sharedStateFilePath) {
-        var gameView = state.GetView(currentPlayer);
+    private static IPlayActionResult DoPlayerAction(ref GameState state, PlayerIndexed playerIndexed, string sharedStateFilePath) {
+        var gameView = state.GetView(playerIndexed);
         var actionFactories = gameView.AvailableActions;;
 
         if (actionFactories.Count() == 1) {
             var actionFactory = actionFactories.Single();
 
             if (actionFactory is GameActionFactoryForBoard actionFactoryForBoard) {
-                return DoBoardSelection(ref state, currentPlayer, sharedStateFilePath, actionFactoryForBoard);
+                return DoBoardSelection(ref state, playerIndexed, sharedStateFilePath, actionFactoryForBoard);
             } else if (actionFactory is GameActionFactoryForSimple actionFactoryForSimple) {
                 using (var stateStorage = new StateStorage(sharedStateFilePath, out state)) {
-                    return actionFactoryForSimple.Create().Attempt(state, currentPlayer);
+                    return actionFactoryForSimple.Create().Attempt(state, playerIndexed);
                 }
             }
             else if (actionFactory is GameActionFactoryForSpace actionFactoryForSpace) {
-                return DoSpaceSelection(ref state, currentPlayer, sharedStateFilePath, actionFactoryForSpace);
+                return DoSpaceSelection(ref state, playerIndexed, sharedStateFilePath, actionFactoryForSpace);
             } else {
                 throw new InvalidOperationException("Unknown or unsupported Action Factory.");
             }
@@ -178,14 +180,14 @@ internal static class ConsoleLoop {
         }
     }
 
-    private static IPlayActionResult DoSpaceSelection(ref GameState state, Player currentPlayer, string sharedStateFilePath, GameActionFactoryForSpace actionFactory) {
-        var gameView = state.GetView(currentPlayer);
+    private static IPlayActionResult DoSpaceSelection(ref GameState state, PlayerIndexed playerIndexed, string sharedStateFilePath, GameActionFactoryForSpace actionFactory) {
+        var gameView = state.GetView(playerIndexed);
         var spaceCommand = InputUtility.ReadCommandInputWithAddedStandardPlayerCommands(
                 "Press numeric key(s) to play a space, or 'r' to resign, or 'q' to save game and quit.",
                 gameView.SpaceNames
         );
         using (var stateStorage = new StateStorage(sharedStateFilePath, out state)) {
-            gameView = state.GetView(currentPlayer);
+            gameView = state.GetView(playerIndexed);
             var gameViewForSwitch = gameView; //workaround for can't use refs in lambdas.
             return spaceCommand.Match(
                 result => {
@@ -194,7 +196,7 @@ internal static class ConsoleLoop {
                     } else if ("q".Equals(result.Value, StringComparison.OrdinalIgnoreCase)) {
                         return Quit();
                     } else if(gameView.TryGetCoordinatesFromSpaceName(result.Value, out sbyte boardIndex, out var col, out var row)) {
-                        return actionFactory.Create(boardIndex, col, row).Attempt(stateStorage.State, currentPlayer);
+                        return actionFactory.Create(boardIndex, col, row).Attempt(stateStorage.State, playerIndexed);
                     } else {
                         return new InvalidCommand(result.Value);
                     }
@@ -206,11 +208,11 @@ internal static class ConsoleLoop {
         }
     }
 
-    internal static OneOf<Result<Player>, RoundIsOver, GameIsOver> DoPlayerChooserLoop(PlayersState playerState) {
+    internal static OneOf<Result<PlayerIndexed>, RoundIsOver, GameIsOver> DoPlayerChooserLoop(PlayersState playerState) {
         // Use ModelToKeyUtility for clean, testable key mapping
-        var playerToCommand = CommandNameTool.BuildPlayerToCommandNameMap(playerState.PlayersAvailableForTurn);
+        var playerIndexToCommand = CommandNameTool.BuildPlayerToCommandNameMap(playerState.PlayersAvailableForTurn);
 
-        var commandToPlayer = playerToCommand
+        var commandToPlayerIndex = playerIndexToCommand
             .ToOrderedDictionary(
                 p => p.Value,
                 p => p.Key,
@@ -219,10 +221,10 @@ internal static class ConsoleLoop {
 
         while (true) {
             if (playerState.PlayersAvailableForTurn.Count() == 1) {
-                var currentPlayer = playerState.PlayersAvailableForTurn.Single();
-                InputUtility.PauseAndPressAnyKey(prompt: $"Player {currentPlayer} ready?");
+                var currentPlayerIndexed = playerState.PlayersAvailableForTurn.Single();
+                InputUtility.PauseAndPressAnyKey(prompt: $"Player {currentPlayerIndexed} ready?");
                 Console.WriteLine();
-                return new Result<Player>(currentPlayer);
+                return new Result<PlayerIndexed>(currentPlayerIndexed);
             }
             if (playerState.IsRoundOver) {
                 return new RoundIsOver();
@@ -233,46 +235,46 @@ internal static class ConsoleLoop {
             // Display all available players with alternate key hints for non-typeable marks
             var playerDisplayList = playerState.PlayersAvailableForTurn
                 .Select(p => {
-                    var altKey = playerToCommand[p];
-                    var keyDisplay = altKey.Equals(p.Mark, StringComparison.OrdinalIgnoreCase)
+                    var altKey = playerIndexToCommand[p.Index];
+                    var keyDisplay = altKey.Equals(p.Player.Mark, StringComparison.OrdinalIgnoreCase)
                         ? ""
                         : $" ({altKey})";
-                    return $"Player {p.Mark}{keyDisplay}";
+                    return $"Player {p.Player.Mark}{keyDisplay}";
                 });
 
             var prompt = "Who will take the next turn? Press the player's key to take their turn (or press 'q' to quit the game for everyone)."
                 + Environment.NewLine
                 + string.Join(" ", playerDisplayList);
-            var validCommands = ((IEnumerable<string>)["q"]).Concat(commandToPlayer.Keys);
+            var validCommands = ((IEnumerable<string>)["q"]).Concat(commandToPlayerIndex.Keys);
             var commandResult = InputUtility.ReadCommandInputLoop(prompt, validCommands);
 
             if ("q".Equals(commandResult, StringComparison.OrdinalIgnoreCase)) {
                 Quit();
             } else {
-                return new Result<Player>(commandToPlayer[commandResult]);
+                return new Result<PlayerIndexed>(playerState.GetPlayerIndexed(commandToPlayerIndex[commandResult]));
             }
         }
     }
 
-    internal static IPlayActionResult DoBoardSelection(ref GameState state, Player currentPlayer, string sharedStateFilePath, GameActionFactoryForBoard actionFactory) {
+    internal static IPlayActionResult DoBoardSelection(ref GameState state, PlayerIndexed playerIndexed, string sharedStateFilePath, GameActionFactoryForBoard actionFactory) {
         if (state.SingleActiveBoardIndex.HasValue) {
             var boardIndex = state.SingleActiveBoardIndex.Value;
             using (var stateStorage = new StateStorage(sharedStateFilePath, out state)) {
-                return actionFactory.Create(boardIndex).Attempt(state, currentPlayer);
+                return actionFactory.Create(boardIndex).Attempt(state, playerIndexed.Index);
             }
         } else {
-            var gameView = state.GetView(currentPlayer);
+            var gameView = state.GetView(playerIndexed);
             var availableBoardCommands = gameView.BoardNames;
             var boardCommand = InputUtility.ReadCommandInputWithAddedStandardPlayerCommands(
                 "Press numeric key(s) to pick a board, 'r' to resign, or 'q' to save game and quit.",
                 availableBoardCommands
             );
             using (var stateStorage = new StateStorage(sharedStateFilePath, out state)) {
-                gameView = state.GetView(currentPlayer);
+                gameView = state.GetView(playerIndexed);
                 return boardCommand.Match(
                     result => {
                         if("r".Equals(result.Value, StringComparison.OrdinalIgnoreCase)) {
-                            gameView = stateStorage.State.GetView(currentPlayer);
+                            gameView = stateStorage.State.GetView(playerIndexed);
                             return gameView.ResignPlayer();
                         } else if ("q".Equals(result.Value, StringComparison.OrdinalIgnoreCase)) {
                             Quit();
@@ -280,7 +282,7 @@ internal static class ConsoleLoop {
                         } else {
                             return gameView.AttemptBoard(result.Value).Match(
                                 boardViewResult 
-                                => actionFactory.Create(boardViewResult.Value.BoardIndex).Attempt(stateStorage.State, currentPlayer),
+                                => actionFactory.Create(boardViewResult.Value.BoardIndex).Attempt(stateStorage.State, playerIndexed),
                                 boardIsDone => boardIsDone,
                                 invalidCommand => invalidCommand
                             );

@@ -7,7 +7,7 @@ public class GameViewTests {
             new MNKTemplate(builders, isSynchronousMode: false, isKriegspiel: false),
             isRandomPlayerOrder: false
         );        
-        return state.GetView(null);
+        return state.GetSpectatorView();
     }
     
     #region GetSpaceName

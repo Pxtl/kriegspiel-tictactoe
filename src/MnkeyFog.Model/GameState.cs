@@ -1,4 +1,5 @@
 using System.Runtime.Serialization;
+using MnkeyFog.Model.Indexed;
 using MnkeyFog.Model.Template;
 using MnkeyFog.Model.Views;
 
@@ -48,6 +49,12 @@ public class GameState
             );
         }
 
+        if (PlayersState.Players.Count > 32) {
+            throw new ApplicationException(
+                "There is a hard limit of 32 players."
+            );
+        }
+
         if (!gameTemplate.LegalPlayerCounts.Contains(PlayersState.Players.Count)) {
             throw new ApplicationException(
                 "Cannot start game. This game only supports the following player-counts: "
@@ -78,33 +85,29 @@ public class GameState
     #region Actions
 
     public IPlayActionResult Attempt(PlayerAction action) => action.Attempt(this);
-    public void ResignPlayer(Player player) => PlayersState.ResignPlayer(player);
+    public void ResignPlayer(int playerIndex) => PlayersState.ResignPlayer(playerIndex);
 
     public void ExecutePendingActions()
     => ActionQueue.ExecutePendingActions(this);
 
-    public void EndTurn(Player player, out bool hasStateChanged)
-    => PlayersState.EndTurn(this, player, out hasStateChanged);
+    public void EndTurn(int playerIndex, out bool hasStateChanged)
+    => PlayersState.EndTurn(this, PlayersState.GetPlayerIndexed(playerIndex), out hasStateChanged);
 
     public void EndRound(out bool hasRoundStateChanged)
     => PlayersState.EndRound(this, out hasRoundStateChanged);
 
     #endregion
 
-    public GameView GetView(Player? player)
-    => new(this, player);
+    public GameView GetSpectatorView()
+    => new(this, (int?)null);
+    public GameView GetView(PlayerIndexed? playerIndexed)
+    => new(this, playerIndexed?.Index);
+    public GameView GetView(int? playerIndex)
+    => new(this, playerIndex);
 
-    #region Players and Scores
-    /// <summary>
-    /// Scorecard for all active (non-resigned) players
-    /// </summary>
+    #region Players and Scores   
     [JsonIgnore()]
-    public ScoreCard ScoreCard 
-    => AllPlayersScoreCard.FilterByPlayers(PlayersState.ActivePlayers);
-
-    
-    [JsonIgnore()]
-    public ScoreCard AllPlayersScoreCard
+    public ScoreCard ScoreCard
     => PlayersState.Players.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
         + Boards.Select(b => b.ScoreCard).SumScoreCards();
 
@@ -114,12 +117,10 @@ public class GameState
         if(!IsGameOver) {
             return [];
         }
-        if(PlayersState.ActivePlayers.Count() == 1) {
-            return PlayersState.ActivePlayers;
-        }
-        else {
-            return ScoreCard.Highest.Players;
-        }
+        var activePlayersScores = new ScoreCard(
+            ScoreCard.PlayerScores.Where(playerScore => PlayersState.ActivePlayerIndices.Contains(playerScore.PlayerIndex))
+        );
+        return activePlayersScores.Highest.AsPlayers(PlayersState);
     }}
 
     [JsonIgnore()]
@@ -142,8 +143,8 @@ public class GameState
 
     [JsonIgnore()]
     public string ResignedPlayersText
-    => PlayersState.ResignedPlayersSet.Count > 0
-        ? $"Resigned players: {string.Join(", ", PlayersState.ResignedPlayersSet.OrderBy(p => p.Mark))}"
+    => PlayersState.ResignedPlayerIndicesSet.Count > 0
+        ? $"Resigned players: {string.Join(", ", PlayersState.ResignedPlayerIndicesSet.OrderBy(ix => ix).Select(ix => PlayersState.GetPlayerIndexed(ix).Player))}"
         : "";
     #endregion
 

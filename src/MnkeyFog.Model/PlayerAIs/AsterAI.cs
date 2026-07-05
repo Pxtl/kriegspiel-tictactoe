@@ -1,6 +1,5 @@
 using MnkeyFog.Model.Template;
 using MnkeyFog.Model.Views;
-using Sundew.Base;
 
 namespace MnkeyFog.Model.PlayerAIs {
 
@@ -107,8 +106,8 @@ namespace MnkeyFog.Model.PlayerAIs {
 
                 // now with our slices ready, we'll also be a bit smarter and abort a slice if it's visibly impossible.
                 foreach(var line in Lines) {
-                    var lineMarks = line.Select(pos => board.GetSpaceView(pos.Col, pos.Row).Mark);
-                    if(lineMarks.All(mark => string.IsNullOrEmpty(mark) || mark.Equals(gameView.Player!.Mark))) {
+                    var lineMarkIndices = line.Select(pos => board.GetSpaceView(pos.Col, pos.Row).MarkIndex);
+                    if(lineMarkIndices.All(lineMarkIndex => lineMarkIndex == null || lineMarkIndex != gameView.PlayerIndex)) {
                         //slice is available to play
                         foreach(var pos in line) {
                             gameView.Attempt(factorySpaceActions[0].Create(board.BoardIndex, pos.Col, pos.Row));

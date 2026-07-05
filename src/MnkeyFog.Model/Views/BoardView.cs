@@ -2,8 +2,8 @@ namespace MnkeyFog.Model.Views;
 
 public record BoardView
 : GameObjectView {
-    public BoardView(Board board, Player? player, sbyte boardIndex)
-    : base(player) {
+    public BoardView(Board board, int? playerIndex, sbyte boardIndex)
+    : base(playerIndex) {
         BoardIndex = boardIndex;
 
         BoardName = CommandNameTool.BoardNameFromIndex(BoardIndex);
@@ -11,10 +11,10 @@ public record BoardView
         Spaces = new SpaceView[board.ColumnCount, board.RowCount];
         for(sbyte row = 0; row < board.RowCount; row += 1) {
             for(sbyte col = 0; col < board.ColumnCount; col += 1) {
-                Spaces[col, row] =  new SpaceView(board.Spaces[col, row], Player, col, row);
+                Spaces[col, row] =  new SpaceView(board.Spaces[col, row], PlayerIndex, col, row);
             }
         }
-        ScoreCard = board.Ruleset.Score(board, player);
+        ScoreCard = board.Ruleset.Score(board, playerIndex);
     }
     #region data properties
 

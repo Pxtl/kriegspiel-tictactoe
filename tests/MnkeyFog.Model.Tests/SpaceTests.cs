@@ -1,67 +1,76 @@
+using PxtlCa.SystemCollectionsExtensions;
+
 namespace MnkeyFog.Model.Tests;
 
 public class SpaceTests {
+    private PlayersState _playersState = new PlayersState(
+        [new Player("X"), new Player("O")],
+        RoundRobinPlayManager.Instance
+    );
+    private Indexed.PlayerIndexed PlayerX => _playersState.GetPlayerIndexed("X");
+    private Indexed.PlayerIndexed PlayerO => _playersState.GetPlayerIndexed("O");
+
     [Fact]
     public void Constructor_Default_MarkCharIsNull() {
         var space = new Space();
-        space.Mark.Should().BeNull();
+        space.MarkIndex.Should().BeNull();
     }
 
     [Fact]
     public void Constructor_Default_KnownToPlayersSet_IsEmpty() {
         var space = new Space();
-        space.KnownToPlayersSet.Should().BeEmpty();
+        space.KnownToPlayerIndicesSet.ToHashSet().Should().BeEmpty();
     }
 
     [Fact]
     public void ToString_NoPlayerShowsMarkChar() {
         var space = new Space();
-        space.Mark = "X";
+        space.MarkIndex = PlayerX.Index;
 
-        space.ToString(null).Should().Be("X");
+        space.ToString(null, _playersState).Should().Be("X");
     }
 
     [Fact]
     public void ToString_KnownToPlayerShowsMarkChar() {
         var space = new Space();
-        space.Mark = "X";
-        space.MakeKnownToPlayer("O");
+        space.MarkIndex = PlayerX.Index;
+        space.MakeKnownToPlayerIndex(PlayerO.Index);
 
-        space.ToString("O").Should().Be("X");
+        space.ToString(PlayerO, _playersState).Should().Be("X");
     }
 
     [Fact]
-    public void ToString_UneknownToPlayerShowsSpace() {
+    public void ToString_UnknownToPlayerShowsSpace() {
         var space = new Space();
-        space.Mark = "X";
+        space.MarkIndex = PlayerX.Index;
 
-        space.ToString("O").Should().Be(" ");
+        space.ToString(PlayerO, _playersState).Should().Be(" ");
     }
 
     [Fact]
     public void MakeKnownToPlayer_AddsPlayerToSet() {
         var space = new Space();
-        space.KnownToPlayersSet.Should().BeEmpty();
+        space.KnownToPlayerIndicesSet.ToHashSet().Should().BeEmpty();
 
-        space.MakeKnownToPlayer("O");
-        space.KnownToPlayersSet.Should().Contain("O");
+        space.MakeKnownToPlayerIndex(PlayerO.Index);
+        space.KnownToPlayerIndicesSet.ToHashSet().Should().Contain(PlayerO.Index);
     }
 
     [Fact]
     public void IsKnownToPlayer_ReturnsTrue_ForKnownPlayer() {
         var space = new Space();
-        space.Mark = "X";
-        space.MakeKnownToPlayer("O");
+        space.MarkIndex = PlayerX.Index;
+        space.MakeKnownToPlayerIndex(PlayerO.Index);
 
-        space.IsKnownToPlayer("O").Should().BeTrue();
+        space.IsKnownToPlayerIndex(PlayerO.Index).Should().BeTrue();
     }
 
     [Fact]
     public void IsKnownToPlayer_ReturnsFalse_ForUnknownPlayer() {
         var space = new Space();
-        space.Mark = "X";
+        space.MarkIndex = PlayerX.Index;
 
-        space.IsKnownToPlayer("O").Should().BeFalse();
-        space.IsKnownToPlayer("X").Should().BeFalse();
+        space.IsKnownToPlayerIndex(PlayerO.Index).Should().BeFalse();
+        space.IsKnownToPlayerIndex(PlayerX.Index).Should().BeFalse();
     }
 }

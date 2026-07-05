@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using MnkeyFog.Model.Indexed;
 using OneOf;
 using OneOf.Types;
 
@@ -48,11 +49,10 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
         }
             
         foreach (var spaceEnumerator in board.AsSpaceEnumerable()) {
-            string? lineOwnerMark = spaceEnumerator.Space.Mark;
-            if(lineOwnerMark != null) {
-                var lineOwnerPlayer = new Player(lineOwnerMark);
+            var lineOwnerMarkIndex = spaceEnumerator.Space.MarkIndex;
+            if(lineOwnerMarkIndex != null) {
                 result += ScoreSpace(
-                    lineOwnerPlayer,
+                    lineOwnerMarkIndex.Value,
                     board,
                     (spaceEnumerator.Col, spaceEnumerator.Row),
                     horizontalScoringLength,
@@ -78,30 +78,30 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
     #region private helpers
 
     protected ScoreCard ScoreSpace(
-        Player lineOwnerPlayer,
+        int lineOwnerPlayerIndex,
         Board board,
         (sbyte Col, sbyte Row) pos,
         sbyte horizontalScoringLength,
         sbyte verticalScoringLength,
         sbyte diagonalScoringLength
     ) 
-    => ScoreSpace(lineOwnerPlayer, board, pos, (1, 0), horizontalScoringLength)
-        + ScoreSpace(lineOwnerPlayer, board, pos, (0, 1), verticalScoringLength)
-        + ScoreSpace(lineOwnerPlayer, board, pos, (1, 1), diagonalScoringLength)
-        + ScoreSpace(lineOwnerPlayer, board, pos, (1, -1), diagonalScoringLength);
+    => ScoreSpace(lineOwnerPlayerIndex, board, pos, (1, 0), horizontalScoringLength)
+        + ScoreSpace(lineOwnerPlayerIndex, board, pos, (0, 1), verticalScoringLength)
+        + ScoreSpace(lineOwnerPlayerIndex, board, pos, (1, 1), diagonalScoringLength)
+        + ScoreSpace(lineOwnerPlayerIndex, board, pos, (1, -1), diagonalScoringLength);
 
     /// <summary>
     /// Score a given space for the given player and the given direction. Only
     /// counts score for lines that *start* on the space, not ones that continue
     /// on the space.
     /// </summary>
-    /// <param name="lineOwnerPlayer"></param>
+    /// <param name="lineOwnerPlayerIndex"></param>
     /// <param name="lineStartPos"></param>
     /// <param name="delta"></param>
     /// <param name="scoreLen"></param>
     /// <returns></returns>
     protected ScoreCard ScoreSpace(
-        Player lineOwnerPlayer,
+        int lineOwnerPlayerIndex,
         Board board,
         (sbyte Col, sbyte Row) lineStartPos,
         (sbyte Col, sbyte Row) delta,
@@ -117,7 +117,7 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
         (sbyte Col, sbyte Row) beforeStartPos = ExtrapolatePos(lineStartPos, delta, -1);
         if (
             board.IsSpaceInsideOfBoard(beforeStartPos)
-            && board.Spaces[beforeStartPos.Col, beforeStartPos.Row].Mark == lineOwnerPlayer.Mark
+            && board.Spaces[beforeStartPos.Col, beforeStartPos.Row].MarkIndex == lineOwnerPlayerIndex
         ) {
             // line already started before this space, return false to prevent double-counting.
             return ScoreCard.Empty;
@@ -127,7 +127,7 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
         for (sbyte i = 0; board.IsSpaceInsideOfBoard(ExtrapolatePos(lineStartPos, delta, i)); i += 1) {
             (sbyte Col, sbyte Row) curPos = ExtrapolatePos(lineStartPos, delta, i);
 
-            if (lineOwnerPlayer.Mark != board.Spaces[curPos.Col, curPos.Row].Mark) {
+            if (lineOwnerPlayerIndex != board.Spaces[curPos.Col, curPos.Row].MarkIndex) {
                 break;
             } else {
                 lineLength = i+1;
@@ -135,7 +135,7 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
         }
         var lineScore = lineLength / scoreLen;
         return (lineScore > 0) 
-            ? new ScoreCard(lineOwnerPlayer, lineScore)
+            ? new ScoreCard(lineOwnerPlayerIndex, lineScore)
             : ScoreCard.Empty;
     }
 

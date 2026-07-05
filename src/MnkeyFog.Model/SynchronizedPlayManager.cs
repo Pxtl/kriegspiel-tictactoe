@@ -1,6 +1,7 @@
 namespace MnkeyFog.Model;
 
 using System.ComponentModel;
+using MnkeyFog.Model.Indexed;
 
 /// <summary>
 /// PlayManager for synchronized mode - player moves are buffered until round end.
@@ -27,6 +28,6 @@ public class SynchronizedPlayManager
         hasStateChanged = false;
     }
     
-    public override IEnumerable<Player> PlayersAvailableForTurn(PlayersState playerState)
-        => playerState.ActivePlayers.Except(playerState.PlayedPlayersSet);
+    public override IEnumerable<PlayerIndexed> PlayersAvailableForTurn(PlayersState playerState)
+        => playerState.ActivePlayers.Where(p => !playerState.PlayedPlayerIndicesSet.Contains(p.Index));
 }

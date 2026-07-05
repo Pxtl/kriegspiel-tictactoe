@@ -19,19 +19,20 @@ public abstract class MonteCarloAI : IPlayerAI {
     }
 
     public GameAction? FindOptimalGameAction(GameView gameView) {
+        ArgumentNullException.ThrowIfNull(gameView.PlayerIndex, $"{nameof(gameView)}.{nameof(gameView.PlayerIndex)}");
         var simulatedState = CloneGameState(gameView);
         var depth = 0;
-        var optimalActionAssessment = SimulateTurn(simulatedState, gameView.Player!, gameView.Player!, depth);
+        var optimalActionAssessment = SimulateTurn(simulatedState, gameView.PlayerIndex.Value, gameView.PlayerIndex.Value, depth);
         return optimalActionAssessment?.GameAction;
     }
 
 	private ActionAssessment? SimulateTurn(
         GameState simulatedState,
-        Player currentPlayer,
-        Player objectivePlayer,
+        int currentPlayerIndex,
+        int objectivePlayerIndex,
         int depth
     ) {
-        var actionFactories = simulatedState.GameTemplate.GetAvailableActions(simulatedState, currentPlayer);
+        var actionFactories = simulatedState.GameTemplate.GetAvailableActions(simulatedState, currentPlayerIndex);
         var actionAssessments = new List<ActionAssessment>();
         
         foreach (var factory in actionFactories) {
@@ -39,17 +40,17 @@ public abstract class MonteCarloAI : IPlayerAI {
             if (factory is GameActionFactoryForSimple factoryForSimple) {
                 action = factoryForSimple.Create();
                 actionAssessments.Add(
-                    SimulateAction(CloneGameState(simulatedState), action, currentPlayer, objectivePlayer)
+                    SimulateAction(CloneGameState(simulatedState), action, currentPlayerIndex, objectivePlayerIndex)
                 );
             }
             if (factory is GameActionFactoryForSpace factoryForSpace) {
                 for(sbyte boardIndex = 0; boardIndex < simulatedState.Boards.Count; boardIndex += 1) {
                     var board = simulatedState.GetBoardByIndex(boardIndex);
                     foreach(var spaceEnumerator in board.AsSpaceEnumerable()) {
-                        if (spaceEnumerator.Space.Mark == null) {
+                        if (spaceEnumerator.Space.MarkIndex == null) {
                             action = factoryForSpace.Create(boardIndex, spaceEnumerator.Col, spaceEnumerator.Row);
                             actionAssessments.Add(
-                                SimulateAction(CloneGameState(simulatedState), action, currentPlayer, objectivePlayer)
+                                SimulateAction(CloneGameState(simulatedState), action, currentPlayerIndex, objectivePlayerIndex)
                             );
                         }
                     }
@@ -59,10 +60,10 @@ public abstract class MonteCarloAI : IPlayerAI {
                 for(sbyte boardIndex = 0; boardIndex < simulatedState.Boards.Count; boardIndex += 1) {
                     var board = simulatedState.GetBoardByIndex(boardIndex);
                     foreach(var spaceEnumerator in board.AsSpaceEnumerable()) {
-                        if (spaceEnumerator.Space.Mark == null) {
+                        if (spaceEnumerator.Space.MarkIndex == null) {
                             action = factoryForBoard.Create(boardIndex);
                             actionAssessments.Add(
-                                SimulateAction(CloneGameState(simulatedState), action, currentPlayer, objectivePlayer)
+                                SimulateAction(CloneGameState(simulatedState), action, currentPlayerIndex, objectivePlayerIndex)
                             );
                         }
                     }
@@ -81,7 +82,7 @@ public abstract class MonteCarloAI : IPlayerAI {
         foreach (var actionAssessment in actionAssessments) {
             if (!actionAssessment.SimulatedState.IsGameOver && depth < MaxDepth) {
                 var nextPlayer = actionAssessment.SimulatedState.PlayersState.PlayersAvailableForTurn.First();
-                var recursiveActionAssessment = SimulateTurn(actionAssessment.SimulatedState, nextPlayer, objectivePlayer, depth + 1);
+                var recursiveActionAssessment = SimulateTurn(actionAssessment.SimulatedState, nextPlayer.Index, objectivePlayerIndex, depth + 1);
                 if (recursiveActionAssessment != null) {
                     actionAssessment.Rating += recursiveActionAssessment.Rating;
                 }
@@ -89,7 +90,7 @@ public abstract class MonteCarloAI : IPlayerAI {
         }
 
         var optimalActionAssessments = (
-            (currentPlayer == objectivePlayer)
+            (currentPlayerIndex == objectivePlayerIndex)
                 ? actionAssessments.AllMaxBy(assessment => assessment.Rating)
                 : actionAssessments.AllMinBy(assessment => assessment.Rating)
         ).ToList();
@@ -105,20 +106,21 @@ public abstract class MonteCarloAI : IPlayerAI {
 	private ActionAssessment SimulateAction(
         GameState simulatedState,
         GameAction gameAction,
-        Player currentPlayer,
-        Player objectivePlayer
+        int currentPlayerIndex,
+        int objectivePlayerIndex
     ) {
-        var baseRating = RateScore(simulatedState.ScoreCard, objectivePlayer);
-		simulatedState.Attempt(new PlayerAction(gameAction, currentPlayer));
+        var baseRating = RateScore(simulatedState.ScoreCard, objectivePlayerIndex);
+		simulatedState.Attempt(new PlayerAction(gameAction, currentPlayerIndex));
         if(simulatedState.PlayersState.IsRoundOver) {
             simulatedState.EndRound(out _);
         }
-        var newRating = RateScore(simulatedState.ScoreCard, objectivePlayer);
+        var newRating = RateScore(simulatedState.ScoreCard, objectivePlayerIndex);
         var resultRating = newRating - baseRating;
         return new ActionAssessment(simulatedState, gameAction, resultRating);
 	}
 
 	private GameState CloneGameState(GameView originalStateView) {
+        ArgumentNullException.ThrowIfNull(originalStateView.PlayerIndex, $"{nameof(originalStateView)}.{nameof(originalStateView.PlayerIndex)}");
         var playersState = new PlayersState(originalStateView.PlayersState);
         var gameTemplate = originalStateView.GameTemplate;
         
@@ -127,10 +129,10 @@ public abstract class MonteCarloAI : IPlayerAI {
         foreach(var boardView in originalStateView.Boards) {
             foreach(var spaceView in boardView.AsSpaceViewEnumerable()) {
                 var clonedSpace = clonedState.Boards[boardView.BoardIndex].Spaces[spaceView.Col, spaceView.Row];
-                clonedSpace.Mark = boardView.Spaces[spaceView.Col, spaceView.Row].Mark;
-                clonedSpace.MakeKnownToPlayer(originalStateView.Player!);
-                if(clonedSpace.Mark != null) {
-                    clonedSpace.MakeKnownToPlayer(new Player(clonedSpace.Mark!));
+                clonedSpace.MarkIndex = boardView.Spaces[spaceView.Col, spaceView.Row].MarkIndex;
+                clonedSpace.MakeKnownToPlayerIndex(originalStateView.PlayerIndex.Value);
+                if(clonedSpace.MarkIndex != null && clonedSpace.MarkIndex != Space.ImpasseMarkIndex) {
+                    clonedSpace.MakeKnownToPlayerIndex(clonedSpace.MarkIndex.Value);
                 }
             }
         }
@@ -141,9 +143,9 @@ public abstract class MonteCarloAI : IPlayerAI {
     private GameState CloneGameState(GameState originalState)
     => new GameState(originalState);
 
-    public int RateScore(ScoreCard scoreCard, Player player)
-    => scoreCard.PlayerScores.SingleOrDefault(ps => ps.Player == player).Score //playerscore is a struct so default score = 0;
-    - scoreCard.PlayerScores.Where(ps => ps.Player != player).Max(ps => ps.Score);
+    public int RateScore(ScoreCard scoreCard, int playerIndex)
+    => scoreCard.PlayerScores.SingleOrDefault(ps => ps.PlayerIndex == playerIndex).Score //playerscore is a struct so default score = 0;
+    - scoreCard.PlayerScores.Where(ps => ps.PlayerIndex != playerIndex).Max(ps => ps.Score);
 }
 
 internal class ActionAssessment {

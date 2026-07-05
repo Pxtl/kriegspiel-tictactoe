@@ -17,7 +17,7 @@ public interface IGameState {
     IReadOnlyList<Board> Boards { get; }
     #endregion
 
-    GameView GetView(Player? player);
+    GameView GetView(int? playerIndex);
 
     Board GetBoardByIndex(sbyte boardIndex);
     

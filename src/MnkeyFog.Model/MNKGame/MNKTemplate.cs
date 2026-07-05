@@ -56,16 +56,16 @@ public record MNKTemplate
         if (!IsKriegspiel) {
             foreach (var board in gameState.Boards) {
                 foreach (var spaceEnum in board.AsSpaceEnumerable()) {
-                    foreach(var player in gameState.PlayersState.Players) {
-                        spaceEnum.Space.MakeKnownToPlayer(player.Mark);
+                    for (var i = 0; i < gameState.PlayersState.Players.Count; i += 1) {
+                        spaceEnum.Space.MakeKnownToPlayerIndex(i);
                     }
                 }
             }
         }
     }
 
-    public override IEnumerable<GameActionFactory> GetAvailableActions(GameState gameState, Player player)
-    => gameState.PlayersState.CanTakeTurn(player) 
+    public override IEnumerable<GameActionFactory> GetAvailableActions(GameState gameState, int playerIndex)
+    => gameState.PlayersState.CanTakeTurn(playerIndex) 
         ? [ new MNKActionFactory() ]
         : [];
 }

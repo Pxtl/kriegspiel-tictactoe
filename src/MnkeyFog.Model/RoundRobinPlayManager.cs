@@ -1,6 +1,7 @@
 namespace MnkeyFog.Model;
 
 using System.ComponentModel;
+using MnkeyFog.Model.Indexed;
 using OneOf;
 using OneOf.Types;
 
@@ -15,7 +16,7 @@ public class RoundRobinPlayManager
 
     public override string GameStateText(PlayersState playerState)
         => playerState.PlayersAvailableForTurn.Count() > 0 
-        ? $"Round-robin play. Current player is {playerState.PlayersAvailableForTurn.First().Mark}."
+        ? $"Round-robin play. Current player is {playerState.PlayersAvailableForTurn.First().Player.Mark}."
         : "Round over.";
 
     public override void EndedRound(GameState gameState, out bool hasStateChanged) {
@@ -27,6 +28,6 @@ public class RoundRobinPlayManager
         hasStateChanged = true;
     }
 
-    public override IEnumerable<Player> PlayersAvailableForTurn(PlayersState playerState)
-        => playerState.ActivePlayers.Except(playerState.PlayedPlayersSet).Take(1);
+    public override IEnumerable<PlayerIndexed> PlayersAvailableForTurn(PlayersState playerState)
+        => playerState.ActivePlayers.Where(p => !playerState.PlayedPlayerIndicesSet.Contains(p.Index)).Take(1);
 }

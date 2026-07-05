@@ -1,6 +1,10 @@
+using Microsoft.VisualBasic;
+
 namespace MnkeyFog.Model.Tests;
 
 public class ScoreCardTests {
+    private int _playerXIndex = 0;
+    private int _playerOIndex = 1;
     [Fact]
     public void Constructor_Empty_ReturnsEmptyScores() {
         var scoreCard = new ScoreCard();
@@ -9,15 +13,15 @@ public class ScoreCardTests {
 
     [Fact]
     public void Constructor_SingleScore() {
-        var scoreCard = new ScoreCard(new Player("X"), 5);
+        var scoreCard = new ScoreCard(_playerXIndex, 5);
         scoreCard.Highest.Should().NotBeNull();
     }
 
     [Fact]
     public void Constructor_MultipleScores() {
         var scoreCard = new ScoreCard(new[] { 
-            new PlayerScore(new Player("X"), 3), 
-            new PlayerScore(new Player("O"), 2) 
+            new PlayerIndexScore(_playerXIndex, 3), 
+            new PlayerIndexScore(_playerOIndex, 2) 
         });
         
         scoreCard.Highest.Should().NotBeNull();
@@ -25,8 +29,8 @@ public class ScoreCardTests {
 
     [Fact]
     public void OperatorPlus() {
-        var a = new ScoreCard(new Player("X"), 3);
-        var b = new ScoreCard(new Player("O"), 2);
+        var a = new ScoreCard(_playerXIndex, 3);
+        var b = new ScoreCard(_playerOIndex, 2);
         
         var result = a + b;
         result.Highest.Should().NotBeNull();

@@ -28,7 +28,7 @@ public abstract record GameTemplate()
 	/// </summary>
     [JsonProperty(TypeNameHandling = TypeNameHandling.All)]
 	public PlayManager PlayManager { get; init; } = RoundRobinPlayManager.Instance;
-	public abstract IEnumerable<GameActionFactory> GetAvailableActions(GameState gameState, Player player);
+	public abstract IEnumerable<GameActionFactory> GetAvailableActions(GameState gameState, int playerIndex);
 	/// <summary>
 	/// Create the boards for the game. See GameState for the constraints on the
 	/// sizes and numbers of boards.
