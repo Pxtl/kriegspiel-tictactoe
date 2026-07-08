@@ -34,7 +34,7 @@ but possibly dotnet runtime 10 will be sufficient.
 to run it in basic gameplay from source (Weinersmith's Kriegspiel Tic-Tac-Toe, hotseat
 mode).
 
-> `dotnet run --project ./mnkeyfog/src/MnkeyFog -- game mnkeyfog`
+> `dotnet run --project ./mnkeyfog/src/MnkeyFog -- game kriegspiel-tictactoe`
 
 ```
 Description:
@@ -51,7 +51,7 @@ Options:
   -j, --join <join>        Join as given player char mark. Must match a mark in players list. Hotseat mode if not provided.
 
 Commands:
-  mnkeyfog  Zach Weinersmith's Kriegspiel Tic-Tac-Toe.
+  kriegspiel-tictactoe  Zach Weinersmith's Kriegspiel Tic-Tac-Toe.
   tictactoe             Basic simple tic-tac-toe.
 ```
 
