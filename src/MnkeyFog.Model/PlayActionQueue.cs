@@ -41,6 +41,9 @@ public class PlayActionQueue : IPlayActionQueue {
                 action.DoAction(gameState);
             }
         }
+        foreach (var board in gameState.Boards) {
+            board.ExecuteRuleset();
+        }
 
         Clear();
     }

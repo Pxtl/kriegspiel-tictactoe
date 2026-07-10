@@ -7,10 +7,6 @@ namespace MnkeyFog.Model;
 /// JSON-serializable model object for a single tic-tac-toe board. Columns are
 /// left-to-right, rows are top-to-bottom.
 /// </summary>
-/// <remarks>
-/// //TODO: Cache ScoreCard and IsDone, invalidate cache on changes to board
-/// contents.
-/// </remarks>
 [ModelSerializable]
 public sealed record Board {
     #region constructors
@@ -80,9 +76,25 @@ public sealed record Board {
         && (pos.Row >= 0);
     #endregion
 
-    #region abstract and virtual properties
-    [JsonIgnore()]
-    public ScoreCard ScoreCard => Ruleset.Score(this);
+    #region ruleset
+    /// <summary>
+    /// The scores for this board. Value is only updated when <see
+    /// cref="ExecuteRuleset"/> is called, which happens at the end of action
+    /// queue processing.
+    /// </summary>
+    public ScoreCard ScoreCard {get; private set;}
+
+    /// <summary>
+    /// Returns true if the board is done and locked from further play. Value is
+    /// only updated when <see cref="ExecuteRuleset"/> is called, which happens at the end of action
+    /// queue processing.
+    /// </summary>
+    public bool IsDone {get; private set;}
+
+    public void ExecuteRuleset() {
+        ScoreCard = Ruleset.Score(this);
+        IsDone = IsFull || Ruleset.IsDone(this);
+    }
     #endregion
 
     #region helper properties
@@ -107,12 +119,5 @@ public sealed record Board {
     [JsonIgnore()]
     public bool IsFull
     => AsSpaceEnumerable().All(s => s.Space.MarkIndex != null);
-
-    /// <summary>
-    /// Returns true if the board is done and locked from further play.
-    /// </summary>
-    [JsonIgnore()]
-    public bool IsDone
-    => IsFull || Ruleset.IsDone(this);
     #endregion
 }

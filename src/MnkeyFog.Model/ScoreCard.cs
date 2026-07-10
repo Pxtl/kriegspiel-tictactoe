@@ -46,9 +46,11 @@ public readonly struct ScoreCard {
     #endregion
 
     #region calculated members
+    [JsonIgnore]
     public readonly bool IsEmpty
     => _scores.Count == 0;
 
+    [JsonIgnore]
     public readonly ScoreCard Highest
     => _scores.Count == 0 
         ? Empty

@@ -132,7 +132,7 @@ public class GameState
     public string GameStateText
     => (
             IsGameOver 
-            ? (Winners.Count() == 0
+            ? ((Winners.Count() == 0 || ScoreCard.PlayerScores.All(ps => ps.Score == 0))
                 ? "Game over. Nobody wins."
                 : $"Game over. {string.Join(" and ", Winners)} win(s)."
             ) 

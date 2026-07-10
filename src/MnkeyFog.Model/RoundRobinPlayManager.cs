@@ -24,7 +24,7 @@ public class RoundRobinPlayManager
     }
 
     public override void EndedTurn(GameState gameState, out bool hasStateChanged) {
-        gameState.ActionQueue!.ExecutePendingActions(gameState);
+        gameState.ExecutePendingActions();
         hasStateChanged = true;
     }
 

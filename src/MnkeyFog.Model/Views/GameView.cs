@@ -40,7 +40,7 @@ public record GameView
     public bool IsGameOver { get; set; }
     #endregion
 
-    #region Player Actions
+    #region player actions
     public bool CanTakeTurn => PlayersState.CanTakeTurn(PlayerIndex);
     public IReadOnlyList<GameActionFactory> AvailableActions { get; init; }
     public Resigned ResignPlayer() {
@@ -77,12 +77,16 @@ public record GameView
     //TODO: Row and Column attempt functions.
     #endregion
 
-    #region private helpers
+    #region helpers
     public IEnumerable<string> BoardNames { get {
         for(var i = 1; i <= Boards.Count; i += 1) {
             yield return i.ToString();
         }
     }}
+
+    public Player? Player => PlayerIndex.HasValue 
+        ? PlayersState.Players[PlayerIndex.Value]
+        : null;
     #endregion
 
     #region board management
@@ -104,7 +108,7 @@ public record GameView
     }
     #endregion
 
-    #region Scores
+    #region scores
     
     /// <summary>
     /// Possibly-approximate scorecard (depending on game) for all players

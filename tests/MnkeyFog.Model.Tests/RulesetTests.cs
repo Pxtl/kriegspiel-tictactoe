@@ -14,6 +14,7 @@ public class RulesetTests {
         board.Spaces[0, 2].MarkIndex = _playerXIndex;
 
         var expectedPlayerScore = new PlayerIndexScore(_playerXIndex, 1);
+        board.ExecuteRuleset();
         board.ScoreCard.Highest!.Should().Be(expectedPlayerScore);
         board.IsDone.Should().BeFalse();
     }
@@ -27,6 +28,7 @@ public class RulesetTests {
         board.Spaces[0, 2].MarkIndex = _playerXIndex;
 
         var expectedPlayerScore = new PlayerIndexScore(_playerXIndex, 1);
+        board.ExecuteRuleset();
         board.ScoreCard.Highest!.Should().Be(expectedPlayerScore);
         board.IsDone.Should().BeTrue();
     }
@@ -40,6 +42,7 @@ public class RulesetTests {
         board.Spaces[0, 2].MarkIndex = _playerXIndex;
 
         var expectedPlayerScore = new PlayerIndexScore(_playerXIndex, 1);
+        board.ExecuteRuleset();
         board.ScoreCard.Highest!.Should().Be(expectedPlayerScore);
         board.IsDone.Should().BeFalse();
     }
@@ -59,6 +62,8 @@ public class RulesetTests {
         board.Spaces[0, 2].MarkIndex = _playerOIndex;
         board.Spaces[1, 2].MarkIndex = _playerOIndex;
         board.Spaces[2, 2].MarkIndex = _playerOIndex;
+        
+        board.ExecuteRuleset();
 
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerOIndex, 2));
         board.IsDone.Should().BeTrue();
@@ -73,6 +78,8 @@ public class RulesetTests {
         board.Spaces[0, 0].MarkIndex = _playerXIndex;
         board.Spaces[1, 1].MarkIndex = _playerXIndex;
         board.Spaces[2, 2].MarkIndex = _playerXIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -84,6 +91,8 @@ public class RulesetTests {
         board.Spaces[0, 2].MarkIndex = _playerXIndex;
         board.Spaces[1, 1].MarkIndex = _playerXIndex;
         board.Spaces[2, 0].MarkIndex = _playerXIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -99,6 +108,8 @@ public class RulesetTests {
         board.Spaces[0, 0].MarkIndex = _playerXIndex;
         board.Spaces[1, 1].MarkIndex = _playerXIndex;
         board.Spaces[2, 2].MarkIndex = _playerXIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -111,6 +122,8 @@ public class RulesetTests {
         board.Spaces[1, 0].MarkIndex = _playerXIndex;
         board.Spaces[2, 1].MarkIndex = _playerXIndex;
         board.Spaces[3, 2].MarkIndex = _playerXIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -124,6 +137,8 @@ public class RulesetTests {
         board.Spaces[1, 1].MarkIndex = _playerXIndex;
         board.Spaces[2, 0].MarkIndex = _playerXIndex;
         
+        board.ExecuteRuleset();
+
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
@@ -135,7 +150,9 @@ public class RulesetTests {
         board.Spaces[1, 2].MarkIndex = _playerXIndex;
         board.Spaces[2, 1].MarkIndex = _playerXIndex;
         board.Spaces[3, 0].MarkIndex = _playerXIndex;
-        
+
+        board.ExecuteRuleset();
+
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
@@ -146,7 +163,9 @@ public class RulesetTests {
         // Only 2 X's inline on diagonal - not a winning line
         board.Spaces[0, 1].MarkIndex = _playerXIndex;
         board.Spaces[1, 2].MarkIndex = _playerXIndex;
-        
+
+        board.ExecuteRuleset();
+
         board.ScoreCard.Highest.Should().Be(ScoreCard.Empty);
         board.IsDone.Should().BeFalse();
     }
@@ -162,7 +181,9 @@ public class RulesetTests {
         board.Spaces[0, 0].MarkIndex = _playerXIndex;
         board.Spaces[1, 1].MarkIndex = _playerXIndex;
         board.Spaces[2, 2].MarkIndex = _playerXIndex;
-        
+
+        board.ExecuteRuleset();
+
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
@@ -174,7 +195,9 @@ public class RulesetTests {
         board.Spaces[0, 1].MarkIndex = _playerXIndex;
         board.Spaces[1, 2].MarkIndex = _playerXIndex;
         board.Spaces[2, 3].MarkIndex = _playerXIndex;
-        
+
+        board.ExecuteRuleset();
+
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
@@ -186,7 +209,9 @@ public class RulesetTests {
         board.Spaces[0, 2].MarkIndex = _playerXIndex;
         board.Spaces[1, 1].MarkIndex = _playerXIndex;
         board.Spaces[2, 0].MarkIndex = _playerXIndex;
-        
+
+        board.ExecuteRuleset();
+
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
 
@@ -200,6 +225,8 @@ public class RulesetTests {
         board.Spaces[2, 1].MarkIndex = _playerXIndex;
 
         board.Spaces[0, 0].MarkIndex = _playerOIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -218,6 +245,8 @@ public class RulesetTests {
         board.Spaces[3, 3].MarkIndex = _playerXIndex;
 
         board.Spaces[0, 3].MarkIndex = _playerOIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -233,6 +262,8 @@ public class RulesetTests {
         board.Spaces[3, 4].MarkIndex = _playerXIndex;
 
         board.Spaces[0, 3].MarkIndex = _playerOIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -249,6 +280,8 @@ public class RulesetTests {
         board.Spaces[3, 5].MarkIndex = _playerXIndex;
 
         board.Spaces[0, 3].MarkIndex = _playerOIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -264,6 +297,8 @@ public class RulesetTests {
         board.Spaces[3, 0].MarkIndex = _playerXIndex;
 
         board.Spaces[1, 1].MarkIndex = _playerOIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -280,6 +315,8 @@ public class RulesetTests {
         board.Spaces[3, 0].MarkIndex = _playerXIndex;
 
         board.Spaces[3, 3].MarkIndex = _playerOIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 1));
     }
@@ -294,6 +331,8 @@ public class RulesetTests {
         board.Spaces[3, 3].MarkIndex = _playerXIndex;
         board.Spaces[4, 4].MarkIndex = _playerXIndex;
         board.Spaces[5, 5].MarkIndex = _playerXIndex;
+
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.PlayerScores.Single().Should().Be(new PlayerIndexScore(_playerXIndex, 2));
     }
@@ -303,6 +342,7 @@ public class RulesetTests {
     [Fact]
     public void Given3x3Board_WhenEmptyBoard_ThenNoScore() {
         var board = new Board(3, 3, new MNKBoardRuleset());
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.Should().Be(ScoreCard.Empty);
     }
@@ -310,6 +350,7 @@ public class RulesetTests {
     [Fact]
     public void Given4x6Board_WhenEmptyBoard_NoScore() {
         var board = new Board(4, 6, new MNKBoardRuleset());
+        board.ExecuteRuleset();
         
         board.ScoreCard.Highest.Should().Be(ScoreCard.Empty);
     }
