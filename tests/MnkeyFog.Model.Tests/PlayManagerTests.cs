@@ -7,25 +7,25 @@ public class PlayManagerTests {
     #region unique player marks
     [Fact]
     public void RoundRobinPlayManagerConstructor_WithUniqueMarksIsAllowed() {
-        var expectedPlayers = new List<Player>() { new("X"), new("O") };
-        var actualManager = new PlayersState(expectedPlayers, RoundRobinPlayManager.Instance);
-        actualManager.Players.Should().BeEquivalentTo(expectedPlayers);
+        var expectedPlayerInfos = new List<PlayerInfo>() { new("X"), new("O") };
+        var actualManager = new PlayersState(expectedPlayerInfos, RoundRobinPlayManager.Instance);
+        actualManager.PlayerInfos.Should().BeEquivalentTo(expectedPlayerInfos);
     }
 
     [Fact]
     public void RoundRobinPlayManagerConstructor_WithNonUniqueMarksThrows() {
-        var expectedPlayers = new List<Player>() { new("X"), new("O"), new("X") };
+        var expectedPlayerInfos = new List<PlayerInfo>() { new("X"), new("O"), new("X") };
         var action = () => {
-            _ = new PlayersState(expectedPlayers, RoundRobinPlayManager.Instance);
+            _ = new PlayersState(expectedPlayerInfos, RoundRobinPlayManager.Instance);
         };
         action.Should().Throw<ArgumentException>();
     }
 
     [Fact]
     public void RoundRobinPlayManagerConstructor_WithMarksSameButDifferentCaseThrows() {
-        var expectedPlayers = new List<Player>() { new("X"), new("O"), new("x") };
+        var expectedPlayerInfos = new List<PlayerInfo>() { new("X"), new("O"), new("x") };
         var action = () => {
-            _ = new PlayersState(expectedPlayers, RoundRobinPlayManager.Instance);
+            _ = new PlayersState(expectedPlayerInfos, RoundRobinPlayManager.Instance);
         };
         action.Should().Throw<ArgumentException>();
     }
@@ -36,13 +36,13 @@ public class PlayManagerTests {
         var playerXIndex = 0;
         var playerOIndex = 1;
         var state = new GameState(
-            [new Player("X"), new Player("O")],
+            [new PlayerInfo("X"), new PlayerInfo("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3), MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
         state.Boards.Count.Should().Be(2);
-        state.PlayersState.Players.Should().Contain(new Player("X"));
-        state.PlayersState.Players.Should().Contain(new Player("O"));
+        state.PlayersState.PlayerInfos.Should().Contain(new PlayerInfo("X"));
+        state.PlayersState.PlayerInfos.Should().Contain(new PlayerInfo("O"));
         state.PlayersState.ActivePlayerIndices.Should().Contain(playerXIndex);
         state.PlayersState.ActivePlayerIndices.Should().Contain(playerOIndex);
     }
@@ -51,7 +51,7 @@ public class PlayManagerTests {
     public void Round_RoundIndexStartsAtZero() {
         var playerXIndex = 0;
         var state = new GameState(
-            [new Player("X"), new Player("O")],
+            [new PlayerInfo("X"), new PlayerInfo("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -63,7 +63,7 @@ public class PlayManagerTests {
         var playerXIndex = 0;
         var playerOIndex = 1;
         var state = new GameState(
-            [new Player("X"), new Player("O")],
+            [new PlayerInfo("X"), new PlayerInfo("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -77,7 +77,7 @@ public class PlayManagerTests {
         var playerXIndex = 0;
         var playerOIndex = 1;
         var state = new GameState(
-            [new Player("X"), new Player("O")],
+            [new PlayerInfo("X"), new PlayerInfo("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -96,7 +96,7 @@ public class PlayManagerTests {
         var playerXIndex = 0;
         var playerOIndex = 1;
         var state = new GameState(
-            [new Player("X"), new Player("O")],
+            [new PlayerInfo("X"), new PlayerInfo("O")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -114,7 +114,7 @@ public class PlayManagerTests {
         var playerAIndex = 0;
         var playerBIndex = 1;
         var state = new GameState(
-            [new Player("A"), new Player("B")],
+            [new PlayerInfo("A"), new PlayerInfo("B")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: true, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -131,7 +131,7 @@ public class PlayManagerTests {
         var playerBIndex = 1;
         var playerCIndex = 2;
         var state = new GameState(
-            [new Player("A"), new Player("B"), new Player("C")],
+            [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: true, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -152,7 +152,7 @@ public class PlayManagerTests {
         var playerCIndex = 2;
         var playerDIndex = 3;
         var state = new GameState(
-            [new Player("A"), new Player("B"), new Player("C")],
+            [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -171,7 +171,7 @@ public class PlayManagerTests {
         var playerBIndex = 1;
         var playerCIndex = 2;
         var state = new GameState(
-            [new Player("A"), new Player("B"), new Player("C")],
+            [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -186,7 +186,7 @@ public class PlayManagerTests {
         var playerAIndex = 0;
 
         var state = new GameState(
-            [new Player("A"), new Player("B"), new Player("C")],
+            [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -200,7 +200,7 @@ public class PlayManagerTests {
         var playerAIndex = 0;
         var playerBIndex = 1;
         var state = new GameState(
-            [new Player("A"), new Player("B"), new Player("C")],
+            [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -214,7 +214,7 @@ public class PlayManagerTests {
         var playerAIndexed = new PlayerIndexed("A", 0);
 
         var state = new GameState(
-            [new Player("A"), new Player("B"), new Player("C")],
+            [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
@@ -225,13 +225,13 @@ public class PlayManagerTests {
     [Fact]
     public void GameStateConstructor_RandomPlayer() {
         var state = new GameState(
-            [new Player("A"), new Player("B"), new Player("C")],
+            [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: true
         );
         var firstPlayer = state.PlayersState.ActivePlayers.Select(ap => ap.Index).First();
-        var expectedPlayers = new[] {0,1,2};
-        expectedPlayers.Contains(firstPlayer).Should().BeTrue();
+        var expectedPlayerInfos = new[] {0,1,2};
+        expectedPlayerInfos.Contains(firstPlayer).Should().BeTrue();
     }
 
     [Fact]
@@ -241,7 +241,7 @@ public class PlayManagerTests {
         var playerCIndex = 2;
         var playerDIndex = 3;
         var state = new GameState(
-            [new Player("A"), new Player("B"), new Player("C")],
+            [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],
             new MNKTemplate([MNKBoardRuleset.CreateBoardBuilder(3, 3)], isSynchronousMode: true, isKriegspiel: true),
             isRandomPlayerOrder: false
         );

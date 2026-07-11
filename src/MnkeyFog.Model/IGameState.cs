@@ -25,5 +25,5 @@ public interface IGameState {
     bool IsGameOver { get; }
 
     [JsonIgnore()]
-    IEnumerable<Player> Winners { get; }
+    IEnumerable<PlayerInfo> Winners { get; }
 }

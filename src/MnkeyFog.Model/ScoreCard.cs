@@ -56,8 +56,8 @@ public readonly struct ScoreCard {
         ? Empty
         : new ScoreCard(_scores.AllMaxBy(s => s.Score));
 
-    public readonly IEnumerable<Player> AsPlayers(PlayersState playersState)
-    => _scores.Select(s => playersState.Players[s.PlayerIndex]);
+    public readonly IEnumerable<PlayerInfo> AsPlayerInfos(PlayersState playersState)
+    => _scores.Select(s => playersState.PlayerInfos[s.PlayerIndex]);
 	#endregion
 
 	#region object overrides (equality and tostring)
@@ -125,10 +125,10 @@ public static class ScoreCardExtensions {
     public static ScoreCard SumScoreCards(this IEnumerable<ScoreCard> scoreCards)
     => ScoreCard.SumScoreCards(scoreCards);
 
-    public static ScoreCard BlankPlayersScoreCard(this IReadOnlyList<Player> players) {
+    public static ScoreCard BlankPlayersScoreCard(this IReadOnlyList<PlayerInfo> playerInfos) {
         // switch to array-based for performance.
-        var playerScores = new PlayerIndexScore[players.Count];
-        for (int i = 0; i < players.Count; i += 1) {
+        var playerScores = new PlayerIndexScore[playerInfos.Count];
+        for (int i = 0; i < playerInfos.Count; i += 1) {
             playerScores[i] = new PlayerIndexScore(i, 0);
         }
         return new ScoreCard(playerScores);

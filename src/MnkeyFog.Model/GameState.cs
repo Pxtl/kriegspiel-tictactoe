@@ -30,7 +30,7 @@ public class GameState
     }
 
     public GameState(
-        Player[] players,
+        PlayerInfo[] players,
         IGameTemplate gameTemplate,
         bool isRandomPlayerOrder
     ) : this(new PlayersState(players, gameTemplate.PlayManager, isRandomPlayerOrder), gameTemplate) { }
@@ -49,18 +49,18 @@ public class GameState
             );
         }
 
-        if (PlayersState.Players.Count > 32) {
+        if (PlayersState.PlayerInfos.Count > 32) {
             throw new ApplicationException(
                 "There is a hard limit of 32 players."
             );
         }
 
-        if (!gameTemplate.LegalPlayerCounts.Contains(PlayersState.Players.Count)) {
+        if (!gameTemplate.LegalPlayerCounts.Contains(PlayersState.PlayerInfos.Count)) {
             throw new ApplicationException(
                 "Cannot start game. This game only supports the following player-counts: "
                     + string.Join(", ", gameTemplate.LegalPlayerCounts)
                     + Environment.NewLine
-                    + $"You have provided {PlayersState.Players.Count} player(s)."
+                    + $"You have provided {PlayersState.PlayerInfos.Count} player(s)."
             );
         }
 
@@ -108,19 +108,19 @@ public class GameState
     #region Players and Scores   
     [JsonIgnore()]
     public ScoreCard ScoreCard
-    => PlayersState.Players.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
+    => PlayersState.PlayerInfos.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
         + Boards.Select(b => b.ScoreCard).SumScoreCards();
 
 
     [JsonIgnore()]
-    public virtual IEnumerable<Player> Winners { get {
+    public virtual IEnumerable<PlayerInfo> Winners { get {
         if(!IsGameOver) {
             return [];
         }
         var activePlayersScores = new ScoreCard(
             ScoreCard.PlayerScores.Where(playerScore => PlayersState.ActivePlayerIndices.Contains(playerScore.PlayerIndex))
         );
-        return activePlayersScores.Highest.AsPlayers(PlayersState);
+        return activePlayersScores.Highest.AsPlayerInfos(PlayersState);
     }}
 
     [JsonIgnore()]
@@ -144,7 +144,7 @@ public class GameState
     [JsonIgnore()]
     public string ResignedPlayersText
     => PlayersState.ResignedPlayerIndicesSet.Count > 0
-        ? $"Resigned players: {string.Join(", ", PlayersState.ResignedPlayerIndicesSet.OrderBy(ix => ix).Select(ix => PlayersState.GetPlayerIndexed(ix).Player))}"
+        ? $"Resigned players: {string.Join(", ", PlayersState.ResignedPlayerIndicesSet.OrderBy(ix => ix).Select(ix => PlayersState.GetPlayerIndexed(ix).Info))}"
         : "";
     #endregion
 

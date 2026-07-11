@@ -84,8 +84,8 @@ public record GameView
         }
     }}
 
-    public Player? Player => PlayerIndex.HasValue 
-        ? PlayersState.Players[PlayerIndex.Value]
+    public PlayerInfo? PlayerInfo => PlayerIndex.HasValue 
+        ? PlayersState.PlayerInfos[PlayerIndex.Value]
         : null;
     #endregion
 
@@ -115,7 +115,7 @@ public record GameView
     /// </summary>
     [JsonIgnore()]
     public ScoreCard ScoreCard
-    => PlayersState.Players.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
+    => PlayersState.PlayerInfos.BlankPlayersScoreCard()  //make sure all active players are in the scorecard even those with 0.
         + Boards.Select(b => b.ScoreCard).SumScoreCards();
     #endregion
 

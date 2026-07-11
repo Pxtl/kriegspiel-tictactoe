@@ -81,15 +81,15 @@ public static class ExtensionMethods {
 
     public static Dictionary<Type, bool> _immutableTypesCache = new Dictionary<Type, bool>();
 
-    public static IEnumerable<PlayerIndexed> ToPlayersIndexed(this IReadOnlyList<Player> players) {
-        for(var i = 0; i < players.Count; i+=1) {
-            yield return new PlayerIndexed(players[i], i);
+    public static IEnumerable<PlayerIndexed> ToPlayersIndexed(this IReadOnlyList<PlayerInfo> playerInfos) {
+        for(var i = 0; i < playerInfos.Count; i+=1) {
+            yield return new PlayerIndexed(playerInfos[i], i);
         }
     }
 
     public static IEnumerable<PlayerIndexed> ToPlayersIndexed(this IReadOnlyList<string> playerMarks) {
         for(var i = 0; i < playerMarks.Count; i+=1) {
-            yield return new PlayerIndexed(new Player(playerMarks[i]), i);
+            yield return new PlayerIndexed(new PlayerInfo(playerMarks[i]), i);
         }
     }
 }

@@ -11,8 +11,8 @@ public class GameStateTests {
         var playerX = state.PlayersState.GetPlayerIndexed("X");
         var playerO = state.PlayersState.GetPlayerIndexed("O");
         state.Boards.Should().BeEmpty();
-        state.PlayersState.Players.Should().Contain(new Player("X"))
-            .And.Subject.Should().Contain(new Player("O"));
+        state.PlayersState.PlayerInfos.Should().Contain(new PlayerInfo("X"))
+            .And.Subject.Should().Contain(new PlayerInfo("O"));
         state.PlayersState.ActivePlayers.Should().Contain(playerX)
             .And.Subject.Should().Contain(playerO);
     }
@@ -46,8 +46,8 @@ public class GameStateTests {
         playerOView.Attempt(new MNKAction(0, 1, 2));
         state.EndRound(out _);
         playerXView.Attempt(new MNKAction(0, 2, 2));
-        state.Winners.Should().Contain(playerXView.Player!);
-        state.Winners.Should().Contain(playerOView.Player!);
+        state.Winners.Should().Contain(playerXView.PlayerInfo!);
+        state.Winners.Should().Contain(playerOView.PlayerInfo!);
         state.GameStateText.Should().Contain("Nobody wins.");
     }
 
@@ -100,8 +100,8 @@ public class GameStateTests {
         Console.WriteLine(state.GameStateText);
 
         state.EndRound(out _);
-        state.Winners.Should().Contain(playerXView.Player!);
-        state.Winners.Should().Contain(playerOView.Player!);
+        state.Winners.Should().Contain(playerXView.PlayerInfo!);
+        state.Winners.Should().Contain(playerOView.PlayerInfo!);
         state.GameStateText.Should().Contain("X");
         state.GameStateText.Should().Contain("O");
         state.GameStateText.Should().Contain("win(s)");

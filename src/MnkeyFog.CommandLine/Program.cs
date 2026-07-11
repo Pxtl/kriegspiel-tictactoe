@@ -14,7 +14,7 @@ public class Program {
     static FileInfo? StateFilePath { get; set; }
     static string? JoinAsPlayer { get; set; }
     static GameState? GameState { get; set; } = null;
-    static OrderedDictionary<Player, IPlayerAI> AIPlayers = new OrderedDictionary<Player, IPlayerAI>();
+    static OrderedDictionary<PlayerInfo, IPlayerAI> AIPlayers = new OrderedDictionary<PlayerInfo, IPlayerAI>();
 
     public static int Main(string[] args) {
         var gameCommand = new Command("game", "Start a new game using a pre-defined game template.") {
@@ -121,8 +121,8 @@ public class Program {
         }
 
         var joinAsPlayerUnion = JoinAsPlayer == null
-            ? OneOf<Player, LocalHotseatGame>.FromT1(new LocalHotseatGame())
-            : OneOf<Player, LocalHotseatGame>.FromT0(new Player(JoinAsPlayer));
+            ? OneOf<PlayerInfo, LocalHotseatGame>.FromT1(new LocalHotseatGame())
+            : OneOf<PlayerInfo, LocalHotseatGame>.FromT0(new PlayerInfo(JoinAsPlayer));
             
         if (StateFilePath != null && GameState != null) {
             ConsoleLoop.RunGame (
@@ -138,11 +138,11 @@ public class Program {
         }
     }
 
-	private static void ParsePlayerListOptions(ParseResult parseResult, out Player[] players, out bool isRandomPlayerOrder)
+	private static void ParsePlayerListOptions(ParseResult parseResult, out PlayerInfo[] players, out bool isRandomPlayerOrder)
 	{
 		players = parseResult
             .GetValue(Options.PlayersOption)!
-            .Select(p => new Player(p))
+            .Select(p => new PlayerInfo(p))
             .ToArray();
 		isRandomPlayerOrder = parseResult.GetValue(Options.RandomOption);
 	}
@@ -156,12 +156,12 @@ public class Program {
         var ai4Players = parseResult.GetValue(Options.AI4PlayersOption) ?? [];
         var ai5Players = parseResult.GetValue(Options.AI5PlayersOption) ?? [];
         var ai6Players = parseResult.GetValue(Options.AI6PlayersOption) ?? [];
-        AIPlayers.AddRange(ai1Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new RandomAI())));
-        AIPlayers.AddRange(ai2Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new ClodAI())));
-        AIPlayers.AddRange(ai3Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new AsterAI())));
-        AIPlayers.AddRange(ai4Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new EagerAI())));
-        AIPlayers.AddRange(ai5Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new MontyAI())));
-        AIPlayers.AddRange(ai6Players.Select(a => new KeyValuePair<Player, IPlayerAI>(new Player(a), new CarlaAI())));
+        AIPlayers.AddRange(ai1Players.Select(a => new KeyValuePair<PlayerInfo, IPlayerAI>(new PlayerInfo(a), new RandomAI())));
+        AIPlayers.AddRange(ai2Players.Select(a => new KeyValuePair<PlayerInfo, IPlayerAI>(new PlayerInfo(a), new ClodAI())));
+        AIPlayers.AddRange(ai3Players.Select(a => new KeyValuePair<PlayerInfo, IPlayerAI>(new PlayerInfo(a), new AsterAI())));
+        AIPlayers.AddRange(ai4Players.Select(a => new KeyValuePair<PlayerInfo, IPlayerAI>(new PlayerInfo(a), new EagerAI())));
+        AIPlayers.AddRange(ai5Players.Select(a => new KeyValuePair<PlayerInfo, IPlayerAI>(new PlayerInfo(a), new MontyAI())));
+        AIPlayers.AddRange(ai6Players.Select(a => new KeyValuePair<PlayerInfo, IPlayerAI>(new PlayerInfo(a), new CarlaAI())));
     }
 
     private class CommandHandler(Func<ParseResult, int> action) : SynchronousCommandLineAction {

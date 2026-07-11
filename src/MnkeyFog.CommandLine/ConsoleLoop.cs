@@ -14,8 +14,8 @@ internal static class ConsoleLoop {
     public static void RunGame(
         FileInfo sharedStateFilePath,
         GameState state,
-        OneOf<Player, LocalHotseatGame> joinAsPlayer,
-        OrderedDictionary<Player, IPlayerAI> aiPlayers
+        OneOf<PlayerInfo, LocalHotseatGame> joinAsPlayer,
+        OrderedDictionary<PlayerInfo, IPlayerAI> aiPlayers
     ) {
         StateStorage.SaveState(state, sharedStateFilePath.FullName);
 
@@ -24,7 +24,7 @@ internal static class ConsoleLoop {
             localHotseatGame => "Running in hotseat mode."
         ));
         
-        Console.Out.WriteLine($"Players are {string.Join(", ", state.PlayersState.Players)}.");
+        Console.Out.WriteLine($"Players are {string.Join(", ", state.PlayersState.PlayerInfos)}.");
         Console.Out.WriteLine($"Game is {state.GameTemplate.CommandName}.");
         Console.Out.WriteLine($"Description: {state.GameTemplate.Description}");
         foreach(var aiPlayer in aiPlayers) {
@@ -38,7 +38,7 @@ internal static class ConsoleLoop {
             while(!isDoneAITurns) {
                 isDoneAITurns = true;
                 foreach (var playerIndexed in state.PlayersState.PlayersAvailableForTurn) {
-                    if(aiPlayers.TryGetValue(playerIndexed.Player, out var playerAI)) {
+                    if(aiPlayers.TryGetValue(playerIndexed.Info, out var playerAI)) {
                         //if any AI player can take their turn, we're not done
                         //AI turns.  Keep attempting until no AI player does a
                         //turn.
@@ -56,14 +56,14 @@ internal static class ConsoleLoop {
                                 }
                             }
                         }
-                        Console.Out.WriteLine($"AI Player {playerIndexed.Player} has finished their turn.");
+                        Console.Out.WriteLine($"AI Player {playerIndexed.Info} has finished their turn.");
                     }
                 }
             }
 
             var currentPlayerChosen = joinAsPlayer.Match(
                 player => {
-                    if (!state.PlayersState.Players.Contains(player)) {
+                    if (!state.PlayersState.PlayerInfos.Contains(player)) {
                         throw new ApplicationException($"Invalid player join, player {player} is not a player in this game.");
                     }
                     var playerIndexed = state.PlayersState.GetPlayerIndexed(player);
@@ -139,7 +139,7 @@ internal static class ConsoleLoop {
         IPlayActionResult? playActionResult = null;
         while (playActionResult == null || !playActionResult.IsTurnDone) {
             Console.Out.WriteLine(state.GameStateText);
-            Console.Out.WriteLine($"Player {playerIndexed.Player}, take your turn.");
+            Console.Out.WriteLine($"Player {playerIndexed.Info}, take your turn.");
             var gameView = state.GetView(playerIndexed);
             Console.Out.WriteLine(
                 BoardRenderer.DrawBoards(gameView, maxRenderWidth: Console.BufferWidth)
@@ -236,10 +236,10 @@ internal static class ConsoleLoop {
             var playerDisplayList = playerState.PlayersAvailableForTurn
                 .Select(p => {
                     var altKey = playerIndexToCommand[p.Index];
-                    var keyDisplay = altKey.Equals(p.Player.Mark, StringComparison.OrdinalIgnoreCase)
+                    var keyDisplay = altKey.Equals(p.Info.Mark, StringComparison.OrdinalIgnoreCase)
                         ? ""
                         : $" ({altKey})";
-                    return $"Player {p.Player.Mark}{keyDisplay}";
+                    return $"Player {p.Info.Mark}{keyDisplay}";
                 });
 
             var prompt = "Who will take the next turn? Press the player's key to take their turn (or press 'q' to quit the game for everyone)."

@@ -6,9 +6,9 @@ namespace MnkeyFog.Model.Tests;
 public class PlayerAITests {
     [Fact]
     public void AIGameRunner_BasicTicTacToeGameEnds() {
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("X")] = new RandomAI(),
-            [new Player("O")] = new RandomAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("X")] = new RandomAI(),
+            [new PlayerInfo("O")] = new RandomAI()
         };
         var action = () => {
             AIGameRunner.RunAIGame(GameTemplates.BasicTicTacToe, playerAIs);
@@ -18,9 +18,9 @@ public class PlayerAITests {
 
     [Fact]
     public void AIGameRunner_KriegspielTicTacToeGameEnds() {
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("X")] = new RandomAI(),
-            [new Player("O")] = new RandomAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("X")] = new RandomAI(),
+            [new PlayerInfo("O")] = new RandomAI()
         };
         var action = () => {
             AIGameRunner.RunAIGame(GameTemplates.KriegspielTicTacToe, playerAIs);
@@ -30,9 +30,9 @@ public class PlayerAITests {
 
     [Fact]
     public void AIGameRunner_Match3GameEnds() {
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("X")] = new RandomAI(),
-            [new Player("O")] = new RandomAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("X")] = new RandomAI(),
+            [new PlayerInfo("O")] = new RandomAI()
         };
         var action = () => {
             AIGameRunner.RunAIGame(GameTemplates.Match3, playerAIs);
@@ -42,9 +42,9 @@ public class PlayerAITests {
 
     [Fact]
     public void AIGameRunner_FreestyleGomokuEnds() {
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("X")] = new RandomAI(),
-            [new Player("O")] = new RandomAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("X")] = new RandomAI(),
+            [new PlayerInfo("O")] = new RandomAI()
         };
         var action = () => {
             AIGameRunner.RunAIGame(GameTemplates.FreestyleGomoku, playerAIs);
@@ -54,13 +54,13 @@ public class PlayerAITests {
 
     [Fact]
     public void AIGameRunner_FogGomokuEnds() {
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("A")] = new RandomAI(),
-            [new Player("B")] = new RandomAI(),
-            [new Player("C")] = new RandomAI(),
-            [new Player("D")] = new RandomAI(),
-            [new Player("E")] = new RandomAI(),
-            [new Player("F")] = new RandomAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("A")] = new RandomAI(),
+            [new PlayerInfo("B")] = new RandomAI(),
+            [new PlayerInfo("C")] = new RandomAI(),
+            [new PlayerInfo("D")] = new RandomAI(),
+            [new PlayerInfo("E")] = new RandomAI(),
+            [new PlayerInfo("F")] = new RandomAI()
         };
         var action = () => {
             AIGameRunner.RunAIGame(GameTemplates.FogGomoku, playerAIs);
@@ -70,11 +70,11 @@ public class PlayerAITests {
 
     [Fact]
     public void AIGameRunner_FogTicTacToeEnds() {
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("A")] = new RandomAI(),
-            [new Player("B")] = new RandomAI(),
-            [new Player("C")] = new RandomAI(),
-            [new Player("D")] = new RandomAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("A")] = new RandomAI(),
+            [new PlayerInfo("B")] = new RandomAI(),
+            [new PlayerInfo("C")] = new RandomAI(),
+            [new PlayerInfo("D")] = new RandomAI()
         };
         var action = () => {
             AIGameRunner.RunAIGame(GameTemplates.FogTicTacToe, playerAIs);
@@ -88,9 +88,9 @@ public class PlayerAITests {
         // AsterAI vs RandomAI should show AsterAI winning more often
         int iterations = 10;
 
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("X")] = new AsterAI(),
-            [new Player("O")] = new RandomAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("X")] = new AsterAI(),
+            [new PlayerInfo("O")] = new RandomAI()
         };
         var asterAIPlayerXIndex = 0;
         var scoreSum = ScoreCard.Empty;
@@ -109,9 +109,9 @@ public class PlayerAITests {
         // AsterAI vs RandomAI should show AsterAI winning more often
         int iterations = 100;
 
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("X")] = new MontyAI(),
-            [new Player("O")] = new AsterAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("X")] = new MontyAI(),
+            [new PlayerInfo("O")] = new AsterAI()
         };
         var montyAIPlayerXIndex = 0;
         var scoreSum = ScoreCard.Empty;
@@ -128,7 +128,7 @@ public class PlayerAITests {
     public void MontyAI_KnowsToBlock() {
         var playerX = new PlayerIndexed("X", 0);
         var playerO = new PlayerIndexed("O", 1);
-        var gameState = new GameState([playerX.Player, playerO.Player], GameTemplates.BasicTicTacToe, isRandomPlayerOrder:false);
+        var gameState = new GameState([playerX.Info, playerO.Info], GameTemplates.BasicTicTacToe, isRandomPlayerOrder:false);
         gameState.Boards[0].Spaces[1,1].MarkIndex = playerO.Index;
         gameState.Boards[0].Spaces[2,0].MarkIndex = playerO.Index;
         gameState.Boards[0].Spaces[2,2].MarkIndex = playerX.Index;
@@ -148,9 +148,9 @@ public class PlayerAITests {
         // AsterAI vs RandomAI should show AsterAI winning more often
         int iterations = 10;
 
-        var playerAIs = new OrderedDictionary<Player, IPlayerAI> {
-            [new Player("X")] = new AsterAI(),
-            [new Player("O")] = new RandomAI()
+        var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
+            [new PlayerInfo("X")] = new AsterAI(),
+            [new PlayerInfo("O")] = new RandomAI()
         };
         var playerState = new PlayersState(playerAIs.Keys, RoundRobinPlayManager.Instance);
         var asterAIPlayerX = playerAIs.Keys.First();
@@ -164,7 +164,7 @@ public class PlayerAITests {
             Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetSpectatorView(), 100));
             Console.Out.WriteLine(gameState.GameStateText);
         }
-        scoreSum.Highest.AsPlayers(playerState).Count().Should().Be(1);
-        scoreSum.Highest.AsPlayers(playerState).Single().Should().Be(asterAIPlayerX);
+        scoreSum.Highest.AsPlayerInfos(playerState).Count().Should().Be(1);
+        scoreSum.Highest.AsPlayerInfos(playerState).Single().Should().Be(asterAIPlayerX);
     }
 }

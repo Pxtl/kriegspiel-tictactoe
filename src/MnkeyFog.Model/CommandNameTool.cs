@@ -17,19 +17,19 @@ public static class CommandNameTool {
         // Build alternate key mapping for ALL players before entering loop
         // Keys are uppercase only (A-Z, 0-9)
         var usedKeys = availablePlayers
-            .Select(p => p.Player.Mark)
+            .Select(p => p.Info.Mark)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var playerIndexToKey = new OrderedDictionary<int, string>();
 
         foreach (var player in availablePlayers) {
             // Check if mark is typeable (ASCII letter or digit)
-            bool isTypeable = (player.Player.Mark.Length == 1)
-                && Regex.IsMatch(player.Player, "[ABCDEFGHJKLMNOPSTUVWXYZ1-9]", RegexOptions.IgnoreCase); //remove I, R, 0 (zero) and Q.  I and O for confusion, R and Q for command collisions.
+            bool isTypeable = (player.Info.Mark.Length == 1)
+                && Regex.IsMatch(player.Info, "[ABCDEFGHJKLMNOPSTUVWXYZ1-9]", RegexOptions.IgnoreCase); //remove I, R, 0 (zero) and Q.  I and O for confusion, R and Q for command collisions.
 
             if (isTypeable)  {
                 // Typeable mark - use the mark itself
-                playerIndexToKey[player.Index] = player.Player.Mark;
+                playerIndexToKey[player.Index] = player.Info.Mark;
             } else {
                 // Non-typeable mark (emoji, Snowman, etc.) - assign alternate key
 

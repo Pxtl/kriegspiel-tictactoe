@@ -4,7 +4,7 @@ namespace MnkeyFog.Model.Tests;
 
 public class SpaceTests {
     private PlayersState _playersState = new PlayersState(
-        [new Player("X"), new Player("O")],
+        [new PlayerInfo("X"), new PlayerInfo("O")],
         RoundRobinPlayManager.Instance
     );
     private Indexed.PlayerIndexed PlayerX => _playersState.GetPlayerIndexed("X");

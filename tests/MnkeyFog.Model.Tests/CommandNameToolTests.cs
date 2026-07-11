@@ -10,7 +10,7 @@ public class CommandNameToolTests {
     [Fact]
     public void BuildPlayerToCommandNameMap_SingleTypeableMark() {
         var map = CommandNameTool.BuildPlayerToCommandNameMap(
-            (new[] { new Player("A") }).ToPlayersIndexed()
+            (new[] { new PlayerInfo("A") }).ToPlayersIndexed()
         );
         
         map.ContainsKey(0).Should().BeTrue();
@@ -38,7 +38,7 @@ public class CommandNameToolTests {
         var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
 
         foreach (var player in players) {
-            Assert.Equal(player.Player.Mark, result[player.Index]);
+            Assert.Equal(player.Info.Mark, result[player.Index]);
         }
     }
 
@@ -50,7 +50,7 @@ public class CommandNameToolTests {
         var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
 
         foreach (var player in players) {
-            Assert.Equal(player.Player.Mark, result[player.Index]);
+            Assert.Equal(player.Info.Mark, result[player.Index]);
         }
     }
 
@@ -113,13 +113,13 @@ public class CommandNameToolTests {
         // Multi-char marks cannot be used directly ( ArgumentException), 
         // but we can test they are not typeable by using Player.FromString with null
         var typeableMark = "A";
-        var players = new List<Player> {
-            new Player(typeableMark),
+        var playerInfos = new List<PlayerInfo> {
+            new PlayerInfo(typeableMark),
         }.ToPlayersIndexed();
-        var typeablePlayerIndexed = players.First();
+        var typeablePlayerIndexed = playerInfos.First();
 
         
-        var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
+        var result = CommandNameTool.BuildPlayerToCommandNameMap(playerInfos);
         
         // Single-char typeable mark returns identity
         Assert.Equal(typeableMark, result[typeablePlayerIndexed.Index]);
@@ -128,14 +128,14 @@ public class CommandNameToolTests {
     [Fact]
     public void BuildPlayerToCommandNameMap_PreservesPlayerReferencesInDictionary()
     {
-        var players = new List<Player> {
-            new Player("X"),
-            new Player("O")
+        var playerInfos = new List<PlayerInfo> {
+            new PlayerInfo("X"),
+            new PlayerInfo("O")
         }.ToPlayersIndexed();
 
-        var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
+        var result = CommandNameTool.BuildPlayerToCommandNameMap(playerInfos);
 
-        var originalX = players.First(p => p.Mark == "X");
+        var originalX = playerInfos.First(p => p.Mark == "X");
         Assert.True(result.ContainsKey(originalX.Index));
         Assert.Equal("X", result[originalX.Index]);
     }
@@ -143,8 +143,8 @@ public class CommandNameToolTests {
     [Fact]
     public void BuildPlayerToCommandNameMap_ReturnsCorrectCountForEmptyInput()
     {
-        var emptyPlayers = new List<Player>().ToPlayersIndexed();
-        var result = CommandNameTool.BuildPlayerToCommandNameMap(emptyPlayers);
+        var emptyPlayerInfos = new List<PlayerInfo>().ToPlayersIndexed();
+        var result = CommandNameTool.BuildPlayerToCommandNameMap(emptyPlayerInfos);
         Assert.Empty(result);
     }
 
@@ -156,14 +156,14 @@ public class CommandNameToolTests {
         var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
 
         foreach (var player in players) {
-            Assert.Equal(player.Player.Mark, result[player.Index]);
+            Assert.Equal(player.Info.Mark, result[player.Index]);
         }
     }
 
     [Fact]
     public void BuildPlayerToCommandNameMap_MixedTypeableAndNonTypeableWorksCorrectly()
     {
-        var players = new List<Player>() {
+        var playerInfos = new List<PlayerInfo>() {
             //typeable
             new("X"),
             new("O"),
@@ -173,20 +173,20 @@ public class CommandNameToolTests {
         }.ToPlayersIndexed();
 
         var expected = new Dictionary<int, string>{
-            [players.Single(p => p.Mark == "X").Index] = "X",
-            [players.Single(p => p.Mark == "O").Index] = "O",
-            [players.Single(p => p.Mark == ".").Index] = "1",
-            [players.Single(p => p.Mark == "!").Index] = "2"
+            [playerInfos.Single(p => p.Mark == "X").Index] = "X",
+            [playerInfos.Single(p => p.Mark == "O").Index] = "O",
+            [playerInfos.Single(p => p.Mark == ".").Index] = "1",
+            [playerInfos.Single(p => p.Mark == "!").Index] = "2"
         };
-        var actual = CommandNameTool.BuildPlayerToCommandNameMap(players);
+        var actual = CommandNameTool.BuildPlayerToCommandNameMap(playerInfos);
 
         actual.Should().BeEquivalentTo(expected);
     }
 
     [Fact]
     public void BuildPlayerToCommandNameMap_TwoSpecialChars_ReturnMap1and2() {
-        var player1 = new Player("☃"); //unicode snowman
-        var player2 = new Player("☂"); //unicode umbrella
+        var player1 = new PlayerInfo("☃"); //unicode snowman
+        var player2 = new PlayerInfo("☂"); //unicode umbrella
         var player1Index = 0;
         var player2Index = 1;
         var map = CommandNameTool.BuildPlayerToCommandNameMap(
@@ -219,7 +219,7 @@ public class CommandNameToolTests {
     #region GetSpaceCommandName
     [Fact]
     public void GetSpaceCommandName_Empty3x3BoardYourTurnIsAsExpected() {
-        var players = new Player[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] {new ("X"), new ("O")};
         var playerXIndex = 0;
         var gameState = new GameState(
             players,
@@ -243,7 +243,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_Empty3x3BoardNotYourTurnIsBlank() {
-        var players = new Player[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] {new ("X"), new ("O")};
         var playerOIndex = 1;
         var gameState = new GameState(
             players,
@@ -263,7 +263,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_SecondRound3x3BoardYourTurnIsAsExpected() {
-        var players = new Player[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] {new ("X"), new ("O")};
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -291,7 +291,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_NonKriegspielModeCanSeeOtherPlayer() {
-        var players = new Player[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] {new ("X"), new ("O")};
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -318,7 +318,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_MoveSameSpaceCanSeeRevealedSpace() {
-        var players = new Player[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] {new ("X"), new ("O")};
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -344,7 +344,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_MoveDifferentSpaceCantSeeOtherPlayer() {
-        var players = new Player[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] {new ("X"), new ("O")};
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -364,7 +364,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_ThirdRound3x3SpectatorViewIsAsExpected() {
-        var players = new Player[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] {new ("X"), new ("O")};
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -399,7 +399,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_Empty4x4BoardYourTurnIsAsExpected() {
-        var players = new Player[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] {new ("X"), new ("O")};
         var playerXIndex = 0;
         var gameState = new GameState(
             players,

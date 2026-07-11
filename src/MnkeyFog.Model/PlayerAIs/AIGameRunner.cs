@@ -10,7 +10,7 @@ public static class AIGameRunner {
 	/// <summary>
 	/// Variant of RunGame that outputs the gamestate for examination.
 	/// </summary>
-	public static ScoreCard RunAIGame(GameTemplate gameTemplate, OrderedDictionary<Player, IPlayerAI> aiPlayers, out GameState gameState) {
+	public static ScoreCard RunAIGame(GameTemplate gameTemplate, OrderedDictionary<PlayerInfo, IPlayerAI> aiPlayers, out GameState gameState) {
 		var playersIndexed = aiPlayers.Keys.ToPlayersIndexed();
 		gameState = new GameState(aiPlayers.Keys.ToArray(), gameTemplate, true);
 		while(!gameState.IsGameOver) {
@@ -24,7 +24,7 @@ public static class AIGameRunner {
 					// resign if the player AI can't figure out a legal move.
 					gameView.ResignPlayer();
 				} else {
-					var ai = aiPlayers[playerIndexed.Player];
+					var ai = aiPlayers[playerIndexed.Info];
 					ai.Attempt(gameView);
 					playerAttemptCounts[playerIndexed.Index] = playerAttemptsCount + 1;
 				}
@@ -35,13 +35,13 @@ public static class AIGameRunner {
 		// since the player order has been shuffled, the indices won't match, so
 		// we have to translate them back to the original index order.
 		var translatedPlayerScores = gameState.ScoreCard.PlayerScores.Select(ps => new PlayerIndexScore(
-			playersIndexed.Single(pi => pi.Player == playersState.GetPlayerIndexed(ps.PlayerIndex).Player).Index,
+			playersIndexed.Single(pi => pi.Info == playersState.GetPlayerIndexed(ps.PlayerIndex).Info).Index,
 			ps.Score
 		));
 		return new ScoreCard(translatedPlayerScores);
 	}
 
-	public static ScoreCard RunAIGame(GameTemplate gameTemplate, OrderedDictionary<Player, IPlayerAI> aiPlayers) {
+	public static ScoreCard RunAIGame(GameTemplate gameTemplate, OrderedDictionary<PlayerInfo, IPlayerAI> aiPlayers) {
 		return RunAIGame(gameTemplate, aiPlayers, out _);
 	}
 }

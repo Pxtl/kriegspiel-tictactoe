@@ -7,8 +7,8 @@ namespace MnkeyFog.Model;
 /// </summary>
 [ModelSerializable]
 [ImmutableObject(true)]
-public sealed record Player {
-    public Player(string mark) {
+public sealed record PlayerInfo {
+    public PlayerInfo(string mark) {
         if (mark == null) {
             throw new ArgumentNullException("Mark must be provided", nameof(mark));
         } else if (mark.Length != 1) {
@@ -28,33 +28,33 @@ public sealed record Player {
     /// <summary>
     /// Create a Player from a char.
     /// </summary>
-    public static Player FromChar(char value) => new Player(value.ToString());
+    public static PlayerInfo FromChar(char value) => new PlayerInfo(value.ToString());
     
     /// <summary>
     /// Create a Player from a 1-character nullable string.  Returns null if the
     /// parameter is not a 1-character string.
     /// </summary>
-    public static Player? FromString(string? value) {
+    public static PlayerInfo? FromString(string? value) {
         if (value == null) {
             return null;
         } else if (value.Length != 1) {
             return null;
         }
-        return new Player(value);
+        return new PlayerInfo(value);
     }
     
     /// <summary>
     /// Implicit conversion from char string to Player.
     /// </summary>
-    public static implicit operator Player(string value) => new Player(value);
+    public static implicit operator PlayerInfo(string value) => new PlayerInfo(value);
     
     /// <summary>
     /// Implicit conversion from char to Player.
     /// </summary>
-    public static implicit operator Player(char value) => new Player(value.ToString());
+    public static implicit operator PlayerInfo(char value) => new PlayerInfo(value.ToString());
         
     /// <summary>
     /// Implicit conversion from Player to string.
     /// </summary>
-    public static implicit operator string(Player player) => player.Mark;
+    public static implicit operator string(PlayerInfo player) => player.Mark;
 }

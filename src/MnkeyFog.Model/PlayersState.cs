@@ -16,18 +16,18 @@ public class PlayersState {
         "Empty constructor puts members in invalid state needs them to be replaced by initializers."
     )]
     public PlayersState() {
-        Players = [];
+        PlayerInfos = [];
         PlayManager = RoundRobinPlayManager.Instance;
     }
 
-    public PlayersState(IReadOnlyList<Player> players, PlayManager playManager)
-    : this(players, playManager, isRandomPlayerOrder: false) {}
+    public PlayersState(IReadOnlyList<PlayerInfo> playerInfos, PlayManager playManager)
+    : this(playerInfos, playManager, isRandomPlayerOrder: false) {}
 
-    public PlayersState(IReadOnlyList<Player> players, PlayManager playManager, bool isRandomPlayerOrder) {
+    public PlayersState(IReadOnlyList<PlayerInfo> playerInfos, PlayManager playManager, bool isRandomPlayerOrder) {
         if (isRandomPlayerOrder) {
-            players = players.Shuffle().ToList();
+            playerInfos = playerInfos.Shuffle().ToList();
         }
-        Players = players;
+        PlayerInfos = playerInfos;
         PlayManager = playManager;
     }
 
@@ -37,7 +37,7 @@ public class PlayersState {
 	public PlayersState(PlayersState playersState) {
         playersState.PlayManager.ConfirmHasImmutableAttribute();
 
-        Players = playersState.Players;
+        PlayerInfos = playersState.PlayerInfos;
         PlayManager = playersState.PlayManager;
         RoundIndex = playersState.RoundIndex;
         ResignedPlayerIndicesSet = new HashSet<int>(playersState.ResignedPlayerIndicesSet);
@@ -50,14 +50,14 @@ public class PlayersState {
     [MemberNotNull(nameof(_indicesByPlayer))]
     [MemberNotNull(nameof(_playerIndicesSet))]
 	[JsonProperty(TypeNameHandling = TypeNameHandling.None, ItemTypeNameHandling = TypeNameHandling.None)] //non-polymorphic.
-    public IReadOnlyList<Player> Players {
+    public IReadOnlyList<PlayerInfo> PlayerInfos {
         get; init {
             // Validation: ToDictionary will throw ArgumentException on non-unique key.
             _ = value.ToDictionary(p => p.Mark, StringComparer.OrdinalIgnoreCase);
 
-            var indicesByPlayer = new KeyValuePair<Player, int>[value.Count];
+            var indicesByPlayer = new KeyValuePair<PlayerInfo, int>[value.Count];
             for(var i = 0; i < value.Count; i += 1) {
-                indicesByPlayer[i] = new KeyValuePair<Player, int>(value[i], i);
+                indicesByPlayer[i] = new KeyValuePair<PlayerInfo, int>(value[i], i);
             }
            
             _indicesByPlayer = indicesByPlayer.ToImmutableDictionary();
@@ -65,8 +65,8 @@ public class PlayersState {
 
             field = value;
         }
-    } = new List<Player>();
-    private ImmutableDictionary<Player, int> _indicesByPlayer;
+    } = new List<PlayerInfo>();
+    private ImmutableDictionary<PlayerInfo, int> _indicesByPlayer;
     private ImmutableHashSet<int> _playerIndicesSet;
 
     /// <summary>
@@ -103,7 +103,7 @@ public class PlayersState {
 
     public void MarkPlayerPlayed(PlayerIndexed playerIndexed) {
         if (PlayedPlayerIndicesSet.Contains(playerIndexed.Index)) {
-            throw new InvalidOperationException($"Player {playerIndexed.Player} has already played");
+            throw new InvalidOperationException($"Player {playerIndexed.Info} has already played");
         }
         PlayedPlayerIndicesSet.Add(playerIndexed.Index);
     }
@@ -145,30 +145,30 @@ public class PlayersState {
         if(markIndex == Space.ImpasseMarkIndex) {
             return Space.ImpasseChar.ToString();
         } else if(markIndex.HasValue) {
-            return Players[markIndex.Value].Mark;
+            return PlayerInfos[markIndex.Value].Mark;
         } else {
             return Space.EmptyMarkString;
         }
     }
 
     public PlayerIndexed GetPlayerIndexed(int playerIndex) 
-    => new PlayerIndexed(Players[playerIndex], playerIndex);
+    => new PlayerIndexed(PlayerInfos[playerIndex], playerIndex);
 
     public PlayerIndexed GetPlayerIndexed(string mark) 
-    => GetPlayerIndexed(new Player(mark));
+    => GetPlayerIndexed(new PlayerInfo(mark));
 
-    public PlayerIndexed GetPlayerIndexed(Player player)
+    public PlayerIndexed GetPlayerIndexed(PlayerInfo player)
     => new PlayerIndexed(player, _indicesByPlayer[player]);
     #endregion
 
     #region helper properties
     [JsonIgnore()]
-    public IEnumerable<int> PlayerIndices => Enumerable.Range(0, Players.Count);
+    public IEnumerable<int> PlayerIndices => Enumerable.Range(0, PlayerInfos.Count);
 
     [JsonIgnore()]
     public IEnumerable<PlayerIndexed> PlayersIndexed { get {
-        for (var i = 0; i < Players.Count; i+=1) {
-            yield return new PlayerIndexed(Players[i], i);
+        for (var i = 0; i < PlayerInfos.Count; i+=1) {
+            yield return new PlayerIndexed(PlayerInfos[i], i);
         }
     } }
 

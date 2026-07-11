@@ -56,7 +56,7 @@ public record MNKTemplate
         if (!IsKriegspiel) {
             foreach (var board in gameState.Boards) {
                 foreach (var spaceEnum in board.AsSpaceEnumerable()) {
-                    for (var i = 0; i < gameState.PlayersState.Players.Count; i += 1) {
+                    for (var i = 0; i < gameState.PlayersState.PlayerInfos.Count; i += 1) {
                         spaceEnum.Space.MakeKnownToPlayerIndex(i);
                     }
                 }
