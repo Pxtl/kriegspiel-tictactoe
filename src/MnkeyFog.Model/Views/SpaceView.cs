@@ -1,4 +1,3 @@
-using MnkeyFog.Model.Indexed;
 
 namespace MnkeyFog.Model.Views;
 

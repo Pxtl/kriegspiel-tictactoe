@@ -1,6 +1,5 @@
 namespace MnkeyFog.Model.Tests;
 
-using MnkeyFog.Model.Indexed;
 using Xunit;
 
 public class CommandNameToolTests {

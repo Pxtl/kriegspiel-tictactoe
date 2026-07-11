@@ -1,4 +1,3 @@
-using MnkeyFog.Model.Indexed;
 using MnkeyFog.Model.PlayerAIs;
 using MnkeyFog.Model.Template;
 using OneOf;

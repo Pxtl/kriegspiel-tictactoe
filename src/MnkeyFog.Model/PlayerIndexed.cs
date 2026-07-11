@@ -1,4 +1,4 @@
-namespace MnkeyFog.Model.Indexed;
+namespace MnkeyFog.Model;
 
 /// <summary>
 /// Carries info about a player.  Do not serialize.

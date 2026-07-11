@@ -1,7 +1,6 @@
 namespace MnkeyFog.Model;
 
 using System.ComponentModel;
-using MnkeyFog.Model.Indexed;
 using OneOf;
 using OneOf.Types;
 

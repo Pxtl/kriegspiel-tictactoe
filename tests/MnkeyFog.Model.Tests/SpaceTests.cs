@@ -7,8 +7,8 @@ public class SpaceTests {
         [new PlayerInfo("X"), new PlayerInfo("O")],
         RoundRobinPlayManager.Instance
     );
-    private Indexed.PlayerIndexed PlayerX => _playersState.GetPlayerIndexed("X");
-    private Indexed.PlayerIndexed PlayerO => _playersState.GetPlayerIndexed("O");
+    private PlayerIndexed PlayerX => _playersState.GetPlayerIndexed("X");
+    private PlayerIndexed PlayerO => _playersState.GetPlayerIndexed("O");
 
     [Fact]
     public void Constructor_Default_MarkCharIsNull() {

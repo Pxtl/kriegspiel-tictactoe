@@ -2,7 +2,6 @@ namespace MnkeyFog.Model;
 
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using MnkeyFog.Model.Indexed;
 using OneOf;
 using OneOf.Types;
 

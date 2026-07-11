@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using MnkeyFog.Model.Indexed;
 namespace MnkeyFog.Model.MNKGame;
 
 /// <summary>

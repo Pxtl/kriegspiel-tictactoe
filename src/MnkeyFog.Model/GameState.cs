@@ -1,5 +1,4 @@
 using System.Runtime.Serialization;
-using MnkeyFog.Model.Indexed;
 using MnkeyFog.Model.Template;
 using MnkeyFog.Model.Views;
 

@@ -1,4 +1,3 @@
-using MnkeyFog.Model.Indexed;
 using MnkeyFog.Model.PlayerAIs;
 
 namespace MnkeyFog.Model.Tests;

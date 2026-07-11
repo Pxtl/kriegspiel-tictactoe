@@ -1,7 +1,6 @@
 namespace MnkeyFog.Model;
 
 using System.Text.RegularExpressions;
-using MnkeyFog.Model.Indexed;
 using MnkeyFog.Model.Views;
 using OneOf;
 using OneOf.Types;

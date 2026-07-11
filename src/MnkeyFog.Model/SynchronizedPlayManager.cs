@@ -1,7 +1,6 @@
 namespace MnkeyFog.Model;
 
 using System.ComponentModel;
-using MnkeyFog.Model.Indexed;
 
 /// <summary>
 /// PlayManager for synchronized mode - player moves are buffered until round end.
