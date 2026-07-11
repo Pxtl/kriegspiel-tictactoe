@@ -12,7 +12,7 @@ using OneOf.Types;
 /// Because these are functional, they are testable.
 /// </remarks>
 public static class CommandNameTool {
-    public static OrderedDictionary<int, string> BuildPlayerToCommandNameMap(IEnumerable<PlayerIndexed> availablePlayers) {
+    public static OrderedDictionary<int, string> BuildPlayerToCommandNameMap(IEnumerable<Player> availablePlayers) {
         // Build alternate key mapping for ALL players before entering loop
         // Keys are uppercase only (A-Z, 0-9)
         var usedKeys = availablePlayers

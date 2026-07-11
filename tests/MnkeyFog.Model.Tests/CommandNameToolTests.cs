@@ -115,13 +115,12 @@ public class CommandNameToolTests {
         var playerInfos = new List<PlayerInfo> {
             new PlayerInfo(typeableMark),
         }.ToPlayersIndexed();
-        var typeablePlayerIndexed = playerInfos.First();
-
         
+        var typeablePlayerInfo = playerInfos.First();
         var result = CommandNameTool.BuildPlayerToCommandNameMap(playerInfos);
         
         // Single-char typeable mark returns identity
-        Assert.Equal(typeableMark, result[typeablePlayerIndexed.Index]);
+        Assert.Equal(typeableMark, result[typeablePlayerInfo.Index]);
     }
 
     [Fact]
@@ -201,7 +200,7 @@ public class CommandNameToolTests {
     
     [Fact]
     public void BuildPlayerToCommandNameMap_EmptyArray() {
-        var map = CommandNameTool.BuildPlayerToCommandNameMap(Array.Empty<PlayerIndexed>());
+        var map = CommandNameTool.BuildPlayerToCommandNameMap(Array.Empty<Player>());
         
         map.Count.Should().Be(0);
     }

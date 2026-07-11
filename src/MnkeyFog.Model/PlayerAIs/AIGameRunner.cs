@@ -16,17 +16,17 @@ public static class AIGameRunner {
 		while(!gameState.IsGameOver) {
 			var playerAttemptCounts = new AutoConstructingDictionary<int, int>(); //defaults all keys to zero.
 			while(!gameState.PlayersState.IsRoundOver && !gameState.IsGameOver) {
-				var playerIndexed = gameState.PlayersState.PlayersAvailableForTurn.First();
-				var gameView = new GameView(gameState, playerIndexed.Index);
+				var player = gameState.PlayersState.PlayersAvailableForTurn.First();
+				var gameView = new GameView(gameState, player.Index);
 				
-				var playerAttemptsCount = playerAttemptCounts[playerIndexed.Index];
+				var playerAttemptsCount = playerAttemptCounts[player.Index];
 				if (playerAttemptsCount > MaxPlayerAIAttemptCount) {
 					// resign if the player AI can't figure out a legal move.
 					gameView.ResignPlayer();
 				} else {
-					var ai = aiPlayers[playerIndexed.Info];
+					var ai = aiPlayers[player.Info];
 					ai.Attempt(gameView);
-					playerAttemptCounts[playerIndexed.Index] = playerAttemptsCount + 1;
+					playerAttemptCounts[player.Index] = playerAttemptsCount + 1;
 				}
 			}
 			gameState.EndRound(out _);
@@ -35,7 +35,7 @@ public static class AIGameRunner {
 		// since the player order has been shuffled, the indices won't match, so
 		// we have to translate them back to the original index order.
 		var translatedPlayerScores = gameState.ScoreCard.PlayerScores.Select(ps => new PlayerIndexScore(
-			playersIndexed.Single(pi => pi.Info == playersState.GetPlayerIndexed(ps.PlayerIndex).Info).Index,
+			playersIndexed.Single(pi => pi.Info == playersState.GetPlayer(ps.PlayerIndex).Info).Index,
 			ps.Score
 		));
 		return new ScoreCard(translatedPlayerScores);

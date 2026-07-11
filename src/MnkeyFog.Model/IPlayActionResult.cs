@@ -17,7 +17,7 @@ public record struct Resigned(int PlayerIndex)
     public bool IsViewChanged => true;
     public bool IsTurnDone => true;
     public string GetResultText(PlayersState playersState)
-    => $"Player {playersState.GetPlayerIndexed(PlayerIndex)} is resigning.";
+    => $"Player {playersState.GetPlayer(PlayerIndex)} is resigning.";
 }
 public record struct Quitting()
 : IPlayActionResult {
@@ -37,14 +37,14 @@ public record struct CannotTakeTurn(int PlayerIndex)
     public bool IsViewChanged => false;
     public bool IsTurnDone => false;
     public string GetResultText(PlayersState playersState)
-    => $"The player {playersState.GetPlayerIndexed(PlayerIndex)} can not take a turn right now.";
+    => $"The player {playersState.GetPlayer(PlayerIndex)} can not take a turn right now.";
 };
 public record struct PositionAlreadyPlayed(int PlayerIndex)
 : IPlayActionResult {
     public bool IsViewChanged => false;
     public bool IsTurnDone => false;
     public string GetResultText(PlayersState playersState)
-    => $"Invalid space, that space is already known to player {playersState.GetPlayerIndexed(PlayerIndex)}.";
+    => $"Invalid space, that space is already known to player {playersState.GetPlayer(PlayerIndex)}.";
 };
 public record struct NewlyLearned(int MarkIndex)
 : IPlayActionResult {

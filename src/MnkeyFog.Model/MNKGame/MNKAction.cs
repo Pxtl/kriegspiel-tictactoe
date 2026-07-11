@@ -35,9 +35,9 @@ public record MNKAction
         }
         var space = GetSpace(gameState);
 		space.MarkIndex = Space.ImpasseMarkIndex;
-        foreach(var player in collisions.Select(c => c.PlayerIndex)) {
-            var playerIndexed = gameState.PlayersState.GetPlayerIndexed(player);
-            space.MakeKnownToPlayerIndex(playerIndexed.Index);
+        foreach(var playerIndex in collisions.Select(c => c.PlayerIndex)) {
+            var player = gameState.PlayersState.GetPlayer(playerIndex);
+            space.MakeKnownToPlayerIndex(player.Index);
         }
 	}
 

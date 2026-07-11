@@ -210,7 +210,7 @@ public class PlayManagerTests {
 
     [Fact]
     public void GameStateConstructor_3Players_FirstPlayerIs_A() {
-        var playerAIndexed = new PlayerIndexed("A", 0);
+        var playerAIndexed = new Player("A", 0);
 
         var state = new GameState(
             [new PlayerInfo("A"), new PlayerInfo("B"), new PlayerInfo("C")],

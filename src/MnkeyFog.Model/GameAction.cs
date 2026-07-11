@@ -11,6 +11,6 @@ public abstract record GameAction() {
     public abstract void DoActionCollision(GameState gameState, int actionPlayer, IReadOnlyList<PlayerAction> collisions);
     public PlayerAction GetPlayerAction(int playerIndex) => new PlayerAction(this, playerIndex);
 
-    public IPlayActionResult Attempt(GameState gameState, PlayerIndexed actionPlayerIndexed)
-    => Attempt(gameState, actionPlayerIndexed.Index);
+    public IPlayActionResult Attempt(GameState gameState, Player actionPlayerInfo)
+    => Attempt(gameState, actionPlayerInfo.Index);
 }

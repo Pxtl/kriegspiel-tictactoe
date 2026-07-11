@@ -8,8 +8,8 @@ public class GameStateTests {
             new MNKTemplate(Array.Empty<BoardBuilder>(), isSynchronousMode: false, isKriegspiel: true),
             isRandomPlayerOrder: false
         );
-        var playerX = state.PlayersState.GetPlayerIndexed("X");
-        var playerO = state.PlayersState.GetPlayerIndexed("O");
+        var playerX = state.PlayersState.GetPlayer("X");
+        var playerO = state.PlayersState.GetPlayer("O");
         state.Boards.Should().BeEmpty();
         state.PlayersState.PlayerInfos.Should().Contain(new PlayerInfo("X"))
             .And.Subject.Should().Contain(new PlayerInfo("O"));
@@ -28,8 +28,8 @@ public class GameStateTests {
             ),
             isRandomPlayerOrder: false
         );
-        var playerXView = state.GetView(state.PlayersState.GetPlayerIndexed("X"));
-        var playerOView = state.GetView(state.PlayersState.GetPlayerIndexed("O"));
+        var playerXView = state.GetView(state.PlayersState.GetPlayer("X"));
+        var playerOView = state.GetView(state.PlayersState.GetPlayer("O"));
         //XXO
         //OOX
         //XOX
@@ -66,32 +66,32 @@ public class GameStateTests {
         //XXX
         //OIX
         //OOO
-        var playerXView = state.GetView(state.PlayersState.GetPlayerIndexed("X"));
-        var playerOView = state.GetView(state.PlayersState.GetPlayerIndexed("O"));      
+        var playerXView = state.GetView(state.PlayersState.GetPlayer("X"));
+        var playerOView = state.GetView(state.PlayersState.GetPlayer("O"));      
         var result = playerXView.Attempt(new MNKAction(0, 0, 0));
         result = playerOView.Attempt(new MNKAction(0, 0, 2));
         state.EndRound(out _);
 
-        playerXView = state.GetView(state.PlayersState.GetPlayerIndexed("X"));
-        playerOView = state.GetView(state.PlayersState.GetPlayerIndexed("O"));
+        playerXView = state.GetView(state.PlayersState.GetPlayer("X"));
+        playerOView = state.GetView(state.PlayersState.GetPlayer("O"));
         result = playerXView.Attempt(new MNKAction(0, 1, 0));
         result = playerOView.Attempt(new MNKAction(0, 1, 2));
         state.EndRound(out _);
 
-        playerXView = state.GetView(state.PlayersState.GetPlayerIndexed("X"));
-        playerOView = state.GetView(state.PlayersState.GetPlayerIndexed("O"));
+        playerXView = state.GetView(state.PlayersState.GetPlayer("X"));
+        playerOView = state.GetView(state.PlayersState.GetPlayer("O"));
         result = playerXView.Attempt(new MNKAction(0, 2, 0));
         result = playerOView.Attempt(new MNKAction(0, 2, 2));
         state.EndRound(out _);
 
-        playerXView = state.GetView(state.PlayersState.GetPlayerIndexed("X"));
-        playerOView = state.GetView(state.PlayersState.GetPlayerIndexed("O"));
+        playerXView = state.GetView(state.PlayersState.GetPlayer("X"));
+        playerOView = state.GetView(state.PlayersState.GetPlayer("O"));
         result = playerXView.Attempt(new MNKAction(0, 1, 2));
         result = playerOView.Attempt(new MNKAction(0, 1, 0));
         state.EndRound(out _);
 
-        playerXView = state.GetView(state.PlayersState.GetPlayerIndexed("X"));
-        playerOView = state.GetView(state.PlayersState.GetPlayerIndexed("O"));
+        playerXView = state.GetView(state.PlayersState.GetPlayer("X"));
+        playerOView = state.GetView(state.PlayersState.GetPlayer("O"));
         result = playerXView.Attempt(new MNKAction(0, 1, 1));
         result = playerOView.Attempt(new MNKAction(0, 1, 1));
 

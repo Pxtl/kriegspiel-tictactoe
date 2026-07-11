@@ -41,7 +41,7 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
         
-        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
+        var currentPlayer = state.PlayersState.GetPlayer("X");
         state.GetView(currentPlayer).Attempt(new MNKAction(0, 0, 0));
         var expected = @"
   ┌───┬───┬───┐
@@ -71,7 +71,7 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
+        var currentPlayer = state.PlayersState.GetPlayer("X");
         // 0 means wrap as tight as possible.
         var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index));
 
@@ -101,9 +101,9 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
+        var currentPlayer = state.PlayersState.GetPlayer("X");
         state.GetView(currentPlayer).Attempt(new MNKAction(0, 1, 1));     
-        var otherPlayer = state.PlayersState.GetPlayerIndexed("O");
+        var otherPlayer = state.PlayersState.GetPlayer("O");
         state.GetView(otherPlayer).Attempt(new MNKAction(0, 0, 0));
         state.EndRound(out var _);
 
@@ -284,7 +284,7 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
+        var currentPlayer = state.PlayersState.GetPlayer("X");
         state.EndTurn(currentPlayer.Index, out _);
 
         // wrap halfway through 3rd board
@@ -322,7 +322,7 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
+        var currentPlayer = state.PlayersState.GetPlayer("X");
         state.EndTurn(currentPlayer.Index, out _);
         
         // 0 means wrap as tight as possible.
@@ -367,7 +367,7 @@ public class BoardRendererTests {
             isRandomPlayerOrder: false
         );
 
-        var currentPlayer = state.PlayersState.GetPlayerIndexed("X");
+        var currentPlayer = state.PlayersState.GetPlayer("X");
 
         var actual = BoardRenderer.DrawBoards(new GameView(state, currentPlayer.Index), maxRenderWidth: 999999);
 

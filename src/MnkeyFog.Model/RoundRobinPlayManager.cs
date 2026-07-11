@@ -27,6 +27,6 @@ public class RoundRobinPlayManager
         hasStateChanged = true;
     }
 
-    public override IEnumerable<PlayerIndexed> PlayersAvailableForTurn(PlayersState playerState)
+    public override IEnumerable<Player> PlayersAvailableForTurn(PlayersState playerState)
         => playerState.ActivePlayers.Where(p => !playerState.PlayedPlayerIndicesSet.Contains(p.Index)).Take(1);
 }

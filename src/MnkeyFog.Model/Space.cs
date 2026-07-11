@@ -54,7 +54,7 @@ public sealed record Space {
     /// Get the display value of this space for the given player.
     /// Show always if the player is null.
     /// </summary>
-    public string ToString(PlayerIndexed? player, PlayersState playersState)
+    public string ToString(Player? player, PlayersState playersState)
         => (player == null || IsKnownToPlayerIndex(player.Index))
             ? playersState.GetMark(MarkIndex)
             : EmptyMarkString;

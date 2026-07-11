@@ -90,7 +90,7 @@ public class GameState
     => ActionQueue.ExecutePendingActions(this);
 
     public void EndTurn(int playerIndex, out bool hasStateChanged)
-    => PlayersState.EndTurn(this, PlayersState.GetPlayerIndexed(playerIndex), out hasStateChanged);
+    => PlayersState.EndTurn(this, PlayersState.GetPlayer(playerIndex), out hasStateChanged);
 
     public void EndRound(out bool hasRoundStateChanged)
     => PlayersState.EndRound(this, out hasRoundStateChanged);
@@ -99,8 +99,8 @@ public class GameState
 
     public GameView GetSpectatorView()
     => new(this, (int?)null);
-    public GameView GetView(PlayerIndexed? playerIndexed)
-    => new(this, playerIndexed?.Index);
+    public GameView GetView(Player? player)
+    => new(this, player?.Index);
     public GameView GetView(int? playerIndex)
     => new(this, playerIndex);
 
@@ -143,7 +143,7 @@ public class GameState
     [JsonIgnore()]
     public string ResignedPlayersText
     => PlayersState.ResignedPlayerIndicesSet.Count > 0
-        ? $"Resigned players: {string.Join(", ", PlayersState.ResignedPlayerIndicesSet.OrderBy(ix => ix).Select(ix => PlayersState.GetPlayerIndexed(ix).Info))}"
+        ? $"Resigned players: {string.Join(", ", PlayersState.ResignedPlayerIndicesSet.OrderBy(ix => ix).Select(ix => PlayersState.GetPlayer(ix).Info))}"
         : "";
     #endregion
 

@@ -125,8 +125,8 @@ public class PlayerAITests {
 
     [Fact]
     public void MontyAI_KnowsToBlock() {
-        var playerX = new PlayerIndexed("X", 0);
-        var playerO = new PlayerIndexed("O", 1);
+        var playerX = new Player("X", 0);
+        var playerO = new Player("O", 1);
         var gameState = new GameState([playerX.Info, playerO.Info], GameTemplates.BasicTicTacToe, isRandomPlayerOrder:false);
         gameState.Boards[0].Spaces[1,1].MarkIndex = playerO.Index;
         gameState.Boards[0].Spaces[2,0].MarkIndex = playerO.Index;

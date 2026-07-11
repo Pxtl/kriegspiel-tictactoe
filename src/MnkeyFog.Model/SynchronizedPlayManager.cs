@@ -27,6 +27,6 @@ public class SynchronizedPlayManager
         hasStateChanged = false;
     }
     
-    public override IEnumerable<PlayerIndexed> PlayersAvailableForTurn(PlayersState playerState)
+    public override IEnumerable<Player> PlayersAvailableForTurn(PlayersState playerState)
         => playerState.ActivePlayers.Where(p => !playerState.PlayedPlayerIndicesSet.Contains(p.Index));
 }

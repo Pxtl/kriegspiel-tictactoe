@@ -95,16 +95,16 @@ public class PlayersState {
     /// there are 2 "index 0" turns, so we can't use "index 0" as new round in
     /// that case.
     /// </remarks>
-    public void EndTurn(GameState gameState, PlayerIndexed currentPlayer, out bool hasStateChanged) {
+    public void EndTurn(GameState gameState, Player currentPlayer, out bool hasStateChanged) {
         MarkPlayerPlayed(currentPlayer);
         PlayManager.EndedTurn(gameState, out hasStateChanged);
     }
 
-    public void MarkPlayerPlayed(PlayerIndexed playerIndexed) {
-        if (PlayedPlayerIndicesSet.Contains(playerIndexed.Index)) {
-            throw new InvalidOperationException($"Player {playerIndexed.Info} has already played");
+    public void MarkPlayerPlayed(Player player) {
+        if (PlayedPlayerIndicesSet.Contains(player.Index)) {
+            throw new InvalidOperationException($"Player {player.Info} has already played");
         }
-        PlayedPlayerIndicesSet.Add(playerIndexed.Index);
+        PlayedPlayerIndicesSet.Add(player.Index);
     }
 
     public void EndRound(GameState gameState, out bool hasStateChanged) {
@@ -116,7 +116,7 @@ public class PlayersState {
     /// <summary>
     /// Test if the given player has resigned.
     /// </summary>
-    public bool IsResignedPlayer(PlayerIndexed player)
+    public bool IsResignedPlayer(Player player)
     => IsResignedPlayer(player.Index);
 
     public bool IsResignedPlayer(int playerIndex)
@@ -126,7 +126,7 @@ public class PlayersState {
     /// Mark the given player as resigned. If it is the current player's turn,
     /// do *not* call NextTurn.
     /// </summary>
-    public void ResignPlayer(PlayerIndexed player) {
+    public void ResignPlayer(Player player) {
         ResignPlayer(player.Index);
     }
 
@@ -150,14 +150,14 @@ public class PlayersState {
         }
     }
 
-    public PlayerIndexed GetPlayerIndexed(int playerIndex) 
-    => new PlayerIndexed(PlayerInfos[playerIndex], playerIndex);
+    public Player GetPlayer(int playerIndex) 
+    => new Player(PlayerInfos[playerIndex], playerIndex);
 
-    public PlayerIndexed GetPlayerIndexed(string mark) 
-    => GetPlayerIndexed(new PlayerInfo(mark));
+    public Player GetPlayer(string mark) 
+    => GetPlayer(new PlayerInfo(mark));
 
-    public PlayerIndexed GetPlayerIndexed(PlayerInfo player)
-    => new PlayerIndexed(player, _indicesByPlayer[player]);
+    public Player GetPlayer(PlayerInfo player)
+    => new Player(player, _indicesByPlayer[player]);
     #endregion
 
     #region helper properties
@@ -165,9 +165,9 @@ public class PlayersState {
     public IEnumerable<int> PlayerIndices => Enumerable.Range(0, PlayerInfos.Count);
 
     [JsonIgnore()]
-    public IEnumerable<PlayerIndexed> PlayersIndexed { get {
+    public IEnumerable<Player> PlayersIndexed { get {
         for (var i = 0; i < PlayerInfos.Count; i+=1) {
-            yield return new PlayerIndexed(PlayerInfos[i], i);
+            yield return new Player(PlayerInfos[i], i);
         }
     } }
 
@@ -183,11 +183,11 @@ public class PlayersState {
     /// Get all of the current active players.  Order is consistent.
     /// </summary>
     [JsonIgnore()]
-    public IEnumerable<PlayerIndexed> ActivePlayers
+    public IEnumerable<Player> ActivePlayers
     => PlayersIndexed.Where(p => ActivePlayerIndices.Contains(p.Index));
 
     [JsonIgnore()]
-    public IEnumerable<PlayerIndexed> PlayersAvailableForTurn
+    public IEnumerable<Player> PlayersAvailableForTurn
     => PlayManager.PlayersAvailableForTurn(this);
 
     [JsonIgnore()]
