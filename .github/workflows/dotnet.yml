@@ -15,6 +15,11 @@ jobs:
         os: [ubuntu-latest, windows-2025-vs2026]
 
     steps:
+      # There is a validation error happening on Windows only so I assume that
+      # disabling autocrlf will fix it.
+      - name: Disable autocrlf
+        run: git config --global core.autocrlf false
+
       - name: Checkout repository
         uses: actions/checkout@v6
 
