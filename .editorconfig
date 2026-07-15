@@ -1,42 +1,50 @@
-# EditorConfig is awesome: https://EditorConfig.org
-# The following is a basic .editorconfig that sets formatting conventions for the project.
+root = true
 
 [*]
 # Basic global settings
-root = true
-
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
 
-[*.{cs,csx}]
-# Formatting defaults for C# code
-
-# Indentation
-indent_style = tab
+[*.{csproj,props,targets}]
+# msbuild/dotnet proj files
 indent_size = 2
-tab_width = 2
+indent_style = space
+trim_trailing_whitespace =  true
 
-# Whitespace
-trim_trailing_whitespace = true
-insert_space_after_comma = false
-insert_space_after_semicolon = false
+[*.cs]
+indent_size = 4
+indent_style = space
+trim_trailing_whitespace =  true
 
-# Line endings
-line_ending_style = lf
+# require braces on statement blocks
+dotnet_diagnostic.IDE0011.severity = error
 
-[*.{cs,csx}]
-# C# formatting via dotnet format defaults
-csharp_indent_access_modifier = 0
-csharp_line_endings = {previous}
-csharp_object_initializer_brace_style = vertical
-dotnet_format_addImplicitObjectConstraintWithNewerCompiler = false
-dotnet_format_autosortusingdirectives = true
-dotnet_format_allow_multipleusingstatements = false
-dotnet_format_space_around_binary_operators = always
-dotnet_format_space_inside_parentheses_and_angle_brackets = always
+# unused variables
+dotnet_diagnostic.CS0168.severity = error
+dotnet_diagnostic.CS0219.severity = error
 
-[*.sln]
-# Solution file formatting
-line_endings = CRLF
-insert_final_newline = true
+# all style problems below are errors
+dotnet_diagnostic.IDE0055.severity = error
+ 
+# --- 1TBS Brace Layout ---
+# Keeps opening braces on the same line for control blocks, accessors, and lambdas
+csharp_new_line_before_open_brace = none
+
+# Puts else, catch, and finally on the same line as the closing brace
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+
+# --- Indentation & Spacing ---
+# Enforce standard C# spacing
+csharp_space_around_binary_operators = before_and_after
+csharp_space_between_parentheses = false
+csharp_space_before_colon_in_inheritance_clause = true
+csharp_space_after_colon_in_inheritance_clause = true
+csharp_space_around_collection_element_initializer = true
+
+# Enforce block body preferences over expression bodies
+csharp_style_expression_bodied_methods = false
+csharp_style_expression_bodied_constructors = false
+csharp_style_expression_bodied_properties = false

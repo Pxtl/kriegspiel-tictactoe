@@ -11,10 +11,10 @@ using OneOf.Types;
 [ImmutableObject(true)] //not read by anything just useful metadata.
 public class RoundRobinPlayManager
 : PlayManager {
-    public static RoundRobinPlayManager Instance {get;} = new RoundRobinPlayManager();
+    public static RoundRobinPlayManager Instance { get; } = new RoundRobinPlayManager();
 
     public override string GameStateText(PlayersState playerState)
-        => playerState.PlayersAvailableForTurn.Count() > 0 
+        => playerState.PlayersAvailableForTurn.Count() > 0
         ? $"Round-robin play. Current player is {playerState.PlayersAvailableForTurn.First().Info.Mark}."
         : "Round over.";
 

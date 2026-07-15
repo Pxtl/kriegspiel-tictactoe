@@ -8,7 +8,7 @@ namespace MnkeyFog.Model;
 public class GameState
 : IGameState, IGameStateServer {
     #region Constructors
-    public GameState() { 
+    public GameState() {
         // unusable default values will probably get removed when members are
         // initialized.
         PlayersState = new PlayersState([], RoundRobinPlayManager.Instance);
@@ -21,7 +21,7 @@ public class GameState
     /// </summary>
     public GameState(GameState gameState) {
         gameState.GameTemplate.ConfirmHasImmutableAttribute();
-        
+
         Boards = gameState.Boards.Select(board => new Board(board)).ToList();
         PlayersState = new PlayersState(gameState.PlayersState);
         GameTemplate = gameState.GameTemplate;
@@ -112,15 +112,17 @@ public class GameState
 
 
     [JsonIgnore()]
-    public virtual IEnumerable<PlayerInfo> Winners { get {
-        if(!IsGameOver) {
-            return [];
+    public virtual IEnumerable<PlayerInfo> Winners {
+        get {
+            if (!IsGameOver) {
+                return [];
+            }
+            var activePlayersScores = new ScoreCard(
+                ScoreCard.PlayerScores.Where(playerScore => PlayersState.ActivePlayerIndices.Contains(playerScore.PlayerIndex))
+            );
+            return activePlayersScores.Highest.AsPlayerInfos(PlayersState);
         }
-        var activePlayersScores = new ScoreCard(
-            ScoreCard.PlayerScores.Where(playerScore => PlayersState.ActivePlayerIndices.Contains(playerScore.PlayerIndex))
-        );
-        return activePlayersScores.Highest.AsPlayerInfos(PlayersState);
-    }}
+    }
 
     [JsonIgnore()]
     public bool IsGameOver
@@ -130,14 +132,14 @@ public class GameState
     [JsonIgnore()]
     public string GameStateText
     => (
-            IsGameOver 
+            IsGameOver
             ? ((Winners.Count() == 0 || ScoreCard.PlayerScores.All(ps => ps.Score == 0))
                 ? "Game over. Nobody wins."
                 : $"Game over. {string.Join(" and ", Winners)} win(s)."
-            ) 
+            )
             : PlayersState.GameStateText
         )
-            + Environment.NewLine 
+            + Environment.NewLine
             + ResignedPlayersText;
 
     [JsonIgnore()]
@@ -150,26 +152,30 @@ public class GameState
     #region board management
 
     [JsonIgnore()]
-    public IEnumerable<sbyte> ActiveBoardIndices { get {
-        for(sbyte i = 0; i < Boards.Count; i+=1) {
-            if(!Boards[i].IsDone) {
-                yield return i; 
+    public IEnumerable<sbyte> ActiveBoardIndices {
+        get {
+            for (sbyte i = 0; i < Boards.Count; i += 1) {
+                if (!Boards[i].IsDone) {
+                    yield return i;
+                }
             }
         }
-    }}
-    
+    }
+
     /// <summary>
     /// If there is only one active board, return its index.  Otherwise, return
     /// null.
     /// </summary>
     [JsonIgnore()]
-    public sbyte? SingleActiveBoardIndex { get {
-        var firstElements = ActiveBoardIndices.Take(2).ToArray();
-        return (firstElements.Length == 1) ? firstElements.Single() : null;
-    }}
+    public sbyte? SingleActiveBoardIndex {
+        get {
+            var firstElements = ActiveBoardIndices.Take(2).ToArray();
+            return (firstElements.Length == 1) ? firstElements.Single() : null;
+        }
+    }
 
     public Board GetBoardByIndex(sbyte boardIndex)
     => Boards[boardIndex];
 
-	#endregion
+    #endregion
 }

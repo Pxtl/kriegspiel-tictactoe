@@ -57,7 +57,7 @@ public static class ExtensionMethods {
         public bool HasImmutableAttribute {
             get {
                 var type = obj.GetType();
-                if(_immutableTypesCache.TryGetValue(type, out bool hasImmutable)) {
+                if (_immutableTypesCache.TryGetValue(type, out bool hasImmutable)) {
                     return hasImmutable;
                 } else {
                     hasImmutable = obj.GetType().GetCustomAttributes<ImmutableObjectAttribute>().Any(attr => attr.Immutable);
@@ -69,9 +69,9 @@ public static class ExtensionMethods {
 
         public void ConfirmHasImmutableAttribute() {
             if (!obj.HasImmutableAttribute) {
-                
+
                 throw new InvalidOperationException(
-                    $"The object of type '{obj.GetType().Name}' is expected to be immutable. " 
+                    $"The object of type '{obj.GetType().Name}' is expected to be immutable. "
                     + "Confirm that the object is immutable and apply the {nameof(ImmutableObjectAttribute)} to its class."
                 );
             }
@@ -81,13 +81,13 @@ public static class ExtensionMethods {
     public static Dictionary<Type, bool> _immutableTypesCache = new Dictionary<Type, bool>();
 
     public static IEnumerable<Player> ToPlayersIndexed(this IReadOnlyList<PlayerInfo> playerInfos) {
-        for(var i = 0; i < playerInfos.Count; i+=1) {
+        for (var i = 0; i < playerInfos.Count; i += 1) {
             yield return new Player(playerInfos[i], i);
         }
     }
 
     public static IEnumerable<Player> ToPlayersIndexed(this IReadOnlyList<string> playerMarks) {
-        for(var i = 0; i < playerMarks.Count; i+=1) {
+        for (var i = 0; i < playerMarks.Count; i += 1) {
             yield return new Player(new PlayerInfo(playerMarks[i]), i);
         }
     }

@@ -22,11 +22,11 @@ internal static class ConsoleLoop {
             player => $"Joining game-file '{sharedStateFilePath.FullName}' as player '{player}'.",
             localHotseatGame => "Running in hotseat mode."
         ));
-        
+
         Console.Out.WriteLine($"Players are {string.Join(", ", state.PlayersState.PlayerInfos)}.");
         Console.Out.WriteLine($"Game is {state.GameTemplate.CommandName}.");
         Console.Out.WriteLine($"Description: {state.GameTemplate.Description}");
-        foreach(var aiPlayer in aiPlayers) {
+        foreach (var aiPlayer in aiPlayers) {
             Console.Out.WriteLine($"AI Player {aiPlayer.Key.Mark}: {aiPlayer.Value.Description}.");
         }
 
@@ -34,17 +34,17 @@ internal static class ConsoleLoop {
         while (!isGameOver) {
             // AI players take their turns.
             var isDoneAITurns = false;
-            while(!isDoneAITurns) {
+            while (!isDoneAITurns) {
                 isDoneAITurns = true;
                 foreach (var player in state.PlayersState.PlayersAvailableForTurn) {
-                    if(aiPlayers.TryGetValue(player.Info, out var playerAI)) {
+                    if (aiPlayers.TryGetValue(player.Info, out var playerAI)) {
                         //if any AI player can take their turn, we're not done
                         //AI turns.  Keep attempting until no AI player does a
                         //turn.
-                        isDoneAITurns = false; 
+                        isDoneAITurns = false;
                         var attemptCount = 0;
                         while (state.PlayersState.CanTakeTurn(player.Index)) {
-                            using(var stateStorage = new StateStorage(sharedStateFilePath.FullName, out state)) {
+                            using (var stateStorage = new StateStorage(sharedStateFilePath.FullName, out state)) {
                                 var gameView = state.GetView(player.Index);
                                 if (attemptCount > AIGameRunner.MaxPlayerAIAttemptCount) {
                                     // resign if the player AI can't figure out a legal move.
@@ -156,7 +156,7 @@ internal static class ConsoleLoop {
 
     private static IPlayActionResult DoPlayerAction(ref GameState state, Player player, string sharedStateFilePath) {
         var gameView = state.GetView(player);
-        var actionFactories = gameView.AvailableActions;;
+        var actionFactories = gameView.AvailableActions; ;
 
         if (actionFactories.Count() == 1) {
             var actionFactory = actionFactories.Single();
@@ -167,8 +167,7 @@ internal static class ConsoleLoop {
                 using (var stateStorage = new StateStorage(sharedStateFilePath, out state)) {
                     return actionFactoryForSimple.Create().Attempt(state, player);
                 }
-            }
-            else if (actionFactory is GameActionFactoryForSpace actionFactoryForSpace) {
+            } else if (actionFactory is GameActionFactoryForSpace actionFactoryForSpace) {
                 return DoSpaceSelection(ref state, player, sharedStateFilePath, actionFactoryForSpace);
             } else {
                 throw new InvalidOperationException("Unknown or unsupported Action Factory.");
@@ -194,7 +193,7 @@ internal static class ConsoleLoop {
                         return gameViewForSwitch.ResignPlayer();
                     } else if ("q".Equals(result.Value, StringComparison.OrdinalIgnoreCase)) {
                         return Quit();
-                    } else if(gameView.TryGetCoordinatesFromSpaceName(result.Value, out sbyte boardIndex, out var col, out var row)) {
+                    } else if (gameView.TryGetCoordinatesFromSpaceName(result.Value, out sbyte boardIndex, out var col, out var row)) {
                         return actionFactory.Create(boardIndex, col, row).Attempt(stateStorage.State, player);
                     } else {
                         return new InvalidCommand(result.Value);
@@ -272,7 +271,7 @@ internal static class ConsoleLoop {
                 gameView = state.GetView(player);
                 return boardCommand.Match(
                     result => {
-                        if("r".Equals(result.Value, StringComparison.OrdinalIgnoreCase)) {
+                        if ("r".Equals(result.Value, StringComparison.OrdinalIgnoreCase)) {
                             gameView = stateStorage.State.GetView(player);
                             return gameView.ResignPlayer();
                         } else if ("q".Equals(result.Value, StringComparison.OrdinalIgnoreCase)) {
@@ -280,7 +279,7 @@ internal static class ConsoleLoop {
                             return new Quitting();
                         } else {
                             return gameView.AttemptBoard(result.Value).Match(
-                                boardViewResult 
+                                boardViewResult
                                 => actionFactory.Create(boardViewResult.Value.BoardIndex).Attempt(stateStorage.State, player),
                                 boardIsDone => boardIsDone,
                                 invalidCommand => invalidCommand
@@ -298,7 +297,7 @@ internal static class ConsoleLoop {
     private static Quitting Quit() {
         Console.WriteLine("Quitting.  Use 'load' to resume later.");
         Environment.Exit(0);
-        return new Quitting();        
+        return new Quitting();
     }
 }
 

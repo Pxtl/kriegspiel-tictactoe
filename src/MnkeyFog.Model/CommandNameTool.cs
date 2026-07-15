@@ -26,7 +26,7 @@ public static class CommandNameTool {
             bool isTypeable = (player.Info.Mark.Length == 1)
                 && Regex.IsMatch(player.Info, "[ABCDEFGHJKLMNOPSTUVWXYZ1-9]", RegexOptions.IgnoreCase); //remove I, R, 0 (zero) and Q.  I and O for confusion, R and Q for command collisions.
 
-            if (isTypeable)  {
+            if (isTypeable) {
                 // Typeable mark - use the mark itself
                 playerIndexToKey[player.Index] = player.Info.Mark;
             } else {
@@ -86,7 +86,7 @@ public static class CommandNameTool {
 
         if (
             !spaceView.MarkIndex.HasValue
-            && !boardView.IsDone 
+            && !boardView.IsDone
             && gameView.CanTakeTurn
         ) {
             return boardView.GetSpaceName(gameView, col, row);
@@ -110,7 +110,7 @@ public static class CommandNameTool {
     => (boardIndex + 1).ToString();
 
     public static OneOf<NotFound, Result<sbyte>> GetBoardIndexByName(string boardName, int boardsCount) {
-        if(TryGetBoardIndexByName(boardName, boardsCount, out var boardIndex)) {
+        if (TryGetBoardIndexByName(boardName, boardsCount, out var boardIndex)) {
             return new Result<sbyte>(boardIndex);
         } else {
             return new NotFound();

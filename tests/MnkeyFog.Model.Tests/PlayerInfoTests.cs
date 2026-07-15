@@ -1,4 +1,5 @@
 namespace MnkeyFog.Model.Tests;
+
 public class PlayerInfoTests {
     [Fact]
     public void NewPlayer_EmptyStringThrows() {
@@ -38,7 +39,7 @@ public class PlayerInfoTests {
         var actual = new PlayerInfo(expectedMark);
         actual.Mark.Should().Be(expectedMark);
     }
-    
+
     [Fact]
     public void NewPlayer_SpecialCharIsAllowedMark() {
         var expectedMark = "☂"; //unicode umbrella

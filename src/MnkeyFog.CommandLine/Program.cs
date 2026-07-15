@@ -51,7 +51,7 @@ public class Program {
                     },
 
                     Action = new CommandHandler((parseResult) => {
-                        ParseRootOptions(parseResult); 
+                        ParseRootOptions(parseResult);
                         ParsePlayerListOptions(parseResult, out var players, out bool isRandomPlayerOrder);
 
                         var size = parseResult.GetValue(Options.SizeOption);
@@ -76,7 +76,7 @@ public class Program {
                             isRandomPlayerOrder: isRandomPlayerOrder
                         );
                         return parseResult.Errors.Count;
-                    }), 
+                    }),
                 },
                 new Command("load") {
                     Action = new CommandHandler(parseResult => {
@@ -96,19 +96,19 @@ public class Program {
 
         gameCommand.Subcommands.AddRange<Command>(
             GameTemplates.GetBuiltInGameTemplates().Select(template => new Command(template.CommandName!, template.Description) {
-                    Action = new CommandHandler(parseResult => {
-                        ParseRootOptions(parseResult); 
-                        ParsePlayerListOptions(parseResult, out var players, out bool isRandomPlayerOrder);
-                        GameState = new GameState(players, template, isRandomPlayerOrder);
-                        return parseResult.Errors.Count;
-                    })
-                }
+                Action = new CommandHandler(parseResult => {
+                    ParseRootOptions(parseResult);
+                    ParsePlayerListOptions(parseResult, out var players, out bool isRandomPlayerOrder);
+                    GameState = new GameState(players, template, isRandomPlayerOrder);
+                    return parseResult.Errors.Count;
+                })
+            }
             ).ToList()
         );
 
         var parseResult = rootCommand.Parse(
-            args, 
-            new ParserConfiguration() {EnablePosixBundling = true}
+            args,
+            new ParserConfiguration() { EnablePosixBundling = true }
         );
         var invocationResult = parseResult.Invoke();
 
@@ -116,16 +116,16 @@ public class Program {
             return 0;
         }
 
-        if(invocationResult != 0) {
+        if (invocationResult != 0) {
             return invocationResult;
         }
 
         var joinAsPlayerUnion = JoinAsPlayer == null
             ? OneOf<PlayerInfo, LocalHotseatGame>.FromT1(new LocalHotseatGame())
             : OneOf<PlayerInfo, LocalHotseatGame>.FromT0(new PlayerInfo(JoinAsPlayer));
-            
+
         if (StateFilePath != null && GameState != null) {
-            ConsoleLoop.RunGame (
+            ConsoleLoop.RunGame(
                 StateFilePath!,
                 GameState!,
                 joinAsPlayerUnion,
@@ -138,16 +138,15 @@ public class Program {
         }
     }
 
-	private static void ParsePlayerListOptions(ParseResult parseResult, out PlayerInfo[] players, out bool isRandomPlayerOrder)
-	{
-		players = parseResult
+    private static void ParsePlayerListOptions(ParseResult parseResult, out PlayerInfo[] players, out bool isRandomPlayerOrder) {
+        players = parseResult
             .GetValue(Options.PlayersOption)!
             .Select(p => new PlayerInfo(p))
             .ToArray();
-		isRandomPlayerOrder = parseResult.GetValue(Options.RandomOption);
-	}
+        isRandomPlayerOrder = parseResult.GetValue(Options.RandomOption);
+    }
 
-	private static void ParseRootOptions(ParseResult parseResult) {
+    private static void ParseRootOptions(ParseResult parseResult) {
         StateFilePath = parseResult.GetValue(Options.StateFileOption);
         JoinAsPlayer = parseResult.GetValue(Options.JoinAsPlayerOption);
         var ai1Players = parseResult.GetValue(Options.AI1PlayersOption) ?? [];

@@ -5,8 +5,7 @@ namespace MnkeyFog.Model.Tests;
 /// </summary>
 public class SanityTests {
     [Fact]
-    public void BasicTest_Tautology()
-    {
+    public void BasicTest_Tautology() {
         true.Should().BeTrue();
     }
 }

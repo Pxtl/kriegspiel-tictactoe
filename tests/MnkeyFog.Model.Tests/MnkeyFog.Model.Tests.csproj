@@ -13,9 +13,12 @@
     <TestingPlatformCommandLineArguments>--minimum-expected-tests 1</TestingPlatformCommandLineArguments>
   </PropertyGroup>
 
-  <ItemGroup>
-
-  </ItemGroup>
+  <!-- coding standards -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="PxtlCa.SystemCollectionsExtensions" Version="0.3.4" />

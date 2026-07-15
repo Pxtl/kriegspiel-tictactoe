@@ -127,11 +127,11 @@ public class PlayerAITests {
     public void MontyAI_KnowsToBlock() {
         var playerX = new Player("X", 0);
         var playerO = new Player("O", 1);
-        var gameState = new GameState([playerX.Info, playerO.Info], GameTemplates.BasicTicTacToe, isRandomPlayerOrder:false);
-        gameState.Boards[0].Spaces[1,1].MarkIndex = playerO.Index;
-        gameState.Boards[0].Spaces[2,0].MarkIndex = playerO.Index;
-        gameState.Boards[0].Spaces[2,2].MarkIndex = playerX.Index;
-        gameState.Boards[0].Spaces[2,1].MarkIndex = playerX.Index;
+        var gameState = new GameState([playerX.Info, playerO.Info], GameTemplates.BasicTicTacToe, isRandomPlayerOrder: false);
+        gameState.Boards[0].Spaces[1, 1].MarkIndex = playerO.Index;
+        gameState.Boards[0].Spaces[2, 0].MarkIndex = playerO.Index;
+        gameState.Boards[0].Spaces[2, 2].MarkIndex = playerX.Index;
+        gameState.Boards[0].Spaces[2, 1].MarkIndex = playerX.Index;
         var gameView = gameState.GetView(playerX);
         var montyAI = new MontyAI();
         var gameAction = montyAI.FindOptimalGameAction(gameView)!;

@@ -20,7 +20,7 @@ public class PlayersState {
     }
 
     public PlayersState(IReadOnlyList<PlayerInfo> playerInfos, PlayManager playManager)
-    : this(playerInfos, playManager, isRandomPlayerOrder: false) {}
+    : this(playerInfos, playManager, isRandomPlayerOrder: false) { }
 
     public PlayersState(IReadOnlyList<PlayerInfo> playerInfos, PlayManager playManager, bool isRandomPlayerOrder) {
         if (isRandomPlayerOrder) {
@@ -33,7 +33,7 @@ public class PlayersState {
     /// <summary>
     /// Copy-constructor.
     /// </summary>
-	public PlayersState(PlayersState playersState) {
+    public PlayersState(PlayersState playersState) {
         playersState.PlayManager.ConfirmHasImmutableAttribute();
 
         PlayerInfos = playersState.PlayerInfos;
@@ -41,24 +41,24 @@ public class PlayersState {
         RoundIndex = playersState.RoundIndex;
         ResignedPlayerIndicesSet = new HashSet<int>(playersState.ResignedPlayerIndicesSet);
         PlayedPlayerIndicesSet = new HashSet<int>(playersState.PlayedPlayerIndicesSet);
-	}
+    }
 
-	#endregion
+    #endregion
 
-	#region data members
+    #region data members
     [MemberNotNull(nameof(_indicesByPlayer))]
     [MemberNotNull(nameof(_playerIndicesSet))]
-	[JsonProperty(TypeNameHandling = TypeNameHandling.None, ItemTypeNameHandling = TypeNameHandling.None)] //non-polymorphic.
+    [JsonProperty(TypeNameHandling = TypeNameHandling.None, ItemTypeNameHandling = TypeNameHandling.None)] //non-polymorphic.
     public IReadOnlyList<PlayerInfo> PlayerInfos {
         get; init {
             // Validation: ToDictionary will throw ArgumentException on non-unique key.
             _ = value.ToDictionary(p => p.Mark, StringComparer.OrdinalIgnoreCase);
 
             var indicesByPlayer = new KeyValuePair<PlayerInfo, int>[value.Count];
-            for(var i = 0; i < value.Count; i += 1) {
+            for (var i = 0; i < value.Count; i += 1) {
                 indicesByPlayer[i] = new KeyValuePair<PlayerInfo, int>(value[i], i);
             }
-           
+
             _indicesByPlayer = indicesByPlayer.ToImmutableDictionary();
             _playerIndicesSet = Enumerable.Range(0, value.Count).ToImmutableHashSet();
 
@@ -78,7 +78,7 @@ public class PlayersState {
     [JsonProperty(TypeNameHandling = TypeNameHandling.None, ItemTypeNameHandling = TypeNameHandling.None)] //non-polymorphic.
 
     public HashSet<int> ResignedPlayerIndicesSet { get; init; } = new HashSet<int>();
-    
+
     [JsonProperty(TypeNameHandling = TypeNameHandling.None, ItemTypeNameHandling = TypeNameHandling.None)] //non-polymorphic.
 
     public HashSet<int> PlayedPlayerIndicesSet { get; init; } = new HashSet<int>();
@@ -112,7 +112,7 @@ public class PlayersState {
         PlayedPlayerIndicesSet.Clear();
         PlayManager.EndedRound(gameState, out hasStateChanged);
     }
-    
+
     /// <summary>
     /// Test if the given player has resigned.
     /// </summary>
@@ -141,19 +141,19 @@ public class PlayersState {
     => playerIndex != null && PlayersAvailableForTurn.Any(p => p.Index == playerIndex);
 
     public string GetMark(int? markIndex) {
-        if(markIndex == Space.ImpasseMarkIndex) {
+        if (markIndex == Space.ImpasseMarkIndex) {
             return Space.ImpasseChar.ToString();
-        } else if(markIndex.HasValue) {
+        } else if (markIndex.HasValue) {
             return PlayerInfos[markIndex.Value].Mark;
         } else {
             return Space.EmptyMarkString;
         }
     }
 
-    public Player GetPlayer(int playerIndex) 
+    public Player GetPlayer(int playerIndex)
     => new Player(PlayerInfos[playerIndex], playerIndex);
 
-    public Player GetPlayer(string mark) 
+    public Player GetPlayer(string mark)
     => GetPlayer(new PlayerInfo(mark));
 
     public Player GetPlayer(PlayerInfo player)
@@ -165,11 +165,13 @@ public class PlayersState {
     public IEnumerable<int> PlayerIndices => Enumerable.Range(0, PlayerInfos.Count);
 
     [JsonIgnore()]
-    public IEnumerable<Player> PlayersIndexed { get {
-        for (var i = 0; i < PlayerInfos.Count; i+=1) {
-            yield return new Player(PlayerInfos[i], i);
+    public IEnumerable<Player> PlayersIndexed {
+        get {
+            for (var i = 0; i < PlayerInfos.Count; i += 1) {
+                yield return new Player(PlayerInfos[i], i);
+            }
         }
-    } }
+    }
 
     [JsonIgnore()]
     public int NumberOfActivePlayers
@@ -178,7 +180,7 @@ public class PlayersState {
     [JsonIgnore()]
     public ImmutableHashSet<int> ActivePlayerIndices
     => _playerIndicesSet.Except(ResignedPlayerIndicesSet);
-    
+
     /// <summary>
     /// Get all of the current active players.  Order is consistent.
     /// </summary>
@@ -198,7 +200,7 @@ public class PlayersState {
     /// Abstract GameStateText property - implemented by subclasses.
     /// </summary>
     [JsonIgnore()]
-    public string GameStateText 
+    public string GameStateText
     => PlayManager.GameStateText(this);
     #endregion
 }

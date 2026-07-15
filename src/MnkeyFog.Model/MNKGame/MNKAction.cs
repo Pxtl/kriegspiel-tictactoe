@@ -11,9 +11,9 @@ public record MNKAction
 : GameAction {
     [Obsolete("Default constructor is only used for deserialization.")]
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-	public MNKAction() : base() { }
+    public MNKAction() : base() { }
 #pragma warning restore CS8618
-	public MNKAction(
+    public MNKAction(
         sbyte boardIndex,
         sbyte col,
         sbyte row
@@ -23,23 +23,23 @@ public record MNKAction
         Row = row;
     }
     [Required]
-    public sbyte BoardIndex {get;init;}
+    public sbyte BoardIndex { get; init; }
     [Required]
-    public sbyte Col {get;init;}
+    public sbyte Col { get; init; }
     [Required]
-    public sbyte Row {get;init;}
- 
-	public override void DoActionCollision(GameState gameState, int actionPlayerIndex, IReadOnlyList<PlayerAction> collisions) {
+    public sbyte Row { get; init; }
+
+    public override void DoActionCollision(GameState gameState, int actionPlayerIndex, IReadOnlyList<PlayerAction> collisions) {
         if (GetBoard(gameState).IsDone) {
             return;
         }
         var space = GetSpace(gameState);
-		space.MarkIndex = Space.ImpasseMarkIndex;
-        foreach(var playerIndex in collisions.Select(c => c.PlayerIndex)) {
+        space.MarkIndex = Space.ImpasseMarkIndex;
+        foreach (var playerIndex in collisions.Select(c => c.PlayerIndex)) {
             var player = gameState.PlayersState.GetPlayer(playerIndex);
             space.MakeKnownToPlayerIndex(player.Index);
         }
-	}
+    }
 
     protected Board GetBoard(GameState gameState)
         => gameState.Boards[BoardIndex];
@@ -47,23 +47,23 @@ public record MNKAction
     protected Space GetSpace(GameState gameState)
         => GetBoard(gameState).Spaces[Col, Row];
 
-	public override bool IsActionCollision(PlayerAction otherAction, int actionPlayerIndex)
-    => otherAction.GameAction is MNKAction otherTicTacToeAction 
+    public override bool IsActionCollision(PlayerAction otherAction, int actionPlayerIndex)
+    => otherAction.GameAction is MNKAction otherTicTacToeAction
         ? BoardIndex == otherTicTacToeAction.BoardIndex
             && Col == otherTicTacToeAction.Col
             && Row == otherTicTacToeAction.Row
             && actionPlayerIndex != otherAction.PlayerIndex
         : throw new InvalidOperationException("Cannot compare different action types.");
 
-	public override IPlayActionResult Attempt(GameState gameState, int actionPlayerIndex) {
-        if(!gameState.PlayersState.CanTakeTurn(actionPlayerIndex)) {
+    public override IPlayActionResult Attempt(GameState gameState, int actionPlayerIndex) {
+        if (!gameState.PlayersState.CanTakeTurn(actionPlayerIndex)) {
             return new CannotTakeTurn(actionPlayerIndex);
         }
-        if(BoardIndex < 0 || BoardIndex >= gameState.Boards.Count) {
+        if (BoardIndex < 0 || BoardIndex >= gameState.Boards.Count) {
             return new InvalidCommand(BoardIndex.ToString());
         }
         var board = gameState.Boards[BoardIndex];
-        if(!board.IsSpaceInsideOfBoard((Col, Row))) {
+        if (!board.IsSpaceInsideOfBoard((Col, Row))) {
             return new InvalidCommand($"{Col}, {Row}");
         }
 
@@ -81,11 +81,10 @@ public record MNKAction
             gameState.EndTurn(actionPlayerIndex, out _);
             return new NewlyLearned(space.MarkIndex.Value);
         }
-	}
+    }
 
-	public override void DoAction(GameState gameState, int actionPlayerIndex)
-	{
-		if (GetBoard(gameState).IsDone) {
+    public override void DoAction(GameState gameState, int actionPlayerIndex) {
+        if (GetBoard(gameState).IsDone) {
             return;
         }
         var space = GetSpace(gameState);
@@ -94,7 +93,7 @@ public record MNKAction
             space.MarkIndex = actionPlayerIndex;
         }
         space.MakeKnownToPlayerIndex(actionPlayerIndex);
-	}
+    }
 
     public static GameAction Create(
         GameState gameState,

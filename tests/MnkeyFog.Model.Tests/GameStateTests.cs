@@ -67,7 +67,7 @@ public class GameStateTests {
         //OIX
         //OOO
         var playerXView = state.GetView(state.PlayersState.GetPlayer("X"));
-        var playerOView = state.GetView(state.PlayersState.GetPlayer("O"));      
+        var playerOView = state.GetView(state.PlayersState.GetPlayer("O"));
         var result = playerXView.Attempt(new MNKAction(0, 0, 0));
         result = playerOView.Attempt(new MNKAction(0, 0, 2));
         state.EndRound(out _);

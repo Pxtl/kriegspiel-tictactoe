@@ -2,7 +2,7 @@
 namespace MnkeyFog.Model.Tests;
 
 public class PlayManagerTests {
-    
+
     #region unique player marks
     [Fact]
     public void RoundRobinPlayManagerConstructor_WithUniqueMarksIsAllowed() {
@@ -229,7 +229,7 @@ public class PlayManagerTests {
             isRandomPlayerOrder: true
         );
         var firstPlayer = state.PlayersState.ActivePlayers.Select(ap => ap.Index).First();
-        var expectedPlayerInfos = new[] {0,1,2};
+        var expectedPlayerInfos = new[] { 0, 1, 2 };
         expectedPlayerInfos.Contains(firstPlayer).Should().BeTrue();
     }
 
@@ -246,11 +246,11 @@ public class PlayManagerTests {
         );
 
         state.PlayersState.ResignPlayer(playerAIndex);
-        
+
         state.PlayersState.CanTakeTurn(playerAIndex).Should().BeFalse();
         state.PlayersState.CanTakeTurn(playerBIndex).Should().BeTrue();
         state.PlayersState.CanTakeTurn(playerCIndex).Should().BeTrue();
-        
+
         // player D does not exist.
         state.PlayersState.CanTakeTurn(playerDIndex).Should().BeFalse();
     }

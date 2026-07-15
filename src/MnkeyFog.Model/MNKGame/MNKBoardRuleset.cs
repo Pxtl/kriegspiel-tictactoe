@@ -23,7 +23,7 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
         if (rowCount > 26) {
             throw new ArgumentException("The board size limit is 26x26.", nameof(rowCount));
         }
-        
+
         return new Template.BoardBuilder(
             columnCount,
             rowCount,
@@ -46,10 +46,10 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
             verticalScoringLength = ScoringLength.Value;
             diagonalScoringLength = ScoringLength.Value;
         }
-            
+
         foreach (var spaceEnumerator in board.AsSpaceEnumerable()) {
             var lineOwnerMarkIndex = spaceEnumerator.Space.MarkIndex;
-            if(lineOwnerMarkIndex != null) {
+            if (lineOwnerMarkIndex != null) {
                 result += ScoreSpace(
                     lineOwnerMarkIndex.Value,
                     board,
@@ -62,12 +62,12 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
         }
         return result;
     }
-    
+
     public override bool IsDone(Board board)
     => IsBoardDoneWhenScored && board.ScoreCard.PlayerScores.Any(s => s.Score > 0);
 
     public override string ToString()
-	=> "m,n,k game scoring, " 
+    => "m,n,k game scoring, "
         + (ScoringLength.HasValue
             ? $"{ScoringLength} in a row."
             : $"full width/height/diagonal of the board."
@@ -83,7 +83,7 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
         sbyte horizontalScoringLength,
         sbyte verticalScoringLength,
         sbyte diagonalScoringLength
-    ) 
+    )
     => ScoreSpace(lineOwnerPlayerIndex, board, pos, (1, 0), horizontalScoringLength)
         + ScoreSpace(lineOwnerPlayerIndex, board, pos, (0, 1), verticalScoringLength)
         + ScoreSpace(lineOwnerPlayerIndex, board, pos, (1, 1), diagonalScoringLength)
@@ -129,11 +129,11 @@ public record MNKBoardRuleset(sbyte? ScoringLength = null, bool IsBoardDoneWhenS
             if (lineOwnerPlayerIndex != board.Spaces[curPos.Col, curPos.Row].MarkIndex) {
                 break;
             } else {
-                lineLength = i+1;
+                lineLength = i + 1;
             }
         }
         var lineScore = lineLength / scoreLen;
-        return (lineScore > 0) 
+        return (lineScore > 0)
             ? new ScoreCard(lineOwnerPlayerIndex, lineScore)
             : ScoreCard.Empty;
     }

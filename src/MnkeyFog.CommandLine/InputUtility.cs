@@ -8,7 +8,7 @@ namespace MnkeyFog.CommandLine;
 /// </summary>
 internal static class InputUtility {
     public static void PauseAndPressAnyKey(string? prompt = null) {
-        if(prompt != null && !prompt.EndsWith(' ')) {
+        if (prompt != null && !prompt.EndsWith(' ')) {
             prompt = $"{prompt} ";
         }
         if (Console.IsInputRedirected) {
@@ -39,7 +39,7 @@ internal static class InputUtility {
     /// a <see cref="Result{T}"/>, or <see cref="Unknown"/>.
     /// </returns>
     public static string ReadCommandInputLoop(string prompt, IEnumerable<string> validCommands) {
-        while(true) {
+        while (true) {
             string? loopResult = null;
             ReadCommandInput(prompt, validCommands).Switch(
                 result => {
@@ -49,7 +49,7 @@ internal static class InputUtility {
                     // do nothing, the ReadCommandInput already printed "Invalid Command"
                 }
             );
-            if(loopResult != null) {
+            if (loopResult != null) {
                 return loopResult;
             }
         }
@@ -95,7 +95,7 @@ internal static class InputUtility {
             }
             //user has reached length of longest command, no matches.
             Console.Out.WriteLine();
-            return new InvalidCommand(sb.ToString());   
+            return new InvalidCommand(sb.ToString());
         }
     }
 }

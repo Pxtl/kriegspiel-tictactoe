@@ -27,15 +27,15 @@ namespace MnkeyFog.Model.PlayerAIs {
 
             // Iterate ALL boards - handles multi-board games correctly
             foreach (var board in Boards) {
-                
+
                 // Calculate center: (count - 1) / 2, explicit casts throughout               
                 double centreX = (board.ColumnCount - 1) / 2.0;      // force double arithmetic
                 double centreY = (board.RowCount - 1) / 2.0;
-                
+
                 var centreCol = centreX.FloorAsSByte;
                 var centreRow = centreY.FloorAsSByte;
 
-                if(Lines == null) {
+                if (Lines == null) {
                     Lines = new List<List<(sbyte Col, sbyte Row)>>();
                     var currentLine = new List<(sbyte Col, sbyte Row)>();
 
@@ -59,7 +59,7 @@ namespace MnkeyFog.Model.PlayerAIs {
                             break;
                         }
                         currentLine.Add(((centreCol + delta).AsSByte, centreRow));
-                        currentLine.Add(((centreCol - delta).AsSByte, centreRow));          
+                        currentLine.Add(((centreCol - delta).AsSByte, centreRow));
                     }
                     Lines.Add(currentLine);
 
@@ -68,9 +68,9 @@ namespace MnkeyFog.Model.PlayerAIs {
                     currentLine.Add((centreCol, centreRow));
                     for (sbyte delta = 1; true; delta += 1) {
                         if (
-                            (centreRow + delta >= board.RowCount) 
-                            && (centreRow - delta < 0) 
-                            && (centreCol + delta >= board.ColumnCount) 
+                            (centreRow + delta >= board.RowCount)
+                            && (centreRow - delta < 0)
+                            && (centreCol + delta >= board.ColumnCount)
                             && (centreCol - delta < 0)
                         ) {
                             break;
@@ -85,9 +85,9 @@ namespace MnkeyFog.Model.PlayerAIs {
                     currentLine.Add((centreCol, centreRow));
                     for (sbyte delta = 1; true; delta += 1) {
                         if (
-                            (centreRow + delta >= board.RowCount) 
-                            && (centreRow - delta < 0) 
-                            && (centreCol + delta >= board.ColumnCount) 
+                            (centreRow + delta >= board.RowCount)
+                            && (centreRow - delta < 0)
+                            && (centreCol + delta >= board.ColumnCount)
                             && (centreCol - delta < 0)
                         ) {
                             break;
@@ -98,18 +98,18 @@ namespace MnkeyFog.Model.PlayerAIs {
                     Lines.Add(currentLine);
 
                     //all slices are added.  Now clean-up.
-                    foreach(var line in Lines) {
+                    foreach (var line in Lines) {
                         line.RemoveAll(pos => !board.IsSpaceInsideOfBoard(pos));
                     }
                     Lines = Lines.Shuffle().ToList();
                 }
 
                 // now with our slices ready, we'll also be a bit smarter and abort a slice if it's visibly impossible.
-                foreach(var line in Lines) {
+                foreach (var line in Lines) {
                     var lineMarkIndices = line.Select(pos => board.GetSpaceView(pos.Col, pos.Row).MarkIndex);
-                    if(lineMarkIndices.All(lineMarkIndex => lineMarkIndex == null || lineMarkIndex != gameView.PlayerIndex)) {
+                    if (lineMarkIndices.All(lineMarkIndex => lineMarkIndex == null || lineMarkIndex != gameView.PlayerIndex)) {
                         //slice is available to play
-                        foreach(var pos in line) {
+                        foreach (var pos in line) {
                             gameView.Attempt(factorySpaceActions[0].Create(board.BoardIndex, pos.Col, pos.Row));
                         }
                     }
@@ -118,15 +118,17 @@ namespace MnkeyFog.Model.PlayerAIs {
 
             // SpaceNames fallback: try each space name for coordinate lookup
             foreach (var spaceName in gameView.SpaceNames) {
-                bool result = gameView.TryGetCoordinatesFromSpaceName(spaceName, out sbyte biBox, out sbyte colBox2, out sbyte rowBox); 
-                               
-                if(factorySpaceActions.Count > 0) {
+                bool result = gameView.TryGetCoordinatesFromSpaceName(spaceName, out sbyte biBox, out sbyte colBox2, out sbyte rowBox);
+
+                if (factorySpaceActions.Count > 0) {
                     gameView.Attempt(factorySpaceActions[0].Create(biBox, colBox2, rowBox));
                 }
             }
 
             // Final fallback: simple action
-            if (simpleFactory != null) gameView.Attempt(simpleFactory.Create());
+            if (simpleFactory != null) {
+                gameView.Attempt(simpleFactory.Create());
+            }
         }
     }
 }

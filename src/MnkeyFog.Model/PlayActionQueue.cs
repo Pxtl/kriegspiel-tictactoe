@@ -9,14 +9,14 @@ namespace MnkeyFog.Model;
 public class PlayActionQueue : IPlayActionQueue {
 #pragma warning restore CS0659, CS0661
     #region constructors
-    public PlayActionQueue() {}
+    public PlayActionQueue() { }
     public PlayActionQueue(PlayActionQueue actionQueue) {
         Actions = new List<PlayerAction>(actionQueue.Actions);
-	}
+    }
     #endregion
 
-	[JsonProperty(ItemTypeNameHandling = TypeNameHandling.None)]
-    public List<PlayerAction> Actions {get;private set;} = [];
+    [JsonProperty(ItemTypeNameHandling = TypeNameHandling.None)]
+    public List<PlayerAction> Actions { get; private set; } = [];
 
     public void Add(PlayerAction action) {
         Actions.Add(action);
@@ -30,7 +30,7 @@ public class PlayActionQueue : IPlayActionQueue {
         if (Actions.Count == 0) {
             return;
         }
-               
+
         foreach (var action in Actions) {
             var collisions = Actions
                 .Where(action.IsActionCollision)
@@ -55,7 +55,7 @@ public class PlayActionQueue : IPlayActionQueue {
         if (obj == null) {
             return false;
         }
-        
+
         if (obj is PlayActionQueue otherBuffer) {
             return Actions.SequenceEqual(otherBuffer.Actions);
         } else {
@@ -63,10 +63,10 @@ public class PlayActionQueue : IPlayActionQueue {
         }
     }
 
-    public static bool operator == (PlayActionQueue? a, PlayActionQueue? b)
+    public static bool operator ==(PlayActionQueue? a, PlayActionQueue? b)
     => (a == null) && (b == null) || (a?.Equals(b) ?? false);
 
-    public static bool operator != (PlayActionQueue? a, PlayActionQueue? b)
+    public static bool operator !=(PlayActionQueue? a, PlayActionQueue? b)
     => !(a == b);
     #endregion
 }

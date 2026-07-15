@@ -17,12 +17,12 @@ public static class BoardRenderer {
 
         sbyte nextDrawnBoardIndex = 0;
         var boardRenderWidth = GetBoardRenderWidth(gameView.GetBoardViewByIndex(nextDrawnBoardIndex));
-       
+
         while (nextDrawnBoardIndex < gameView.BoardsCount) {
             DrawBorderRow(gameView, nextDrawnBoardIndex, "┌", "┬", "┐", "───", doShowBoardCode, maxRenderWidth, sb);
-            
-            for(sbyte row = 0; row < maxRowCount; row += 1) {
-                if(row > 0) {
+
+            for (sbyte row = 0; row < maxRowCount; row += 1) {
+                if (row > 0) {
                     DrawBorderRow(gameView, nextDrawnBoardIndex, "├", "┼", "┤", "───", false, maxRenderWidth, sb);
                 }
                 DrawBoardSpacesRow(gameView, nextDrawnBoardIndex, "│", row, boardRenderWidth, maxRenderWidth, sb);
@@ -44,10 +44,10 @@ public static class BoardRenderer {
     private static sbyte DrawBorderRow(
         GameView gameView,
         sbyte startBoardIndex,
-        string startBarString, 
-        string midBarString, 
-        string endBarString, 
-        string spanString, 
+        string startBarString,
+        string midBarString,
+        string endBarString,
+        string spanString,
         bool showBoardName,
         int maxRenderWidth,
         StringBuilder sb
@@ -56,9 +56,9 @@ public static class BoardRenderer {
         for (; boardIndex < gameView.BoardsCount; boardIndex += 1) {
             var board = gameView.GetBoardViewByIndex(boardIndex);
             var cursorX = sb.GetCursorX();
-            
+
             //wrap check - break if cursor would exceed maxWidth
-            if(cursorX > 0 && (cursorX + GetBoardRenderWidth(board) > maxRenderWidth)) {
+            if (cursorX > 0 && (cursorX + GetBoardRenderWidth(board) > maxRenderWidth)) {
                 break;
             }
 
@@ -70,8 +70,8 @@ public static class BoardRenderer {
             );
 
             sb.Append($"{startBarString}{spanString}");
-            
-            for(sbyte col = 0; col < board.ColumnCount - 1; col += 1) {
+
+            for (sbyte col = 0; col < board.ColumnCount - 1; col += 1) {
                 sb.Append($"{midBarString}{spanString}");
             }
             sb.Append(endBarString);
@@ -85,7 +85,7 @@ public static class BoardRenderer {
     /// Wraps to newline when maxWidth is exceeded.
     /// </summary>
     private static sbyte DrawBoardSpacesRow(
-        GameView gameView, 
+        GameView gameView,
         sbyte startBoardIndex,
         string borderBarString,
         sbyte rowIndex,
@@ -94,20 +94,19 @@ public static class BoardRenderer {
         StringBuilder sb
     ) {
         var boardIndex = startBoardIndex;
-        for (; boardIndex < gameView.BoardsCount; boardIndex += 1)
-        {
+        for (; boardIndex < gameView.BoardsCount; boardIndex += 1) {
             var board = gameView.GetBoardViewByIndex(boardIndex);
             var cursorX = sb.GetCursorX();
-            
+
             //wrap check - break if cursor would exceed maxWidth
-            if(cursorX > 0 && (cursorX + boardRenderWidth > maxRenderWidth)) {
+            if (cursorX > 0 && (cursorX + boardRenderWidth > maxRenderWidth)) {
                 break;
             }
 
             //indentation before start of board, provides space for board number.
             sb.Append("  ");
 
-            for(sbyte col = 0; col < board.ColumnCount; col += 1) {
+            for (sbyte col = 0; col < board.ColumnCount; col += 1) {
                 var body = CommandNameTool.SpaceCommandName(gameView, boardIndex, col, rowIndex);
                 DrawSpaceBody(body, borderBarString, sb);
             }

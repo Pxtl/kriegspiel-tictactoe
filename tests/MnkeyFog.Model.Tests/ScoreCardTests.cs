@@ -19,11 +19,11 @@ public class ScoreCardTests {
 
     [Fact]
     public void Constructor_MultipleScores() {
-        var scoreCard = new ScoreCard(new[] { 
-            new PlayerIndexScore(_playerXIndex, 3), 
-            new PlayerIndexScore(_playerOIndex, 2) 
+        var scoreCard = new ScoreCard(new[] {
+            new PlayerIndexScore(_playerXIndex, 3),
+            new PlayerIndexScore(_playerOIndex, 2)
         });
-        
+
         scoreCard.Highest.Should().NotBeNull();
     }
 
@@ -31,7 +31,7 @@ public class ScoreCardTests {
     public void OperatorPlus() {
         var a = new ScoreCard(_playerXIndex, 3);
         var b = new ScoreCard(_playerOIndex, 2);
-        
+
         var result = a + b;
         result.Highest.Should().NotBeNull();
     }

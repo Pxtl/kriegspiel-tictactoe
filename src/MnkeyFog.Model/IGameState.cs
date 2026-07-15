@@ -20,7 +20,7 @@ public interface IGameState {
     GameView GetView(int? playerIndex);
 
     Board GetBoardByIndex(sbyte boardIndex);
-    
+
     [JsonIgnore()]
     bool IsGameOver { get; }
 

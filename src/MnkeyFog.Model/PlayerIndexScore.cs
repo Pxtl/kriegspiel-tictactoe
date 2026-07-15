@@ -8,5 +8,5 @@ namespace MnkeyFog.Model;
 [ImmutableObject(true)]
 [ModelSerializable]
 public readonly record struct PlayerIndexScore(int PlayerIndex, int Score) {
-    public static implicit operator ScoreCard(PlayerIndexScore p) => new ScoreCard(p);   
+    public static implicit operator ScoreCard(PlayerIndexScore p) => new ScoreCard(p);
 }

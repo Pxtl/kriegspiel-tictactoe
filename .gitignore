@@ -26,3 +26,7 @@ core.*
 # Agent working files
 temp/
 .ralph/
+
+# Trace files
+*.nettrace
+*.speedscope.json

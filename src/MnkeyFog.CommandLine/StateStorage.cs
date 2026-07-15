@@ -12,13 +12,13 @@ public class StateStorage : IDisposable {
         Formatting = Formatting.Indented,
         SerializationBinder = KnownTypesBinder.Instance
     };
-    public GameState State {get; private set;}
-    public string FilePath {get;}
+    public GameState State { get; private set; }
+    public string FilePath { get; }
     public static string GetLockFilePath(string filePath)
         => filePath + ".lock";
     public StateStorage(string filePath) {
         FilePath = filePath;
-        State = LoadState(FilePath, withLock:true);
+        State = LoadState(FilePath, withLock: true);
     }
 
     public StateStorage(string filePath, GameState state) {
@@ -46,7 +46,7 @@ public class StateStorage : IDisposable {
             )
         );
     }
-    
+
     public static GameState LoadState(string filePath, bool withLock = false) {
         int waitCount = 0;
         while (File.Exists(GetLockFilePath(filePath))) {
@@ -76,13 +76,13 @@ public class StateStorage : IDisposable {
     }
 
     public static TState StringToState<TState>(string stateString)
-	=> JsonConvert.DeserializeObject<TState>(stateString, _settings)!;
+    => JsonConvert.DeserializeObject<TState>(stateString, _settings)!;
 
-	public static string StateToString<TState>(TState state)
-	=> JsonConvert.SerializeObject(state, _settings);
+    public static string StateToString<TState>(TState state)
+    => JsonConvert.SerializeObject(state, _settings);
 
     public static void TouchFile(string lockFilePath) {
-        if(!File.Exists(lockFilePath)) {
+        if (!File.Exists(lockFilePath)) {
             File.Create(lockFilePath).Close(); // close immediately 
         }
 

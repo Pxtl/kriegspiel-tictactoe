@@ -37,7 +37,7 @@ public sealed record Board {
         board.Ruleset.ConfirmHasImmutableAttribute();
         Ruleset = board.Ruleset;
         Spaces = new Space[board.ColumnCount, board.RowCount];
-        foreach(var spaceEnumerator in board.AsSpaceEnumerable()) {
+        foreach (var spaceEnumerator in board.AsSpaceEnumerable()) {
             Spaces[spaceEnumerator.Col, spaceEnumerator.Row] = new Space(spaceEnumerator.Space);
         }
     }
@@ -65,7 +65,7 @@ public sealed record Board {
     /// </summary>
     public bool IsSpaceInsideOfBoard((sbyte Col, sbyte Row) pos)
     => IsSpaceInsideOfBoard(pos, (ColumnCount, RowCount));
-    
+
     /// <summary>
     /// Returns true if a space is within an arbitrarily-sized board.
     /// </summary>
@@ -82,14 +82,14 @@ public sealed record Board {
     /// cref="ExecuteRuleset"/> is called, which happens at the end of action
     /// queue processing.
     /// </summary>
-    public ScoreCard ScoreCard {get; private set;}
+    public ScoreCard ScoreCard { get; private set; }
 
     /// <summary>
     /// Returns true if the board is done and locked from further play. Value is
     /// only updated when <see cref="ExecuteRuleset"/> is called, which happens at the end of action
     /// queue processing.
     /// </summary>
-    public bool IsDone {get; private set;}
+    public bool IsDone { get; private set; }
 
     public void ExecuteRuleset() {
         ScoreCard = Ruleset.Score(this);

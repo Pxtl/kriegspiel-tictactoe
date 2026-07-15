@@ -14,7 +14,7 @@ public sealed record Space {
     public static readonly string EmptyMarkString = " ";
 
     #region constructors
-    public Space() {}
+    public Space() { }
     public Space(Space space) {
         MarkIndex = space.MarkIndex;
         _knownToPlayerIndicesSet = space._knownToPlayerIndicesSet;
@@ -25,8 +25,8 @@ public sealed record Space {
     /// The current state of the space - null means available.
     /// '█' means it's an impasse (two players contested this space in same round).
     /// </summary>
-    public int? MarkIndex {get;set;}
-    
+    public int? MarkIndex { get; set; }
+
     private BitVector32 _knownToPlayerIndicesSet;
     [JsonConverter(typeof(BitVector32Converter))]
     public BitVector32 KnownToPlayerIndicesSet {
@@ -36,13 +36,13 @@ public sealed record Space {
         }
     }
     #endregion
-    
+
     /// <summary>
     /// Test if this space is known to the given player.
     /// </summary>
-    public bool IsKnownToPlayerIndex(int? playerIndex) 
+    public bool IsKnownToPlayerIndex(int? playerIndex)
         => (playerIndex == null) || KnownToPlayerIndicesSet[BitVector32.CreateMask(playerIndex.Value)];
-    
+
     /// <summary>
     /// Mark this space as known to the given player.
     /// </summary>

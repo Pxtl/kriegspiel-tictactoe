@@ -9,21 +9,21 @@ namespace MnkeyFog.Model;
 [ModelSerializable]
 [ImmutableObject(true)]
 public record BoardRuleset {
-	public static BoardRuleset Empty { get; } = new BoardRuleset();
-	public virtual bool IsDone(Board board)
-	=> false;
+    public static BoardRuleset Empty { get; } = new BoardRuleset();
+    public virtual bool IsDone(Board board)
+    => false;
 
-	public virtual ScoreCard Score(Board board)
-	=> ScoreCard.Empty;
+    public virtual ScoreCard Score(Board board)
+    => ScoreCard.Empty;
 
-	/// <summary>
+    /// <summary>
     /// When constructing a BoardView, does the player know the true score or
     /// only their personal score?  Use this to control that. If players need
     /// the true score, redirect to Score(board).
     /// </summary>
     public virtual ScoreCard Score(Board board, int? playerIndex)
-	=> Score(board);
+    => Score(board);
 
-	public override string ToString()
-	=> "empty rules (scoring is impossible)";
+    public override string ToString()
+    => "empty rules (scoring is impossible)";
 };

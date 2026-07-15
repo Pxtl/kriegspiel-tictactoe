@@ -7,11 +7,11 @@ public record BoardView
         BoardIndex = boardIndex;
 
         BoardName = CommandNameTool.BoardNameFromIndex(BoardIndex);
-	    IsDone = board.IsDone;
+        IsDone = board.IsDone;
         Spaces = new SpaceView[board.ColumnCount, board.RowCount];
-        for(sbyte row = 0; row < board.RowCount; row += 1) {
-            for(sbyte col = 0; col < board.ColumnCount; col += 1) {
-                Spaces[col, row] =  new SpaceView(board.Spaces[col, row], PlayerIndex, col, row);
+        for (sbyte row = 0; row < board.RowCount; row += 1) {
+            for (sbyte col = 0; col < board.ColumnCount; col += 1) {
+                Spaces[col, row] = new SpaceView(board.Spaces[col, row], PlayerIndex, col, row);
             }
         }
         ScoreCard = board.Ruleset.Score(board, playerIndex);
@@ -49,7 +49,7 @@ public record BoardView
     /// Whether or not the underlying board is Done.  If it is Done, then it
     /// accepts no actions.
     /// </summary>
-	public bool IsDone { get; init; }
+    public bool IsDone { get; init; }
     #endregion
 
     #region helper properties
@@ -75,10 +75,10 @@ public record BoardView
     => Spaces.GetLength(0) * Spaces.GetLength(1);
     #endregion
 
-	public string GetSpaceName(GameView gameView, sbyte col, sbyte row)
+    public string GetSpaceName(GameView gameView, sbyte col, sbyte row)
     => gameView.GetSpaceName(BoardName, col, row);
 
-	public SpaceView GetSpaceView(sbyte col, sbyte row)
+    public SpaceView GetSpaceView(sbyte col, sbyte row)
     => Spaces[col, row];
 
     /// <summary>

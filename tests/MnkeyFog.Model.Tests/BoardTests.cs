@@ -6,7 +6,7 @@ public class BoardTests {
     #region board size
     [Fact]
     public void Width_Default() {
-        var board = new Board() {};
+        var board = new Board() { };
         board.ColumnCount.Should().Be(1);
     }
 

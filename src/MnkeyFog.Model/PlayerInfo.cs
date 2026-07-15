@@ -20,7 +20,7 @@ public sealed record PlayerInfo {
         }
         Mark = mark;
     }
-    public string Mark {get; init;}
+    public string Mark { get; init; }
 
     public override string ToString()
         => Mark;
@@ -29,7 +29,7 @@ public sealed record PlayerInfo {
     /// Create a Player from a char.
     /// </summary>
     public static PlayerInfo FromChar(char value) => new PlayerInfo(value.ToString());
-    
+
     /// <summary>
     /// Create a Player from a 1-character nullable string.  Returns null if the
     /// parameter is not a 1-character string.
@@ -42,17 +42,17 @@ public sealed record PlayerInfo {
         }
         return new PlayerInfo(value);
     }
-    
+
     /// <summary>
     /// Implicit conversion from char string to Player.
     /// </summary>
     public static implicit operator PlayerInfo(string value) => new PlayerInfo(value);
-    
+
     /// <summary>
     /// Implicit conversion from char to Player.
     /// </summary>
     public static implicit operator PlayerInfo(char value) => new PlayerInfo(value.ToString());
-        
+
     /// <summary>
     /// Implicit conversion from Player to string.
     /// </summary>

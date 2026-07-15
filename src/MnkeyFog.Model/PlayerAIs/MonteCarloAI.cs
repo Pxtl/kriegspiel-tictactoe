@@ -5,7 +5,7 @@ namespace MnkeyFog.Model.PlayerAIs;
 
 [ModelSerializable]
 public abstract class MonteCarloAI : IPlayerAI {
-    
+
     //currently depth > 4 has dire performance.
     public abstract string Description { get; }
     public abstract int MaxDepth { get; }
@@ -13,7 +13,7 @@ public abstract class MonteCarloAI : IPlayerAI {
 
     public void Attempt(GameView gameView) {
         var optimalGameAction = FindOptimalGameAction(gameView);
-        if(optimalGameAction != null) {
+        if (optimalGameAction != null) {
             gameView.Attempt(optimalGameAction);
         }
     }
@@ -26,7 +26,7 @@ public abstract class MonteCarloAI : IPlayerAI {
         return optimalActionAssessment?.GameAction;
     }
 
-	private ActionAssessment? SimulateTurn(
+    private ActionAssessment? SimulateTurn(
         GameState simulatedState,
         int currentPlayerIndex,
         int objectivePlayerIndex,
@@ -34,7 +34,7 @@ public abstract class MonteCarloAI : IPlayerAI {
     ) {
         var actionFactories = simulatedState.GameTemplate.GetAvailableActions(simulatedState, currentPlayerIndex);
         var actionAssessments = new List<ActionAssessment>();
-        
+
         foreach (var factory in actionFactories) {
             GameAction? action = null;
             if (factory is GameActionFactoryForSimple factoryForSimple) {
@@ -44,9 +44,9 @@ public abstract class MonteCarloAI : IPlayerAI {
                 );
             }
             if (factory is GameActionFactoryForSpace factoryForSpace) {
-                for(sbyte boardIndex = 0; boardIndex < simulatedState.Boards.Count; boardIndex += 1) {
+                for (sbyte boardIndex = 0; boardIndex < simulatedState.Boards.Count; boardIndex += 1) {
                     var board = simulatedState.GetBoardByIndex(boardIndex);
-                    foreach(var spaceEnumerator in board.AsSpaceEnumerable()) {
+                    foreach (var spaceEnumerator in board.AsSpaceEnumerable()) {
                         if (spaceEnumerator.Space.MarkIndex == null) {
                             action = factoryForSpace.Create(boardIndex, spaceEnumerator.Col, spaceEnumerator.Row);
                             actionAssessments.Add(
@@ -57,9 +57,9 @@ public abstract class MonteCarloAI : IPlayerAI {
                 }
             }
             if (factory is GameActionFactoryForBoard factoryForBoard) {
-                for(sbyte boardIndex = 0; boardIndex < simulatedState.Boards.Count; boardIndex += 1) {
+                for (sbyte boardIndex = 0; boardIndex < simulatedState.Boards.Count; boardIndex += 1) {
                     var board = simulatedState.GetBoardByIndex(boardIndex);
-                    foreach(var spaceEnumerator in board.AsSpaceEnumerable()) {
+                    foreach (var spaceEnumerator in board.AsSpaceEnumerable()) {
                         if (spaceEnumerator.Space.MarkIndex == null) {
                             action = factoryForBoard.Create(boardIndex);
                             actionAssessments.Add(
@@ -78,7 +78,7 @@ public abstract class MonteCarloAI : IPlayerAI {
                 throw new NotImplementedException();
             }
         }
-        
+
         foreach (var actionAssessment in actionAssessments) {
             if (!actionAssessment.SimulatedState.IsGameOver && depth < MaxDepth) {
                 var nextPlayer = actionAssessment.SimulatedState.PlayersState.PlayersAvailableForTurn.First();
@@ -94,49 +94,49 @@ public abstract class MonteCarloAI : IPlayerAI {
                 ? actionAssessments.AllMaxBy(assessment => assessment.Rating)
                 : actionAssessments.AllMinBy(assessment => assessment.Rating)
         ).ToList();
-        
+
         //given a tie, choose randomly.
         var optimalActionAssessment = optimalActionAssessments.Count == 1
             ? optimalActionAssessments.Single()
             : optimalActionAssessments[_random.Next(0, optimalActionAssessments.Count)];
 
         return optimalActionAssessment;
-	}
+    }
 
-	private ActionAssessment SimulateAction(
+    private ActionAssessment SimulateAction(
         GameState simulatedState,
         GameAction gameAction,
         int currentPlayerIndex,
         int objectivePlayerIndex
     ) {
         var baseRating = RateScore(simulatedState.ScoreCard, objectivePlayerIndex);
-		simulatedState.Attempt(new PlayerAction(gameAction, currentPlayerIndex));
-        if(simulatedState.PlayersState.IsRoundOver) {
+        simulatedState.Attempt(new PlayerAction(gameAction, currentPlayerIndex));
+        if (simulatedState.PlayersState.IsRoundOver) {
             simulatedState.EndRound(out _);
         }
         var newRating = RateScore(simulatedState.ScoreCard, objectivePlayerIndex);
         var resultRating = newRating - baseRating;
         return new ActionAssessment(simulatedState, gameAction, resultRating);
-	}
+    }
 
-	private GameState CloneGameState(GameView originalStateView) {
+    private GameState CloneGameState(GameView originalStateView) {
         ArgumentNullException.ThrowIfNull(originalStateView.PlayerIndex, $"{nameof(originalStateView)}.{nameof(originalStateView.PlayerIndex)}");
         var playersState = new PlayersState(originalStateView.PlayersState);
         var gameTemplate = originalStateView.GameTemplate;
-        
+
         // Create a fresh copy of the game state
         var clonedState = new GameState(playersState, gameTemplate);
-        foreach(var boardView in originalStateView.Boards) {
-            foreach(var spaceView in boardView.AsSpaceViewEnumerable()) {
+        foreach (var boardView in originalStateView.Boards) {
+            foreach (var spaceView in boardView.AsSpaceViewEnumerable()) {
                 var clonedSpace = clonedState.Boards[boardView.BoardIndex].Spaces[spaceView.Col, spaceView.Row];
                 clonedSpace.MarkIndex = boardView.Spaces[spaceView.Col, spaceView.Row].MarkIndex;
                 clonedSpace.MakeKnownToPlayerIndex(originalStateView.PlayerIndex.Value);
-                if(clonedSpace.MarkIndex != null && clonedSpace.MarkIndex != Space.ImpasseMarkIndex) {
+                if (clonedSpace.MarkIndex != null && clonedSpace.MarkIndex != Space.ImpasseMarkIndex) {
                     clonedSpace.MakeKnownToPlayerIndex(clonedSpace.MarkIndex.Value);
                 }
             }
         }
-        
+
         return clonedState;
     }
 

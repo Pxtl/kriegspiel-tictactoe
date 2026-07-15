@@ -14,6 +14,6 @@ public record SpaceView
     #region data properties
     public sbyte Col { get; init; }
     public sbyte Row { get; init; }
-	public int? MarkIndex { get; init; }
+    public int? MarkIndex { get; init; }
     #endregion
 }

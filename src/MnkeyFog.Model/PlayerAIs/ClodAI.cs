@@ -16,11 +16,11 @@ namespace MnkeyFog.Model.PlayerAIs {
             foreach (var board in gameView.Boards) {
                 sbyte rc = board.RowCount;  // row count  
                 sbyte cc = board.ColumnCount;
-                
+
                 // Calculate center: (count - 1) / 2, explicit casts throughout               
                 double centerX = (cc - 1) / 2.0;      // force double arithmetic
                 double centerY = (rc - 1) / 2.0;
-                
+
                 sbyte centerCol = (sbyte)Math.Floor(centerX);
                 sbyte centerRow = (sbyte)Math.Floor(centerY);
 
@@ -32,7 +32,7 @@ namespace MnkeyFog.Model.PlayerAIs {
 
                 // Horizontal scan through center row
                 for (sbyte delta = -3; delta <= 3; delta++) {
-                    sbyte testCol = ((sbyte)(centerCol + delta));   
+                    sbyte testCol = ((sbyte)(centerCol + delta));
                     gameView.Attempt(factorySpaceActions[0].Create(board.BoardIndex, testCol, centerRow));
                 }
 
@@ -53,15 +53,17 @@ namespace MnkeyFog.Model.PlayerAIs {
 
             // SpaceNames fallback: try each space name for coordinate lookup
             foreach (var spaceName in gameView.SpaceNames) {
-                bool result = gameView.TryGetCoordinatesFromSpaceName(spaceName, out sbyte biBox, out sbyte colBox2, out sbyte rowBox); 
-                               
-                if(factorySpaceActions.Count > 0) {
+                bool result = gameView.TryGetCoordinatesFromSpaceName(spaceName, out sbyte biBox, out sbyte colBox2, out sbyte rowBox);
+
+                if (factorySpaceActions.Count > 0) {
                     gameView.Attempt(factorySpaceActions[0].Create(biBox, colBox2, rowBox));
                 }
             }
 
             // Final fallback: simple action
-            if (simpleFactory != null) gameView.Attempt(simpleFactory.Create());
+            if (simpleFactory != null) {
+                gameView.Attempt(simpleFactory.Create());
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ public record GameView
             : gameState.GameTemplate.GetAvailableActions(gameState, PlayerIndex.Value).ToList();
 
         var boardViewsArray = new BoardView[gameState.Boards.Count];
-        for(sbyte i = 0; i < gameState.Boards.Count; i+=1) {
+        for (sbyte i = 0; i < gameState.Boards.Count; i += 1) {
             boardViewsArray[i] = new BoardView(gameState.Boards[i], PlayerIndex, i);
         }
         Boards = boardViewsArray;
@@ -64,7 +64,7 @@ public record GameView
             notFound => new InvalidCommand(boardName),
             indexResult => AttemptBoard(indexResult.Value)
         );
-    
+
     public OneOf<Result<BoardView>, InvalidCommand, BoardIsDone> AttemptBoard(sbyte boardIndex)
         => (boardIndex >= 0 && boardIndex < BoardsCount)
             ? (
@@ -73,18 +73,20 @@ public record GameView
                     : new Result<BoardView>(GetBoardViewByIndex(boardIndex))
                 )
             : new InvalidCommand(CommandNameTool.BoardNameFromIndex(boardIndex));
-    
+
     //TODO: Row and Column attempt functions.
     #endregion
 
     #region helpers
-    public IEnumerable<string> BoardNames { get {
-        for(var i = 1; i <= Boards.Count; i += 1) {
-            yield return i.ToString();
+    public IEnumerable<string> BoardNames {
+        get {
+            for (var i = 1; i <= Boards.Count; i += 1) {
+                yield return i.ToString();
+            }
         }
-    }}
+    }
 
-    public PlayerInfo? PlayerInfo => PlayerIndex.HasValue 
+    public PlayerInfo? PlayerInfo => PlayerIndex.HasValue
         ? PlayersState.PlayerInfos[PlayerIndex.Value]
         : null;
     #endregion
@@ -109,7 +111,7 @@ public record GameView
     #endregion
 
     #region scores
-    
+
     /// <summary>
     /// Possibly-approximate scorecard (depending on game) for all players
     /// </summary>
@@ -128,11 +130,11 @@ public record GameView
         .Select(s => GetSpaceName(b.BoardName, s.Col, s.Row))
     ); //zero-pad.
 
-	/// <summary>
-	/// For the given space on the board, generate the space's name. Only used
-	/// on small (3x3 or less) boards.
-	/// </summary>
-	private int GetSpaceNameAsInt(BoardView board, sbyte col, sbyte row) {
+    /// <summary>
+    /// For the given space on the board, generate the space's name. Only used
+    /// on small (3x3 or less) boards.
+    /// </summary>
+    private int GetSpaceNameAsInt(BoardView board, sbyte col, sbyte row) {
         //up to basic 3x3. Supports larger but this function does not get
         //called for those.
 
@@ -152,14 +154,14 @@ public record GameView
     /// </summary>
     public string GetSpaceName(BoardView board, sbyte col, sbyte row)
     => (BoardsCount > 1 ? board.BoardName : "") //board name component
-        + 
+        +
         (IsSpaceNamingNumpadLayout(board) //space name component
             ? GetSpaceNameAsInt(board, col, row).ToString()
             : (
                 // letter component.  Can be only length 1 because max board size is 26.
                 ((char)('A' + col)).ToString()
                 // number component, zero-padded to SpaceNameLength without the letter component.
-                + (board.RowCount - row).ToString(new string('0', SpaceNameLength(board) - 1)) 
+                + (board.RowCount - row).ToString(new string('0', SpaceNameLength(board) - 1))
             )
         );
 
@@ -181,7 +183,7 @@ public record GameView
 
     public bool TryGetCoordinatesFromSpaceName(string spaceName, out sbyte boardIndex, out sbyte resultCol, out sbyte resultRow) {
         if (TryGetCoordinatesFromSpaceName(spaceName, out string boardName, out resultCol, out resultRow)) {
-            if(CommandNameTool.TryGetBoardIndexByName(boardName, BoardsCount, out boardIndex)) {
+            if (CommandNameTool.TryGetBoardIndexByName(boardName, BoardsCount, out boardIndex)) {
                 return true;
             } else {
                 return false;
@@ -199,7 +201,7 @@ public record GameView
     /// </summary>
     public bool TryGetCoordinatesFromSpaceName(string spaceName, out string boardName, out sbyte resultCol, out sbyte resultRow) {
         boardName = "1";
-        if(BoardsCount > 1) {
+        if (BoardsCount > 1) {
             boardName = spaceName.Substring(0, 1);
         }
         var board = GetBoardViewByName(boardName);

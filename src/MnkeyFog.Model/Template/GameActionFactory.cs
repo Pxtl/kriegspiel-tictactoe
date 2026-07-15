@@ -9,13 +9,13 @@ namespace MnkeyFog.Model.Template;
 /// </summary>
 public abstract record GameActionFactory {
     [JsonIgnore()]
-    public abstract string Name {get;}
+    public abstract string Name { get; }
 }
 
-public abstract record GameActionFactoryForSimple : GameActionFactory { 
+public abstract record GameActionFactoryForSimple : GameActionFactory {
     public abstract GameAction Create();
 }
-public abstract record GameActionFactoryForSpace : GameActionFactory { 
+public abstract record GameActionFactoryForSpace : GameActionFactory {
     public abstract GameAction Create(sbyte boardIndex, sbyte col, sbyte row);
 }
 public abstract record GameActionFactoryForColumn : GameActionFactory {

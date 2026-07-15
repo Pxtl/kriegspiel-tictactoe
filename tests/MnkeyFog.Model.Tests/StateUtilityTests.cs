@@ -52,7 +52,7 @@ public class StateUtilityTests {
 
         //round 4 (incomplete)
         expectedState.GetView(playerXIndex).Attempt(new MNKAction(0, 1, 0));
- 
+
         IGameState untypedExpectedState = expectedState;
 
         var stateString = StateStorage.StateToString<IGameState>(expectedState);

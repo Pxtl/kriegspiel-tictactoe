@@ -3,7 +3,7 @@ namespace MnkeyFog.Model.Tests;
 using Xunit;
 
 public class CommandNameToolTests {
-    
+
 
     #region BuildPlayerToCommandNameMap
     [Fact]
@@ -11,14 +11,13 @@ public class CommandNameToolTests {
         var map = CommandNameTool.BuildPlayerToCommandNameMap(
             (new[] { new PlayerInfo("A") }).ToPlayersIndexed()
         );
-        
+
         map.ContainsKey(0).Should().BeTrue();
         map.ContainsKey(1).Should().BeFalse();
     }
-    
+
     [Fact]
-    public void BuildPlayerToCommandNameMap_WithOnlyTypeableMarks_ReturnsIdentity()
-    {
+    public void BuildPlayerToCommandNameMap_WithOnlyTypeableMarks_ReturnsIdentity() {
         var players = (new[] { "X", "O", "9", "5" }).ToPlayersIndexed();
 
         var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
@@ -30,8 +29,7 @@ public class CommandNameToolTests {
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_LowercaseLettersAreIdentity()
-    {
+    public void BuildPlayerToCommandNameMap_LowercaseLettersAreIdentity() {
         var players = (new[] { "x", "a", "z", "b" }).ToPlayersIndexed();
 
         var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
@@ -42,8 +40,7 @@ public class CommandNameToolTests {
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_AlphabeticLettersAreTypeable()
-    {
+    public void BuildPlayerToCommandNameMap_AlphabeticLettersAreTypeable() {
         var players = (new[] { "X", "O", "A", "Z", "B" }).ToPlayersIndexed();
 
         var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
@@ -54,11 +51,10 @@ public class CommandNameToolTests {
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_PunctuationMarksAreNonTypeable()
-    {
+    public void BuildPlayerToCommandNameMap_PunctuationMarksAreNonTypeable() {
         var players = (new[] { ".", "!", "?", ":", ";" }).ToPlayersIndexed();
 
-        var expected = new Dictionary<int, string>{
+        var expected = new Dictionary<int, string> {
             [players.Single(p => p.Mark == ".").Index] = "1",
             [players.Single(p => p.Mark == "!").Index] = "2",
             [players.Single(p => p.Mark == "?").Index] = "3",
@@ -70,11 +66,10 @@ public class CommandNameToolTests {
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_ExcludesUsedMarksFromAlternates()
-    {
+    public void BuildPlayerToCommandNameMap_ExcludesUsedMarksFromAlternates() {
         var players = (new[] { "A", ".", "!", "1" }).ToPlayersIndexed();
-        
-        var expected = new Dictionary<int, string>{
+
+        var expected = new Dictionary<int, string> {
             [players.Single(p => p.Mark == "A").Index] = "A",
             [players.Single(p => p.Mark == ".").Index] = "2",
             [players.Single(p => p.Mark == "!").Index] = "3",
@@ -85,11 +80,10 @@ public class CommandNameToolTests {
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_AllNumbersConsumedUsesLetters()
-    {
+    public void BuildPlayerToCommandNameMap_AllNumbersConsumedUsesLetters() {
         var players = (new[] { "1", "2", "3", "4", "5", ".", "!", "?", ":", ";", "/" }).ToPlayersIndexed();
 
-        var expected = new Dictionary<int, string>{
+        var expected = new Dictionary<int, string> {
             [players.Single(p => p.Mark == "1").Index] = "1",
             [players.Single(p => p.Mark == "2").Index] = "2",
             [players.Single(p => p.Mark == "3").Index] = "3",
@@ -107,25 +101,23 @@ public class CommandNameToolTests {
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_MultiCharMarkGetsAlternateKey()
-    {
+    public void BuildPlayerToCommandNameMap_MultiCharMarkGetsAlternateKey() {
         // Multi-char marks cannot be used directly ( ArgumentException), 
         // but we can test they are not typeable by using Player.FromString with null
         var typeableMark = "A";
         var playerInfos = new List<PlayerInfo> {
             new PlayerInfo(typeableMark),
         }.ToPlayersIndexed();
-        
+
         var typeablePlayerInfo = playerInfos.First();
         var result = CommandNameTool.BuildPlayerToCommandNameMap(playerInfos);
-        
+
         // Single-char typeable mark returns identity
         Assert.Equal(typeableMark, result[typeablePlayerInfo.Index]);
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_PreservesPlayerReferencesInDictionary()
-    {
+    public void BuildPlayerToCommandNameMap_PreservesPlayerReferencesInDictionary() {
         var playerInfos = new List<PlayerInfo> {
             new PlayerInfo("X"),
             new PlayerInfo("O")
@@ -139,16 +131,14 @@ public class CommandNameToolTests {
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_ReturnsCorrectCountForEmptyInput()
-    {
+    public void BuildPlayerToCommandNameMap_ReturnsCorrectCountForEmptyInput() {
         var emptyPlayerInfos = new List<PlayerInfo>().ToPlayersIndexed();
         var result = CommandNameTool.BuildPlayerToCommandNameMap(emptyPlayerInfos);
         Assert.Empty(result);
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_DigitsAreTypeable()
-    {
+    public void BuildPlayerToCommandNameMap_DigitsAreTypeable() {
         var players = (new[] { "1", "8", "9" }).ToPlayersIndexed();
 
         var result = CommandNameTool.BuildPlayerToCommandNameMap(players);
@@ -159,8 +149,7 @@ public class CommandNameToolTests {
     }
 
     [Fact]
-    public void BuildPlayerToCommandNameMap_MixedTypeableAndNonTypeableWorksCorrectly()
-    {
+    public void BuildPlayerToCommandNameMap_MixedTypeableAndNonTypeableWorksCorrectly() {
         var playerInfos = new List<PlayerInfo>() {
             //typeable
             new("X"),
@@ -170,7 +159,7 @@ public class CommandNameToolTests {
             new("!")
         }.ToPlayersIndexed();
 
-        var expected = new Dictionary<int, string>{
+        var expected = new Dictionary<int, string> {
             [playerInfos.Single(p => p.Mark == "X").Index] = "X",
             [playerInfos.Single(p => p.Mark == "O").Index] = "O",
             [playerInfos.Single(p => p.Mark == ".").Index] = "1",
@@ -190,18 +179,18 @@ public class CommandNameToolTests {
         var map = CommandNameTool.BuildPlayerToCommandNameMap(
             new[] { player1, player2 }.ToPlayersIndexed()
         );
-        
+
         map[player1Index].Should().Be("1");
         map[player2Index].Should().Be("2");
     }
     #endregion
 
     #region BuildPlayerToCommandNameMap Edge Cases
-    
+
     [Fact]
     public void BuildPlayerToCommandNameMap_EmptyArray() {
         var map = CommandNameTool.BuildPlayerToCommandNameMap(Array.Empty<Player>());
-        
+
         map.Count.Should().Be(0);
     }
 
@@ -213,11 +202,11 @@ public class CommandNameToolTests {
         action.Should().Throw<ArgumentNullException>();
     }
     #endregion
-    
+
     #region GetSpaceCommandName
     [Fact]
     public void GetSpaceCommandName_Empty3x3BoardYourTurnIsAsExpected() {
-        var players = new PlayerInfo[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] { new("X"), new("O") };
         var playerXIndex = 0;
         var gameState = new GameState(
             players,
@@ -225,14 +214,14 @@ public class CommandNameToolTests {
             isRandomPlayerOrder: false
         );
 
-        var expected = new string[3,3] {
+        var expected = new string[3, 3] {
             {"17", "18", "19"},
             {"14", "15", "16"},
             {"11", "12", "13"}
         };
 
-        for(sbyte row = 0; row < expected.GetLength(0); row += 1) {
-            for(sbyte col = 0; col < expected.GetLength(0); col += 1) {
+        for (sbyte row = 0; row < expected.GetLength(0); row += 1) {
+            for (sbyte col = 0; col < expected.GetLength(0); col += 1) {
                 var actual = CommandNameTool.SpaceCommandName(new GameView(gameState, playerXIndex), 0, col, row);
                 actual.Should().Be(expected[row, col]);
             }
@@ -241,7 +230,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_Empty3x3BoardNotYourTurnIsBlank() {
-        var players = new PlayerInfo[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] { new("X"), new("O") };
         var playerOIndex = 1;
         var gameState = new GameState(
             players,
@@ -251,8 +240,8 @@ public class CommandNameToolTests {
 
         var expected = " ";
 
-        for(sbyte row = 0; row < gameState.Boards[0].RowCount; row += 1) {
-            for(sbyte col = 0; col < gameState.Boards[0].RowCount; col += 1) {
+        for (sbyte row = 0; row < gameState.Boards[0].RowCount; row += 1) {
+            for (sbyte col = 0; col < gameState.Boards[0].RowCount; col += 1) {
                 var actual = CommandNameTool.SpaceCommandName(new GameView(gameState, playerOIndex), 0, col, row);
                 actual.Should().Be(expected);
             }
@@ -261,7 +250,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_SecondRound3x3BoardYourTurnIsAsExpected() {
-        var players = new PlayerInfo[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] { new("X"), new("O") };
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -273,14 +262,14 @@ public class CommandNameToolTests {
         gameState.GetView(playerOIndex).Attempt(new MNKAction(0, 1, 1));
         gameState.EndRound(out _);
 
-        var expected = new string[3,3] {
+        var expected = new string[3, 3] {
             {"7", "8", "9"},
             {"4", "X", "6"},
             {"1", "2", "3"}
         };
 
-        for(sbyte row = 0; row < expected.GetLength(0); row += 1) {
-            for(sbyte col = 0; col < expected.GetLength(0); col += 1) {
+        for (sbyte row = 0; row < expected.GetLength(0); row += 1) {
+            for (sbyte col = 0; col < expected.GetLength(0); col += 1) {
                 var actual = CommandNameTool.SpaceCommandName(new GameView(gameState, playerXIndex), 0, col, row);
                 actual.Should().Be(expected[row, col]);
             }
@@ -289,7 +278,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_NonKriegspielModeCanSeeOtherPlayer() {
-        var players = new PlayerInfo[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] { new("X"), new("O") };
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -300,14 +289,14 @@ public class CommandNameToolTests {
 
         gameState.GetView(playerXIndex).Attempt(new MNKAction(0, 1, 1));
 
-        var expected = new string[3,3] {
+        var expected = new string[3, 3] {
             {"7", "8", "9"},
             {"4", "X", "6"},
             {"1", "2", "3"}
         };
 
-        for(sbyte row = 0; row < expected.GetLength(0); row += 1) {
-            for(sbyte col = 0; col < expected.GetLength(0); col += 1) {
+        for (sbyte row = 0; row < expected.GetLength(0); row += 1) {
+            for (sbyte col = 0; col < expected.GetLength(0); col += 1) {
                 var actual = CommandNameTool.SpaceCommandName(new GameView(gameState, playerOIndex), 0, col, row);
                 actual.Should().Be(expected[row, col]);
             }
@@ -316,7 +305,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_MoveSameSpaceCanSeeRevealedSpace() {
-        var players = new PlayerInfo[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] { new("X"), new("O") };
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -342,7 +331,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_MoveDifferentSpaceCantSeeOtherPlayer() {
-        var players = new PlayerInfo[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] { new("X"), new("O") };
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -362,7 +351,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_ThirdRound3x3SpectatorViewIsAsExpected() {
-        var players = new PlayerInfo[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] { new("X"), new("O") };
         var playerXIndex = 0;
         var playerOIndex = 1;
         var gameState = new GameState(
@@ -381,14 +370,14 @@ public class CommandNameToolTests {
         gameState.GetView(playerOIndex).Attempt(new MNKAction(0, 2, 2));
         gameState.EndRound(out _);
 
-        var expected = new string[3,3] {
+        var expected = new string[3, 3] {
             {"X", " ", " "},
             {" ", "X", " "},
             {" ", " ", "O"}
         };
 
-        for(sbyte row = 0; row < expected.GetLength(0); row += 1) {
-            for(sbyte col = 0; col < expected.GetLength(0); col += 1) {
+        for (sbyte row = 0; row < expected.GetLength(0); row += 1) {
+            for (sbyte col = 0; col < expected.GetLength(0); col += 1) {
                 var actual = CommandNameTool.SpaceCommandName(new GameView(gameState, null), 0, col, row);
                 actual.Should().Be(expected[row, col]);
             }
@@ -397,7 +386,7 @@ public class CommandNameToolTests {
 
     [Fact]
     public void GetSpaceCommandName_Empty4x4BoardYourTurnIsAsExpected() {
-        var players = new PlayerInfo[] {new ("X"), new ("O")};
+        var players = new PlayerInfo[] { new("X"), new("O") };
         var playerXIndex = 0;
         var gameState = new GameState(
             players,
@@ -405,15 +394,15 @@ public class CommandNameToolTests {
             isRandomPlayerOrder: false
         );
 
-        var expected = new string[4,4] {
+        var expected = new string[4, 4] {
             {"A4", "B4", "C4", "D4"},
             {"A3", "B3", "C3", "D3"},
             {"A2", "B2", "C2", "D2"},
             {"A1", "B1", "C1", "D1"}
         };
 
-        for(sbyte row = 0; row < expected.GetLength(0); row += 1) {
-            for(sbyte col = 0; col < expected.GetLength(0); col += 1) {
+        for (sbyte row = 0; row < expected.GetLength(0); row += 1) {
+            for (sbyte col = 0; col < expected.GetLength(0); col += 1) {
                 var actual = CommandNameTool.SpaceCommandName(new GameView(gameState, playerXIndex), 0, col, row);
                 actual.Should().Be(expected[row, col]);
             }

@@ -11,6 +11,13 @@
     <AssemblyName>mnkeyfog</AssemblyName>
   </PropertyGroup>
 
+  <!-- coding standards -->
+  <PropertyGroup>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <RunAnalyzersDuringBuild>true</RunAnalyzersDuringBuild>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="../MnkeyFog.Model/MnkeyFog.Model.csproj" />
   </ItemGroup>

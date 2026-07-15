@@ -6,10 +6,10 @@ public class GameViewTests {
             (new[] { 'X', 'O' }).ToPlayersArray(),
             new MNKTemplate(builders, isSynchronousMode: false, isKriegspiel: false),
             isRandomPlayerOrder: false
-        );        
+        );
         return state.GetSpectatorView();
     }
-    
+
     #region GetSpaceName
     [Fact]
     public void GetSpaceName_3x3TopRightSpace_AsExpected() {

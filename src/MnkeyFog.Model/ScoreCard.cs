@@ -14,8 +14,8 @@ public readonly struct ScoreCard {
     public ScoreCard() {
         _scores = _emptyPlayerScoreCollection;
     }
-    public ScoreCard(int playerIndex, int score) : this(new PlayerIndexScore(playerIndex, score)) {}
-    public ScoreCard(PlayerIndexScore playerScore) : this([playerScore]) {}
+    public ScoreCard(int playerIndex, int score) : this(new PlayerIndexScore(playerIndex, score)) { }
+    public ScoreCard(PlayerIndexScore playerScore) : this([playerScore]) { }
     public ScoreCard(IEnumerable<PlayerIndexScore> scores) {
         _scores = scores
             .GroupBy(s => s.PlayerIndex)
@@ -40,7 +40,7 @@ public readonly struct ScoreCard {
     #endregion
 
     #region state members
-    private StructList<PlayerIndexScore> _scores {get; init;}
+    private StructList<PlayerIndexScore> _scores { get; init; }
     public readonly IReadOnlyList<PlayerIndexScore> PlayerScores
     => _scores;
     #endregion
@@ -52,50 +52,50 @@ public readonly struct ScoreCard {
 
     [JsonIgnore]
     public readonly ScoreCard Highest
-    => _scores.Count == 0 
+    => _scores.Count == 0
         ? Empty
         : new ScoreCard(_scores.AllMaxBy(s => s.Score));
 
     public readonly IEnumerable<PlayerInfo> AsPlayerInfos(PlayersState playersState)
     => _scores.Select(s => playersState.PlayerInfos[s.PlayerIndex]);
-	#endregion
+    #endregion
 
-	#region object overrides (equality and tostring)
-	public override string? ToString() => _scores.ToString();
+    #region object overrides (equality and tostring)
+    public override string? ToString() => _scores.ToString();
 
     public override bool Equals(object? obj) {
         if (obj == null) {
             return false;
         } else if (obj is PlayerIndexScore playerScore) {
             obj = new ScoreCard(playerScore);
-        } 
-        
+        }
+
         if (obj is ScoreCard scoreCard) {
             return _scores.Equals(scoreCard._scores);
         } else {
             return false;
         }
     }
-    
+
     // override object.GetHashCode
     public override int GetHashCode()
     => _scores.GetHashCode();
 
-    public static bool operator== (ScoreCard? a, ScoreCard? b) {
-        if(a == null) {
+    public static bool operator ==(ScoreCard? a, ScoreCard? b) {
+        if (a == null) {
             return b == null;
         } else {
             return a.Equals(b);
         }
     }
 
-    public static bool operator!= (ScoreCard? a, ScoreCard? b) {
+    public static bool operator !=(ScoreCard? a, ScoreCard? b) {
         return !(a == b);
     }
     #endregion
 
-	public ScoreCard FilterByPlayerIndices(IEnumerable<int> playerIndices)
-	=> new ScoreCard(PlayerScores.Where(ps => playerIndices.Contains(ps.PlayerIndex)));
+    public ScoreCard FilterByPlayerIndices(IEnumerable<int> playerIndices)
+    => new ScoreCard(PlayerScores.Where(ps => playerIndices.Contains(ps.PlayerIndex)));
 
     #region operator overloads
     public static ScoreCard operator +(ScoreCard a, ScoreCard b)

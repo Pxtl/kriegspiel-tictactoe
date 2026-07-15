@@ -18,6 +18,6 @@ public abstract record GameObjectView {
 
     #region Data Properties
     [JsonProperty(TypeNameHandling = TypeNameHandling.None)]
-    public int? PlayerIndex {get; init;}
+    public int? PlayerIndex { get; init; }
     #endregion
 }

@@ -36,7 +36,7 @@ public record MNKTemplate
     : base() {
         BoardBuilders = boardBuilders;
         IsKriegspiel = isKriegspiel;
-        PlayManager = isSynchronousMode 
+        PlayManager = isSynchronousMode
             ? SynchronizedPlayManager.Instance
             : RoundRobinPlayManager.Instance;
     }
@@ -46,7 +46,7 @@ public record MNKTemplate
     public bool IsKriegspiel { get; init; }
 
     [JsonProperty(TypeNameHandling = TypeNameHandling.Objects)]
-    public IReadOnlyList<BoardBuilder> BoardBuilders {get; init;}
+    public IReadOnlyList<BoardBuilder> BoardBuilders { get; init; }
     #endregion
 
     public override IReadOnlyList<Board> CreateBoards()
@@ -65,7 +65,7 @@ public record MNKTemplate
     }
 
     public override IEnumerable<GameActionFactory> GetAvailableActions(GameState gameState, int playerIndex)
-    => gameState.PlayersState.CanTakeTurn(playerIndex) 
-        ? [ new MNKActionFactory() ]
+    => gameState.PlayersState.CanTakeTurn(playerIndex)
+        ? [new MNKActionFactory()]
         : [];
 }
