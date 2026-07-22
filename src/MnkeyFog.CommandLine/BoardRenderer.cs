@@ -6,8 +6,13 @@ namespace MnkeyFog.CommandLine;
 /// Draws the full board based on the given gamestate, from the perspective of
 /// the given player.
 /// </summary>
-public static class BoardRenderer {
-    public static string DrawBoards(
+public class BoardRenderer {
+    // Constructor with no required state for now
+    public BoardRenderer() {
+        // Can be extended later for configuration options
+    }
+
+    public string DrawBoards(
         GameView gameView,
         int maxRenderWidth = int.MaxValue
     ) {
@@ -34,14 +39,14 @@ public static class BoardRenderer {
         return sb.ToString();
     }
 
-    public static int GetBoardRenderWidth(BoardView board)
-        => board.ColumnCount * 4 + 3; // 4 chars per-space, plus 2 for indent, 
+    public int GetBoardRenderWidth(BoardView board)
+        => board.ColumnCount * 4 + 3; // 4 chars per-space, plus 2 for indent.
 
     /// <summary>
     /// Helper function to draw a border row of the board.
     /// Wraps to newline when maxWidth is exceeded.
     /// </summary>
-    private static sbyte DrawBorderRow(
+    private sbyte DrawBorderRow(
         GameView gameView,
         sbyte startBoardIndex,
         string startBarString,
@@ -55,7 +60,7 @@ public static class BoardRenderer {
         var boardIndex = startBoardIndex;
         for (; boardIndex < gameView.BoardsCount; boardIndex += 1) {
             var board = gameView.GetBoardViewByIndex(boardIndex);
-            var cursorX = sb.GetCursorX();
+            var cursorX = GetCursorX(sb);
 
             //wrap check - break if cursor would exceed maxWidth
             if (cursorX > 0 && (cursorX + GetBoardRenderWidth(board) > maxRenderWidth)) {
@@ -84,7 +89,7 @@ public static class BoardRenderer {
     /// Draw a row of board spaces with window wrapping.
     /// Wraps to newline when maxWidth is exceeded.
     /// </summary>
-    private static sbyte DrawBoardSpacesRow(
+    private sbyte DrawBoardSpacesRow(
         GameView gameView,
         sbyte startBoardIndex,
         string borderBarString,
@@ -96,7 +101,7 @@ public static class BoardRenderer {
         var boardIndex = startBoardIndex;
         for (; boardIndex < gameView.BoardsCount; boardIndex += 1) {
             var board = gameView.GetBoardViewByIndex(boardIndex);
-            var cursorX = sb.GetCursorX();
+            var cursorX = GetCursorX(sb);
 
             //wrap check - break if cursor would exceed maxWidth
             if (cursorX > 0 && (cursorX + boardRenderWidth > maxRenderWidth)) {
@@ -119,13 +124,16 @@ public static class BoardRenderer {
     /// <summary>
     /// Helper function to draw the body-spaces of the board.
     /// </summary>
-    private static void DrawSpaceBody(string body, string borderBarString, StringBuilder sb) {
+    private void DrawSpaceBody(string body, string borderBarString, StringBuilder sb) {
         body = body.PadLeft(2);
         body = body.PadRight(3);
         sb.Append($"{borderBarString}{body}");
     }
 
-    public static int GetCursorX(this StringBuilder sb) {
+    /// <summary>
+    /// Get the cursor position (number of characters since last line break).
+    /// </summary>
+    public int GetCursorX(StringBuilder sb) {
         int charsSinceLineBreak = 0;
 
         for (int i = sb.Length - 1; i >= 0; i--) {
