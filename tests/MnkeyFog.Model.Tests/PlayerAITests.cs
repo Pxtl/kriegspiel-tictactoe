@@ -81,11 +81,10 @@ public class PlayerAITests {
         action.Should().NotThrow();
     }
 
-    //commented out because Clod cannot consistently defeat Randy
     [Fact]
     public void AIGameRunner_BasicTicTacToe_AsterAIvsRandom() {
         // AsterAI vs RandomAI should show AsterAI winning more often
-        int iterations = 10;
+        int iterations = 50;
 
         var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
             [new PlayerInfo("X")] = new AsterAI(),
@@ -95,18 +94,18 @@ public class PlayerAITests {
         var scoreSum = ScoreCard.Empty;
         for (int i = 0; i < iterations; i++) {
             scoreSum += AIGameRunner.RunAIGame(GameTemplates.BasicTicTacToe, playerAIs, out var gameState);
-            Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
-            Console.Out.WriteLine(gameState.GameStateText);
+            // commented out debugging code because it was too much content.
+            // Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
+            // Console.Out.WriteLine(gameState.GameStateText);
         }
         scoreSum.Highest.PlayerScores.Count().Should().Be(1);
         scoreSum.Highest.PlayerScores.Single().PlayerIndex.Should().Be(asterAIPlayerXIndex);
     }
 
-    //commented out because Clod cannot consistently defeat Randy
     [Fact]
     public void AIGameRunner_BasicTicTacToe_MontyAIvsAsterAI() {
-        // AsterAI vs RandomAI should show AsterAI winning more often
-        int iterations = 100;
+        // MontyAI vs AsterAI should show MontyAI winning more often
+        int iterations = 50;
 
         var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
             [new PlayerInfo("X")] = new MontyAI(),
@@ -116,8 +115,9 @@ public class PlayerAITests {
         var scoreSum = ScoreCard.Empty;
         for (int i = 0; i < iterations; i++) {
             scoreSum += AIGameRunner.RunAIGame(GameTemplates.BasicTicTacToe, playerAIs, out var gameState);
-            Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
-            Console.Out.WriteLine(gameState.GameStateText);
+            // commented out debugging code because it was too much content.
+            // Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
+            // Console.Out.WriteLine(gameState.GameStateText);
         }
         scoreSum.Highest.PlayerScores.Count().Should().Be(1);
         scoreSum.Highest.PlayerScores.Single().PlayerIndex.Should().Be(montyAIPlayerXIndex);
@@ -145,7 +145,7 @@ public class PlayerAITests {
     [Fact]
     public void AIGameRunner_FogTicTacToe_AsterAIvsRandom() {
         // AsterAI vs RandomAI should show AsterAI winning more often
-        int iterations = 10;
+        int iterations = 50;
 
         var playerAIs = new OrderedDictionary<PlayerInfo, IPlayerAI> {
             [new PlayerInfo("X")] = new AsterAI(),
@@ -160,8 +160,9 @@ public class PlayerAITests {
             scoreSum += new ScoreCard(
                 result.Highest.PlayerScores.Select(ps => new PlayerIndexScore(ps.PlayerIndex, 1))
             );
-            Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
-            Console.Out.WriteLine(gameState.GameStateText);
+            // commented out debugging code because it was too much content.
+            // Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
+            // Console.Out.WriteLine(gameState.GameStateText);
         }
         scoreSum.Highest.AsPlayerInfos(playerState).Count().Should().Be(1);
         scoreSum.Highest.AsPlayerInfos(playerState).Single().Should().Be(asterAIPlayerX);
