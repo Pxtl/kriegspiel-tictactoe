@@ -122,6 +122,69 @@ public class BoardRendererTests {
     }
 
     [Fact]
+    public void DrawBoards_3x3BorderlessWithActiveBoardAndOneMove_ReturnBoardsWithSpaceCodesGridString() {
+        var boardBuilder3x3 = MNKBoardRuleset.CreateBoardBuilder(3, 3);
+
+        var state = new GameState(
+            (new[] { 'X', 'O' }).ToPlayersArray(),
+            new MNKTemplate([boardBuilder3x3], isSynchronousMode: false, isKriegspiel: true),
+            isRandomPlayerOrder: false
+        );
+
+        var currentPlayer = state.PlayersState.GetPlayer("X");
+        state.GetView(currentPlayer).Attempt(new MNKAction(0, 1, 1));
+        var otherPlayer = state.PlayersState.GetPlayer("O");
+        state.GetView(otherPlayer).Attempt(new MNKAction(0, 0, 0));
+        state.EndRound(out var _);
+
+        var actual = new BoardRenderer(BoardRendererConfiguration.Borderless)
+            .DrawBoards(new GameView(state, currentPlayer.Index));
+
+        var expected = @"
+   7  8  9 
+   4  X  6 
+   1  2  3 
+"
+            .NormalizeString()
+            .RemoveStartingBreak();
+
+        actual.TrimEnd().Should().Be(expected);
+    }
+
+
+    [Fact]
+    public void DrawBoards_3x3HashPipesWithActiveBoardAndOneMove_ReturnBoardsWithSpaceCodesGridString() {
+        var boardBuilder3x3 = MNKBoardRuleset.CreateBoardBuilder(3, 3);
+
+        var state = new GameState(
+            (new[] { 'X', 'O' }).ToPlayersArray(),
+            new MNKTemplate([boardBuilder3x3], isSynchronousMode: false, isKriegspiel: true),
+            isRandomPlayerOrder: false
+        );
+
+        var currentPlayer = state.PlayersState.GetPlayer("X");
+        state.GetView(currentPlayer).Attempt(new MNKAction(0, 1, 1));
+        var otherPlayer = state.PlayersState.GetPlayer("O");
+        state.GetView(otherPlayer).Attempt(new MNKAction(0, 0, 0));
+        state.EndRound(out var _);
+
+        var actual = new BoardRenderer(BoardRendererConfiguration.HashPipes)
+            .DrawBoards(new GameView(state, currentPlayer.Index));
+
+        var expected = @"
+   7 │ 8 │ 9 
+  ───┼───┼───
+   4 │ X │ 6 
+  ───┼───┼───
+   1 │ 2 │ 3 
+"
+            .NormalizeString()
+            .RemoveStartingBreak();
+
+        actual.TrimEnd().Should().Be(expected);
+    }
+
+    [Fact]
     public void DrawBoards_MaxSizeReturnsBlankBoardGridString() {
         var boardBuilder = MNKBoardRuleset.CreateBoardBuilder(26, 26);
         var state = new GameState(
