@@ -40,7 +40,7 @@ public class BoardRenderer {
     }
 
     public int GetBoardRenderWidth(BoardView board)
-        => board.ColumnCount * 4 + 3;
+        => board.ColumnCount * 4 + 3; // 4 chars per-space, plus 2 for indent.
 
     /// <summary>
     /// Helper function to draw a border row of the board.
