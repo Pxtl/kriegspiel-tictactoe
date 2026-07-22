@@ -125,7 +125,8 @@ internal static class ConsoleLoop {
                 );
             } else {
                 Console.Out.WriteLine(state.GameStateText);
-                Console.Out.WriteLine(BoardRenderer.DrawBoards(state.GetSpectatorView(), maxRenderWidth: Console.BufferWidth));
+                var boardRenderer = new BoardRenderer();
+                Console.Out.WriteLine(boardRenderer.DrawBoards(state.GetSpectatorView(), maxRenderWidth: Console.BufferWidth));
                 isGameOver = true;
             }
         }
@@ -140,17 +141,15 @@ internal static class ConsoleLoop {
             Console.Out.WriteLine(state.GameStateText);
             Console.Out.WriteLine($"Player {player.Info}, take your turn.");
             var gameView = state.GetView(player);
-            Console.Out.WriteLine(
-                BoardRenderer.DrawBoards(gameView, maxRenderWidth: Console.BufferWidth)
-            );
+            var boardRenderer = new BoardRenderer();
+            Console.Out.WriteLine(boardRenderer.DrawBoards(gameView, maxRenderWidth: Console.BufferWidth));
             playActionResult = DoPlayerAction(ref state, player, sharedStateFilePath);
             Console.Out.WriteLine(playActionResult.GetResultText(state.PlayersState));
         }
         var isViewChanged = playActionResult.IsViewChanged;
         if (isViewChanged) {
-            Console.Out.WriteLine(
-                BoardRenderer.DrawBoards(state.GetView(player), maxRenderWidth: Console.BufferWidth)
-            );
+            var boardRenderer = new BoardRenderer();
+            Console.Out.WriteLine(boardRenderer.DrawBoards(state.GetView(player), maxRenderWidth: Console.BufferWidth));
         }
     }
 

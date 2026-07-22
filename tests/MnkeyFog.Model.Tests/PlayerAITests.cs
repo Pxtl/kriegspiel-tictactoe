@@ -95,7 +95,7 @@ public class PlayerAITests {
         var scoreSum = ScoreCard.Empty;
         for (int i = 0; i < iterations; i++) {
             scoreSum += AIGameRunner.RunAIGame(GameTemplates.BasicTicTacToe, playerAIs, out var gameState);
-            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetSpectatorView(), 100));
+            Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
             Console.Out.WriteLine(gameState.GameStateText);
         }
         scoreSum.Highest.PlayerScores.Count().Should().Be(1);
@@ -116,7 +116,7 @@ public class PlayerAITests {
         var scoreSum = ScoreCard.Empty;
         for (int i = 0; i < iterations; i++) {
             scoreSum += AIGameRunner.RunAIGame(GameTemplates.BasicTicTacToe, playerAIs, out var gameState);
-            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetSpectatorView(), 100));
+            Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
             Console.Out.WriteLine(gameState.GameStateText);
         }
         scoreSum.Highest.PlayerScores.Count().Should().Be(1);
@@ -160,7 +160,7 @@ public class PlayerAITests {
             scoreSum += new ScoreCard(
                 result.Highest.PlayerScores.Select(ps => new PlayerIndexScore(ps.PlayerIndex, 1))
             );
-            Console.Out.WriteLine(BoardRenderer.DrawBoards(gameState.GetSpectatorView(), 100));
+            Console.Out.WriteLine(new BoardRenderer().DrawBoards(gameState.GetSpectatorView(), 100));
             Console.Out.WriteLine(gameState.GameStateText);
         }
         scoreSum.Highest.AsPlayerInfos(playerState).Count().Should().Be(1);
