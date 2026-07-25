@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace MnkeyFog.CommandLine;
 
-public class BoardRendererConfiguration {
+public record class BoardRendererConfiguration {
     #region constructors
     public BoardRendererConfiguration(
         int cellWidth,
