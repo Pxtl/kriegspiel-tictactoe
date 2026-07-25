@@ -3,193 +3,203 @@ using Newtonsoft.Json;
 namespace MnkeyFog.CommandLine;
 
 public class BoardRendererConfiguration {
-    // Traditional constructor with nullable char types
+    #region constructors
     public BoardRendererConfiguration(
         int cellWidth,
         char? cellColumnSeparator, char? cellRowSeparator,
-        string? topLeftCorner, string? topIntersection, string? topRightCorner,
-        string? leftIntersection, string? middleIntersection, string? rightIntersection,
-        string? bottomLeftCorner, string? bottomIntersection, string? bottomRightCorner,
+        char? topLeftCorner, char? topIntersection, char? topRightCorner,
+        char? leftIntersection, char? middleIntersection, char? rightIntersection,
+        char? bottomLeftCorner, char? bottomIntersection, char? bottomRightCorner,
         string emptyBoardLeader, string doneBoardLeader, Func<string, string> boardNameMappingToBoardLeader
     ) {
         CellWidth = cellWidth;
-        CellColumnSeparator = cellColumnSeparator;
-        CellRowSeparator = cellRowSeparator;
-        TopLeftCorner = topLeftCorner;
-        TopIntersection = topIntersection;
-        TopRightCorner = topRightCorner;
-        LeftIntersection = leftIntersection;
-        MiddleIntersection = middleIntersection;
-        RightIntersection = rightIntersection;
-        BottomLeftCorner = bottomLeftCorner;
-        BottomIntersection = bottomIntersection;
-        BottomRightCorner = bottomRightCorner;
+        CellColumnSeparatorChar = cellColumnSeparator;
+        CellRowSeparatorChar = cellRowSeparator;
+        TopLeftCornerChar = topLeftCorner;
+        TopIntersectionChar = topIntersection;
+        TopRightCornerChar = topRightCorner;
+        LeftIntersectionChar = leftIntersection;
+        MiddleIntersectionChar = middleIntersection;
+        RightIntersectionChar = rightIntersection;
+        BottomLeftCornerChar = bottomLeftCorner;
+        BottomIntersectionChar = bottomIntersection;
+        BottomRightCornerChar = bottomRightCorner;
         EmptyBoardLeader = emptyBoardLeader;
         DoneBoardLeader = doneBoardLeader;
         BoardNameMappingToBoardLeader = boardNameMappingToBoardLeader;
     }
+    #endregion
 
-    // Properties for nullable char backing storage
+    #region Data members
     public int CellWidth { get; }
-    public char? CellColumnSeparator { get; }
-    public char? CellRowSeparator { get; }
-    public string? TopLeftCorner { get; }
-    public string? TopIntersection { get; }
-    public string? TopRightCorner { get; }
-    public string? LeftIntersection { get; }
-    public string? MiddleIntersection { get; }
-    public string? RightIntersection { get; }
-    public string? BottomLeftCorner { get; }
-    public string? BottomIntersection { get; }
-    public string? BottomRightCorner { get; }
+    public char? CellColumnSeparatorChar { get; }
+    public char? CellRowSeparatorChar { get; }
+    public char? TopLeftCornerChar { get; }
+    public char? TopIntersectionChar { get; }
+    public char? TopRightCornerChar { get; }
+    public char? LeftIntersectionChar { get; }
+    public char? MiddleIntersectionChar { get; }
+    public char? RightIntersectionChar { get; }
+    public char? BottomLeftCornerChar { get; }
+    public char? BottomIntersectionChar { get; }
+    public char? BottomRightCornerChar { get; }
     public string EmptyBoardLeader { get; }
     public string DoneBoardLeader { get; }
     public Func<string, string> BoardNameMappingToBoardLeader { get; }
+    #endregion
 
-    // Extracted getter properties that return strings, replacing BoardRenderer.DrawBoards conversion logic
+    private readonly string FinalFailoverString = " ";
+
+    #region Calculated members
+
     [JsonIgnore]
-    public string TopLeftCornerOrEmpty {
+    public string TopLeftCorner {
+        get {
+            if (HasLeftBorder && HasTopBorder) {
+                return TopLeftCornerChar?.ToString() ?? FinalFailoverString;
+            }
+            return "";
+        }
+    }
+
+    [JsonIgnore]
+    public string TopIntersection {
+        get {
+            if (HasTopBorder) {
+                if (HasColumnSeparators) {
+                    return TopIntersectionChar?.ToString() ?? FinalFailoverString;
+                } else {
+                    return CellRowSeparatorChar?.ToString() ?? FinalFailoverString;
+                }
+            }
+            return "";
+        }
+    }
+
+    [JsonIgnore]
+    public string TopRightCorner {
+        get {
+            if (HasRightBorder && HasTopBorder) {
+                return TopRightCornerChar?.ToString() ?? FinalFailoverString;
+            }
+            return "";
+        }
+    }
+
+    [JsonIgnore]
+    public string LeftIntersection {
         get {
             if (HasLeftBorder) {
-                return TopLeftCorner ?? "";
+                if (HasRowSeparators) {
+                    return LeftIntersectionChar?.ToString() ?? FinalFailoverString;
+                } else {
+                    return CellColumnSeparatorChar?.ToString() ?? FinalFailoverString;
+                }
             }
             return "";
         }
     }
 
     [JsonIgnore]
-    public string TopIntersectionOrRowSeparatorOrEmpty {
+    public string MiddleIntersection {
         get {
-            if (TopIntersection != null) {
-                return TopIntersection;
-            }
-            if (HasColumnSeparators) {
-                return CellColumnSeparatorOrSpace.ToString();
-            }
-            if (HasRowSeparators) {
-                return CellRowSeparatorOrSpace.ToString();
+            if (HasColumnSeparators && HasRowSeparators) {
+                return MiddleIntersectionChar?.ToString() ?? FinalFailoverString;
+            } else if (HasRowSeparators) {
+                return CellRowSeparatorChar?.ToString() ?? FinalFailoverString;
+            } else if (HasColumnSeparators) {
+                return CellColumnSeparatorChar?.ToString() ?? FinalFailoverString;
             }
             return "";
         }
     }
 
     [JsonIgnore]
-    public string TopRightCornerOrEmpty {
-        get {
-            if (HasRightBorder) {
-                return TopRightCorner ?? "";
-            }
-            return "";
-        }
-    }
-
-    [JsonIgnore]
-    public string LeftIntersectionOrEmpty {
-        get {
-            if (HasLeftBorder) {
-                return LeftIntersection ?? "";
-            }
-            return "";
-        }
-    }
-
-    [JsonIgnore]
-    public string MiddleIntersectionOrColumnSeparatorOrRowSeparatorOrEmpty {
-        get {
-            if (MiddleIntersection != null) {
-                return MiddleIntersection;
-            }
-            if (HasColumnSeparators) {
-                return CellColumnSeparatorOrSpace.ToString();
-            }
-            if (HasRowSeparators) {
-                return CellRowSeparatorOrSpace.ToString();
-            }
-            return "";
-        }
-    }
-
-    [JsonIgnore]
-    public string RightIntersectionOrEmpty {
+    public string RightIntersection {
         get {
             if (HasRightBorder) {
-                return RightIntersection ?? "";
+                if (HasRowSeparators) {
+                    return RightIntersectionChar?.ToString() ?? FinalFailoverString;
+                } else {
+                    return CellColumnSeparatorChar?.ToString() ?? FinalFailoverString;
+                }
             }
             return "";
         }
     }
 
+
     [JsonIgnore]
-    public string BottomLeftCornerOrEmpty {
+    public string BottomLeftCorner {
         get {
-            if (HasLeftBorder) {
-                return BottomLeftCorner ?? "";
+            if (HasLeftBorder && HasBottomBorder) {
+                return BottomLeftCornerChar?.ToString() ?? FinalFailoverString;
             }
             return "";
         }
     }
 
     [JsonIgnore]
-    public string BottomIntersectionOrRowSeparatorOrEmpty {
+    public string BottomIntersection {
         get {
-            if (BottomIntersection != null) {
-                return BottomIntersection;
-            }
-            if (HasColumnSeparators) {
-                return CellColumnSeparatorOrSpace.ToString();
-            }
-            if (HasRowSeparators) {
-                return CellRowSeparatorOrSpace.ToString();
+            if (HasBottomBorder) {
+                if (HasColumnSeparators) {
+                    return BottomIntersectionChar?.ToString() ?? FinalFailoverString;
+                } else {
+                    return CellRowSeparatorChar?.ToString() ?? FinalFailoverString;
+                }
             }
             return "";
         }
     }
 
     [JsonIgnore]
-    public string BottomRightCornerOrEmpty {
+    public string BottomRightCorner {
         get {
-            if (HasRightBorder) {
-                return BottomRightCorner ?? "";
+            if (HasRightBorder && HasBottomBorder) {
+                return BottomRightCornerChar?.ToString() ?? FinalFailoverString;
             }
             return "";
         }
     }
 
-    // Helper properties for conversion
     [JsonIgnore]
-    public char CellRowSeparatorOrSpace => CellRowSeparator ?? ' ';
+    public string CellRowSeparator
+    => HasRowSeparators
+        ? new string(CellRowSeparatorChar ?? FinalFailoverString[0], CellWidth)
+        : "";
 
     [JsonIgnore]
-    public char CellColumnSeparatorOrSpace => CellColumnSeparator ?? ' ';
+    public string CellColumnSeparator
+    => HasColumnSeparators
+        ? (CellColumnSeparatorChar.ToString() ?? FinalFailoverString)
+        : "";
 
     [JsonIgnore]
-    public string CellSeparatorSpanString => new string(CellRowSeparatorOrSpace, CellWidth);
-
-    // Extracted properties for configuration analysis
-    [JsonIgnore]
-    public bool HasTopBorder => TopLeftCorner != null || TopRightCorner != null;
+    public bool HasTopBorder => TopLeftCornerChar != null || TopRightCornerChar != null;
 
     [JsonIgnore]
-    public bool HasBottomBorder => BottomLeftCorner != null || BottomRightCorner != null;
+    public bool HasBottomBorder => BottomLeftCornerChar != null || BottomRightCornerChar != null;
 
     [JsonIgnore]
-    public bool HasLeftBorder => TopLeftCorner != null || BottomLeftCorner != null;
+    public bool HasLeftBorder => TopLeftCornerChar != null || BottomLeftCornerChar != null;
 
     [JsonIgnore]
-    public bool HasRightBorder => TopRightCorner != null || BottomRightCorner != null;
+    public bool HasRightBorder => TopRightCornerChar != null || BottomRightCornerChar != null;
 
     [JsonIgnore]
-    public bool HasColumnSeparators => TopIntersection != null || MiddleIntersection != null || BottomIntersection != null;
+    public bool HasColumnSeparators => TopIntersectionChar != null || MiddleIntersectionChar != null || BottomIntersectionChar != null;
 
     [JsonIgnore]
-    public bool HasRowSeparators => LeftIntersection != null || MiddleIntersection != null || RightIntersection != null;
+    public bool HasRowSeparators => LeftIntersectionChar != null || MiddleIntersectionChar != null || RightIntersectionChar != null;
+    #endregion
 
     // Factory methods for static configurations
     public static BoardRendererConfiguration FullPipes { get; } = new BoardRendererConfiguration(
         3, '│', '─',
-        "┌", "┬", "┐",
-        "├", "┼", "┤",
-        "└", "┴", "┘",
+        '┌', '┬', '┐',
+        '├', '┼', '┤',
+        '└', '┴', '┘',
         "  ", " ✓", boardName => boardName.PadLeft(2)
     );
 
@@ -204,7 +214,7 @@ public class BoardRendererConfiguration {
     public static BoardRendererConfiguration HashPipes { get; } = new BoardRendererConfiguration(
         3, '│', '─',
         null, null, null,
-        null, "┼", null,
+        null, '┼', null,
         null, null, null,
         "  ", " ✓", boardName => boardName.PadLeft(2)
     );
