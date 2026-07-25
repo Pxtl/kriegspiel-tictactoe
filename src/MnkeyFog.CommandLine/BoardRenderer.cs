@@ -32,25 +32,16 @@ public class BoardRenderer {
 
         while (nextDrawnBoardIndex < gameView.BoardsCount) {
             sbyte drawBoardIndex = nextDrawnBoardIndex;
-            var cellRowSeparatorChar = Configuration.CellRowSeparator ?? ' ';
-            var cellColumnSeparatorChar = Configuration.CellColumnSeparator ?? ' ';
-            var middleIntersection = (Configuration.HasColumnSeparators && Configuration.HasRowSeparators)
-                ? Configuration.MiddleIntersection
-                : Configuration.HasColumnSeparators
-                ? cellColumnSeparatorChar.ToString()
-                : Configuration.HasRowSeparators
-                ? cellRowSeparatorChar.ToString()
-                : "";
 
             var doShowBoardName = doShowBoardNameForAllBoards;
             if (Configuration.HasTopBorder) {
                 DrawBorderRow(
                     gameView,
                     drawBoardIndex,
-                    Configuration.HasLeftBorder ? Configuration.TopLeftCorner! : "",
-                    Configuration.TopIntersection ?? cellRowSeparatorChar.ToString(),
-                    Configuration.HasRightBorder ? Configuration.TopRightCorner! : "",
-                    new string(cellRowSeparatorChar, Configuration.CellWidth),
+                    Configuration.TopLeftCorner,
+                    Configuration.TopIntersection,
+                    Configuration.TopRightCorner,
+                    Configuration.CellRowSeparator,
                     doShowBoardName,
                     maxRenderWidth,
                     sb
@@ -64,10 +55,10 @@ public class BoardRenderer {
                         DrawBorderRow(
                             gameView,
                             drawBoardIndex,
-                            Configuration.HasLeftBorder ? Configuration.LeftIntersection! : "",
-                            middleIntersection!,
-                            Configuration.HasRightBorder ? Configuration.RightIntersection! : "",
-                            new string(cellRowSeparatorChar, Configuration.CellWidth),
+                            Configuration.LeftIntersection,
+                            Configuration.MiddleIntersection,
+                            Configuration.RightIntersection,
+                            Configuration.CellRowSeparator,
                             false,
                             maxRenderWidth,
                             sb
@@ -77,11 +68,6 @@ public class BoardRenderer {
                 nextDrawnBoardIndex = DrawBoardSpacesRow(
                     gameView,
                     drawBoardIndex,
-                    Configuration.HasLeftBorder,
-                    Configuration.HasColumnSeparators,
-                    Configuration.HasRightBorder,
-                    cellColumnSeparatorChar.ToString(),
-                    Configuration.CellWidth,
                     row,
                     boardRenderWidth,
                     doShowBoardName,
@@ -94,10 +80,10 @@ public class BoardRenderer {
                 DrawBorderRow(
                     gameView,
                     drawBoardIndex,
-                    Configuration.HasLeftBorder ? Configuration.BottomLeftCorner! : "",
-                    Configuration.BottomIntersection ?? cellRowSeparatorChar.ToString(),
-                    Configuration.HasRightBorder ? Configuration.BottomRightCorner! : "",
-                    new string(cellRowSeparatorChar, Configuration.CellWidth),
+                    Configuration.BottomLeftCorner,
+                    Configuration.BottomIntersection,
+                    Configuration.BottomRightCorner,
+                    Configuration.CellRowSeparator,
                     false,
                     maxRenderWidth,
                     sb
@@ -123,10 +109,10 @@ public class BoardRenderer {
     private sbyte DrawBorderRow(
         GameView gameView,
         sbyte startBoardIndex,
-        string startBarString,
-        string midBarString,
-        string endBarString,
-        string spanString,
+        string cellStartString,
+        string cellIntersectionString,
+        string cellEndString,
+        string cellSpanString,
         bool doShowBoardName,
         int maxRenderWidth,
         StringBuilder sb
@@ -143,12 +129,12 @@ public class BoardRenderer {
 
             DrawBoardLeader(doShowBoardName, sb, boardIndex, board);
 
-            sb.Append($"{startBarString}{spanString}");
+            sb.Append($"{cellStartString}{cellSpanString}");
 
             for (sbyte col = 0; col < board.ColumnCount - 1; col += 1) {
-                sb.Append($"{midBarString}{spanString}");
+                sb.Append($"{cellIntersectionString}{cellSpanString}");
             }
-            sb.Append(endBarString);
+            sb.Append(cellEndString);
         }
         sb.AppendLine();
         return boardIndex;
@@ -161,11 +147,6 @@ public class BoardRenderer {
     private sbyte DrawBoardSpacesRow(
         GameView gameView,
         sbyte startBoardIndex,
-        bool hasLeftBorder,
-        bool hasColumnSeparators,
-        bool hasRightBorder,
-        string columnSeparator,
-        int cellWidth,
         sbyte rowIndex,
         int boardRenderWidth,
         bool doShowBoardName,
@@ -184,18 +165,18 @@ public class BoardRenderer {
 
             DrawBoardLeader(doShowBoardName, sb, boardIndex, board);
 
-            if (hasLeftBorder) {
-                sb.Append(columnSeparator);
+            if (Configuration.HasLeftBorder) {
+                sb.Append(Configuration.CellColumnSeparator);
             }
             for (sbyte col = 0; col < board.ColumnCount; col += 1) {
-                if (col > 0 && hasColumnSeparators) {
-                    sb.Append(columnSeparator);
+                if (col > 0 && Configuration.HasColumnSeparators) {
+                    sb.Append(Configuration.CellColumnSeparator);
                 }
                 var body = CommandNameTool.SpaceCommandName(gameView, boardIndex, col, rowIndex);
-                DrawSpaceBody(body, cellWidth, sb);
+                DrawSpaceBody(body, Configuration.CellWidth, sb);
             }
-            if (hasRightBorder) {
-                sb.Append(columnSeparator);
+            if (Configuration.HasRightBorder) {
+                sb.Append(Configuration.CellColumnSeparator);
             }
         }
         sb.AppendLine();
